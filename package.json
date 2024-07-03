@@ -1,28 +1,29 @@
 {
-  "name": "astro-pdf",
-  "version": "0.0.1",
-  "description": "A simple Astro integration to generate PDFs from built pages",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/es/index.js",
-  "files": [
-    "dist",
-    "!dist/**/*.map"
-  ],
-  "scripts": {
-    "build": "rollup -c"
-  },
-  "author": "Lam Eu Ler",
-  "license": "MIT",
-  "dependencies": {
-    "@puppeteer/browsers": "^2.2.3",
-    "@types/serve-handler": "^6.1.4",
-    "puppeteer": "^22.12.1",
-    "serve-handler": "^6.1.5"
-  },
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "astro": "^4.11.3",
-    "rollup": "^4.18.0"
-  }
+	"name": "astro-pdf",
+	"version": "0.0.1",
+	"description": "A simple Astro integration to generate PDFs from built pages",
+	"main": "./dist/cjs/integration.js",
+	"module": "./dist/es/integration.js",
+	"types": "./dist/types/integration.d.ts",
+	"files": [
+		"dist",
+		"!dist/**/*.map"
+	],
+	"scripts": {
+		"build": "rollup -c"
+	},
+	"author": "Lam Eu Ler",
+	"license": "MIT",
+	"dependencies": {
+		"@puppeteer/browsers": "^2.2.3",
+		"@types/serve-handler": "^6.1.4",
+		"puppeteer": "^22.12.1",
+		"serve-handler": "^6.1.5"
+	},
+	"devDependencies": {
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-typescript": "^11.1.6",
+		"astro": "^4.11.3",
+		"rollup": "^4.18.0"
+	}
 }
