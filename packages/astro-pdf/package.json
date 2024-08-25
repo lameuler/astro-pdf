@@ -15,6 +15,11 @@
 	},
 	"author": "Lam Eu Ler",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/lameuler/astro-pdf.git",
+		"directory": "packages/astro-pdf"
+	},
 	"dependencies": {
 		"@puppeteer/browsers": "^2.2.3",
 		"@types/serve-handler": "^6.1.4",
