@@ -1,6 +1,6 @@
 {
 	"name": "astro-pdf",
-	"version": "0.0.1-beta.0",
+	"version": "0.0.1-beta.1",
 	"description": "A simple Astro integration to generate PDFs from built pages",
 	"main": "./dist/cjs/integration.js",
 	"module": "./dist/es/integration.js",
@@ -10,7 +10,8 @@
 		"!dist/**/*.map"
 	],
 	"scripts": {
-		"build": "rollup -c"
+		"build": "rollup -c",
+		"prepack": "npm run build"
 	},
 	"author": "Lam Eu Ler",
 	"license": "MIT",
