@@ -36,3 +36,15 @@ export function startServer(port: number, dir?: string) {
         })
     })
 }
+
+export function closeServer(server: Server) {
+    return new Promise<void>((resolve, reject) => {
+        server.close(err => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve()
+            }
+        })
+    })
+}

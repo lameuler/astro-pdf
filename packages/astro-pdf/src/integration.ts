@@ -3,7 +3,7 @@ import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page } from 
 import { type InstallOptions } from '@puppeteer/browsers'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { installBrowser, startServer } from './utils'
+import { closeServer, installBrowser, startServer } from './utils'
 
 interface Options {
     install?: boolean | Partial<InstallOptions>,
@@ -50,27 +50,26 @@ export default function astroPdf(options: Options): AstroIntegration {
                     const pageOptions = options.pages(pathname)
                     if (pageOptions) {
                         const page = await browser.newPage()
-                        page.goto(`http://localhost:${port}/${pathname}`)
+                        await page.goto(`http://localhost:${port}/${pathname}`)
 
                         if (pageOptions.light) {
-                            page.emulateMediaFeatures([{
+                            await page.emulateMediaFeatures([{
                                 name: 'prefers-color-scheme',
                                 value: 'light'
                             }])
                         }
                         pageOptions.callback?.(page)
 
-                        page.pdf({
+                        await page.pdf({
                             ...pageOptions.pdf,
                             // resolve pdf output relative to astro output directory
                             path: resolve(fileURLToPath(dir), pageOptions.path)
                         })
-                        page.createPDFStream()
                     }
                 }))
 
-                browser.close()
-                server.close()
+                await browser.close()
+                closeServer(server)
             }
         }
     }
