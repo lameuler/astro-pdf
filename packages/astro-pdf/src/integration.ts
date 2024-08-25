@@ -50,7 +50,9 @@ export default function astroPdf(options: Options): AstroIntegration {
                     const pageOptions = options.pages(pathname)
                     if (pageOptions) {
                         const page = await browser.newPage()
-                        await page.goto(`http://localhost:${port}/${pathname}`)
+                        await page.goto(`http://localhost:${port}/${pathname}`, {
+                            waitUntil: 'networkidle2'
+                        })
 
                         if (pageOptions.light) {
                             await page.emulateMediaFeatures([{
