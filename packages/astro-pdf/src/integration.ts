@@ -58,7 +58,7 @@ export default function astroPdf(options: Options): AstroIntegration {
                                 value: 'light'
                             }])
                         }
-                        pageOptions.callback?.(page)
+                        await pageOptions.callback?.(page)
 
                         await page.pdf({
                             ...pageOptions.pdf,
