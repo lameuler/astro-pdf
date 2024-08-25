@@ -2,7 +2,12 @@
   "name": "root",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "build:pkg": "npm run build -w packages/astro-pdf",
+    "build:test": "npm run build -w test/project"
+  },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "test/*"
   ]
 }
