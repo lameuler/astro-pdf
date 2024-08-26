@@ -1,5 +1,5 @@
 import { type AstroIntegration } from 'astro'
-import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page } from 'puppeteer'
+import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, PuppeteerLifeCycleEvent } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -16,6 +16,7 @@ interface Options {
 interface PageOptions {
     path: string,
     light?: boolean,
+    waitUntil?: PuppeteerLifeCycleEvent,
     pdf: Omit<PDFOptions, 'path'>,
     callback?: (page: Page) => any
 }
@@ -51,7 +52,7 @@ export default function astroPdf(options: Options): AstroIntegration {
                     if (pageOptions) {
                         const page = await browser.newPage()
                         await page.goto(`http://localhost:${port}/${pathname}`, {
-                            waitUntil: 'networkidle2'
+                            waitUntil: pageOptions.waitUntil ?? 'networkidle2'
                         })
 
                         if (pageOptions.light) {
