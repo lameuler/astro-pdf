@@ -9,6 +9,15 @@ export default defineConfig({
                 if (path === 'testing/') {
                     return {
                         path: 'testing.pdf',
+                        waitUntil: 'networkidle0',
+                        callback: async page => {
+                            await page.$eval('main', main => {
+                                const doc = main.ownerDocument
+                                const el = doc.createElement('span')
+                                el.innerText = 'testing 123'
+                                main.appendChild(el)
+                            })
+                        },
                         pdf: {
                             format: 'A4',
                             printBackground: true
