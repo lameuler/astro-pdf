@@ -2,7 +2,7 @@
 
 A simple Astro integration to generate PDFs from built pages.
 
-This package is still under developement and is not stable yet.
+This package is still under development and is not stable yet.
 
 ## Quickstart
 Install and add `astro-pdf`:
@@ -26,6 +26,8 @@ export default defineConfig({
                 if (path === 'testing/') {
                     return { // return options for pages to be generated
                         path: 'testing.pdf', // output path
+                        light: true, // set system theme to light
+                        waitUntil: 'networkidle0', // for puppeteer page loading
                         pdf: { // puppeteer PDFOptions
                             format: 'A4',
                             printBackground: true
