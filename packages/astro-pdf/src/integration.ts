@@ -16,7 +16,7 @@ interface Options {
 interface PageOptions {
     path: string,
     light?: boolean,
-    waitUntil?: PuppeteerLifeCycleEvent,
+    waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     pdf: Omit<PDFOptions, 'path'>,
     callback?: (page: Page) => any
 }
