@@ -4,16 +4,23 @@ A simple Astro integration to generate PDFs from built pages.
 
 This package is still under developement and is not stable yet.
 
+## Quickstart
+Install and add `astro-pdf`:
+```sh
+npx astro add astro-pdf
+```
+and follow the CLI prompts.
+
 ## Example
 ```js
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import astroPdf from 'astro-pdf'
+import pdf from 'astro-pdf'
 
 // https://astro.build/config
 export default defineConfig({
     integrations: [
-        astroPdf({
+        pdf({
             // pages will receive the pathname of each page being built
             pages: path => {
                 if (path === 'testing/') {
