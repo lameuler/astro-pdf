@@ -3,7 +3,7 @@ import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, Puppet
 import { type InstallOptions } from '@puppeteer/browsers'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { closeServer, installBrowser, startServer } from './utils'
+import { installBrowser, astroPreview } from './utils'
 
 interface Options {
     install?: boolean | Partial<InstallOptions>,
@@ -39,8 +39,8 @@ export default function astroPdf(options: Options): AstroIntegration {
                     cacheDir
                 ) : null
 
-                // start simple server
-                const { server, port } = await startServer(options.port ?? 54321, fileURLToPath(dir))
+                // run astro preview
+                const { url, close } = await astroPreview(logger)
                 
                 const browser = await launch({
                     executablePath,
@@ -51,7 +51,8 @@ export default function astroPdf(options: Options): AstroIntegration {
                     const pageOptions = options.pages(pathname)
                     if (pageOptions) {
                         const page = await browser.newPage()
-                        await page.goto(`http://localhost:${port}/${pathname}`, {
+                        const location = new URL(pathname, url)
+                        await page.goto(location.href, {
                             waitUntil: pageOptions.waitUntil ?? 'networkidle2'
                         })
 
@@ -72,7 +73,7 @@ export default function astroPdf(options: Options): AstroIntegration {
                 }))
 
                 await browser.close()
-                closeServer(server)
+                await close()
             }
         }
     }

@@ -20,17 +20,18 @@
 		"url": "git+https://github.com/lameuler/astro-pdf.git",
 		"directory": "packages/astro-pdf"
 	},
-	"keywords": ["astro-integration"],
+	"keywords": [
+		"astro-integration"
+	],
 	"dependencies": {
 		"@puppeteer/browsers": "^2.2.3",
-		"@types/serve-handler": "^6.1.4",
 		"puppeteer": "^22.12.1",
-		"serve-handler": "^6.1.5"
+		"zx": "^8.1.8"
 	},
 	"devDependencies": {
-		"@rollup/plugin-node-resolve": "^15.2.3",
-		"@rollup/plugin-typescript": "^11.1.6",
-		"astro": "^4.11.3",
-		"rollup": "^4.18.0"
+		"@rollup/plugin-node-resolve": "^15.3.0",
+		"@rollup/plugin-typescript": "^12.1.0",
+		"astro": "^4.15.9",
+		"rollup": "^4.22.4"
 	}
 }

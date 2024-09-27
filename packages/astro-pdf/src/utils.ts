@@ -1,6 +1,6 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
-import { createServer, type Server } from 'http'
-import handler from 'serve-handler'
+import { $ } from 'zx'
+import { type AstroIntegrationLogger } from 'astro/dist/core/logger/core'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
@@ -16,35 +16,34 @@ export async function installBrowser(options: Partial<InstallOptions>, defaultCa
     return installed.executablePath
 }
 
-export function startServer(port: number, dir?: string) {
-    const server = createServer((request, response) => {
-        return handler(request, response, {
-            public: dir
-        })
-    })
-    return new Promise<{ server: Server, port: number }>((resolve, reject) => {
-        server.listen(port, undefined, () => {
-            const address = server.address()
-            if (typeof address === 'string') {
-                reject('expected `server.address()` to return AddressInfo, got string instead')
-            } else {
-                resolve({
-                    server,
-                    port: address.port
-                })
-            }
-        })
-    })
-}
+export async function astroPreview(logger?: AstroIntegrationLogger) {
+    try {
+        const proc = $`npx astro preview`
+        
+        for await (const chunk of proc.stdout) {
+            const text: string = chunk.toString('utf8')
 
-export function closeServer(server: Server) {
-    return new Promise<void>((resolve, reject) => {
-        server.close(err => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve()
+            // look for server url
+            const m = text.match(/https?:\/\/[\w\-.]+:\d+/)
+            if (m) {
+                try {
+                    const url = new URL(m[0])
+                    logger?.info(`using server url ${url.href}`)
+
+                    // function to end astro preview process
+                    const close = async function () {
+                        logger?.debug('closing astro preview server')
+                        await proc.kill('SIGINT')
+                        logger?.debug('successfully closed astro preview server')
+                    }
+
+                    return { url, close }
+                } catch (e) {
+                    logger?.debug(`failed to parse ${m[0]}. continuing to listen for server url`)
+                }
             }
-        })
-    })
+        }
+    } catch (e) {
+        logger?.error(`error when running 'npx astro preview':\n${e}`)
+    }
 }
