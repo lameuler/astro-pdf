@@ -125,7 +125,7 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const rel = relative(outDir, outputPath).replace(sep, '/')
     if (rel.startsWith('../')) {
         env.totalCount--
-        logger.warn(`cannot write page ${pathname} to ${chalk.yellow(pageOptions.path)} as it is outside the output directory`)
+        logger.warn(`cannot write page ${chalk.yellow(pathname)} to ${chalk.yellow(pageOptions.path)} as it is outside the output directory`)
         return
     }
 
@@ -156,5 +156,5 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
         path: outputPath
     })
     logger.info(`${chalk.green('▶')} ${'/'+pathname}`)
-    logger.info(`  ${chalk.blue('└─')} ${chalk.grey(`${'/' + rel.replace(/^.\//, '')} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
+    logger.info(`  ${chalk.blue('└─')} ${chalk.dim(`${'/' + rel.replace(/^.\//, '')} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
 }
