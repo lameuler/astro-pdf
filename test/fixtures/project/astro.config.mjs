@@ -24,6 +24,15 @@ export default defineConfig({
                         }
                     }
                 }
+                if (path === 'testing2/') return { path: 'testing2.pdf' }
+                if (path === 'testing3/') return { path: 'testing3.pdf' }
+            }
+        }),
+        astroPdf({
+            pages: path => {
+                if (path === 'testing/') return { path: '../testing1.pdf' }
+                if (path === 'testing2/') return { path: 'testing2.pdf' }
+                if (path === 'testing3/') return { path: 'testing3.pdf' }
             }
         })
     ]
