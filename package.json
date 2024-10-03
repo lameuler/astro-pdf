@@ -1,13 +1,39 @@
 {
-  "name": "root",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "build:pkg": "npm run build -w packages/astro-pdf",
-    "build:test": "npm run build -w test/project"
-  },
-  "workspaces": [
-    "packages/*",
-    "test/*"
-  ]
+	"name": "astro-pdf",
+	"version": "0.0.1-beta.7",
+	"description": "A simple Astro integration to generate PDFs from built pages",
+	"main": "./dist/cjs/integration.js",
+	"module": "./dist/es/integration.js",
+	"types": "./dist/types/integration.d.ts",
+	"files": [
+		"dist",
+		"!dist/**/*.map"
+	],
+	"scripts": {
+		"build": "rollup -c",
+		"prepack": "npm run build"
+	},
+	"author": "Lam Eu Ler",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/lameuler/astro-pdf.git"
+	},
+	"keywords": [
+		"astro-integration", "pdf"
+	],
+	"dependencies": {
+		"@puppeteer/browsers": "^2.2.3",
+		"puppeteer": "^22.12.1",
+		"zx": "^8.1.8"
+	},
+	"devDependencies": {
+		"@rollup/plugin-node-resolve": "^15.3.0",
+		"@rollup/plugin-typescript": "^12.1.0",
+		"astro": "^4.15.9",
+		"rollup": "^4.22.4"
+	},
+	"workspaces": [
+		"test/fixtures/**"
+	]
 }
