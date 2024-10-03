@@ -1,6 +1,5 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
-import { $ } from 'zx'
-import { type AstroIntegrationLogger } from 'astro/dist/core/logger/core'
+import { $, type ProcessPromise } from 'zx'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
@@ -16,34 +15,50 @@ export async function installBrowser(options: Partial<InstallOptions>, defaultCa
     return installed.executablePath
 }
 
-export async function astroPreview(logger?: AstroIntegrationLogger) {
-    try {
-        const proc = $`npx astro preview`
-        
-        for await (const chunk of proc.stdout) {
-            const text: string = chunk.toString('utf8')
+export async function astroPreview(debug?: (message: string) => any) {
+    debug?.('starting astro preview server')
+    const proc = $`npx astro preview`
+    
+    for await (const chunk of proc.stdout) {
+        const text: string = chunk.toString('utf8')
 
-            // look for server url
-            const m = text.match(/https?:\/\/[\w\-.]+:\d+/)
-            if (m) {
-                try {
-                    const url = new URL(m[0])
-                    logger?.info(`using server url ${url.href}`)
+        // look for server url
+        const m = text.match(/https?:\/\/[\w\-.]+:\d+/)
+        if (m) {
+            try {
+                const url = new URL(m[0])
+                debug?.(`started astro preview server at ${url.href}`)
 
-                    // function to end astro preview process
-                    const close = async function () {
-                        logger?.debug('closing astro preview server')
-                        await proc.kill('SIGINT')
-                        logger?.debug('successfully closed astro preview server')
+                // function to end astro preview process
+                const close = async function () {
+                    debug?.('closing astro preview server')
+                    if (! await kill(proc, 'SIGTERM', 1000)) {
+                        debug?.('killing server with SIGKILL')
+                        await kill(proc, 'SIGKILL')
                     }
-
-                    return { url, close }
-                } catch (e) {
-                    logger?.debug(`failed to parse ${m[0]}. continuing to listen for server url`)
+                    debug?.('successfully closed astro preview server')
                 }
+
+                return { url, close }
+            } catch (e) {
+                debug?.(`failed to parse ${m[0]}. continuing to listen for server url`)
             }
         }
-    } catch (e) {
-        logger?.error(`error when running 'npx astro preview':\n${e}`)
     }
+}
+
+async function kill(proc: ProcessPromise, signal: NodeJS.Signals, timeout?: number) {
+    proc.kill(signal)
+    return new Promise<boolean>((resolve, reject) => {
+        const t = timeout !== undefined ? setTimeout(() => resolve(false), timeout) : -1
+        proc.catch(p => {
+            if(p.signal === signal) {
+                clearTimeout(t)
+                resolve(true)
+            } else {
+                clearTimeout(t)
+                reject(p)
+            }
+        })
+    })
 }

@@ -1,6 +1,6 @@
 {
 	"name": "astro-pdf",
-	"version": "0.0.1-beta.7",
+	"version": "1.0.0-beta.1",
 	"description": "A simple Astro integration to generate PDFs from built pages",
 	"main": "./dist/cjs/integration.js",
 	"module": "./dist/es/integration.js",
@@ -20,7 +20,8 @@
 		"url": "git+https://github.com/lameuler/astro-pdf.git"
 	},
 	"keywords": [
-		"astro-integration", "pdf"
+		"astro-integration",
+		"pdf"
 	],
 	"dependencies": {
 		"@puppeteer/browsers": "^2.2.3",
@@ -30,6 +31,8 @@
 	"devDependencies": {
 		"@rollup/plugin-node-resolve": "^15.3.0",
 		"@rollup/plugin-typescript": "^12.1.0",
+		"@rollup/plugin-virtual": "^3.0.2",
+		"@types/node": "^22.7.4",
 		"astro": "^4.15.9",
 		"rollup": "^4.22.4"
 	},
