@@ -9,7 +9,7 @@ import { readFile } from 'fs/promises'
 const version = JSON.parse(await readFile('package.json', 'utf-8')).version
 
 export default defineConfig({
-    input: 'src/integration.ts',
+    input: 'src/index.ts',
     output: [
         {
             dir: 'dist',

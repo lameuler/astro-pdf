@@ -8,7 +8,7 @@ import { chalk } from 'zx'
 import { installBrowser, astroPreview } from './utils'
 import version from 'virtual:version'
 
-interface Options {
+export interface Options {
     install?: boolean | Partial<InstallOptions>,
     launch?: PuppeteerLaunchOptions,
     cacheDir?: string,
@@ -16,7 +16,7 @@ interface Options {
     port: number
 }
 
-interface PageOptions {
+export interface PageOptions {
     path: string,
     light?: boolean,
     waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],

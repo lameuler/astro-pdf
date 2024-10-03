@@ -2,9 +2,9 @@
 	"name": "astro-pdf",
 	"version": "1.0.0-beta.1",
 	"description": "A simple Astro integration to generate PDFs from built pages",
-	"main": "./dist/cjs/integration.js",
-	"module": "./dist/es/integration.js",
-	"types": "./dist/types/integration.d.ts",
+	"main": "./dist/cjs/index.js",
+	"module": "./dist/es/index.js",
+	"types": "./dist/types/index.d.ts",
 	"files": [
 		"dist",
 		"!dist/**/*.map"
