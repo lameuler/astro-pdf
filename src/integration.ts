@@ -124,6 +124,7 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const outputPath = resolve(outDir, pageOptions.path)
     const rel = relative(outDir, outputPath).replace(sep, '/')
     if (rel.startsWith('../')) {
+        env.totalCount--
         logger.warn(`cannot write page ${pathname} to ${chalk.yellow(pageOptions.path)} as it is outside the output directory`)
         return
     }
