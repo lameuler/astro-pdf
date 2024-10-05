@@ -11,7 +11,8 @@
 	],
 	"scripts": {
 		"build": "rollup -c",
-		"prepack": "npm run build"
+		"prepack": "npm run build",
+		"test": "vitest run --dir=./test"
 	},
 	"author": "Lam Eu Ler",
 	"license": "MIT",
@@ -34,7 +35,9 @@
 		"@rollup/plugin-virtual": "^3.0.2",
 		"@types/node": "^22.7.4",
 		"astro": "^4.15.9",
-		"rollup": "^4.22.4"
+		"cheerio": "^1.0.0",
+		"rollup": "^4.22.4",
+		"vitest": "^2.1.2"
 	},
 	"workspaces": [
 		"test/fixtures/**"
