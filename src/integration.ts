@@ -59,7 +59,7 @@ export function astroPdf(options: Options): AstroIntegration {
                 const outDir = fileURLToPath(dir)
 
                 // run astro preview
-                const { url, close } = await astroPreview(logger.debug.bind(logger))
+                const { url, close } = await astroPreview({ debug: logger.debug.bind(logger) })
                 logger.info(`using server at ${chalk.blue(url)}`)
                 
                 const browser = await launch({
