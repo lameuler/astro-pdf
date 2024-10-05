@@ -22,11 +22,11 @@ export type AstroPreviewResult = {
     close: () => Promise<void>
 }
 
-export function astroPreview(options: { debug?: (message: string) => any, cwd?: string, timeout?: number } = {}): Promise<AstroPreviewResult | undefined> {
-    const { debug, cwd, timeout } = options
+export function astroPreview(options: { debug?: (message: string) => any, root?: string, timeout?: number } = {}): Promise<AstroPreviewResult | undefined> {
+    const { debug, root, timeout } = options
 
     debug?.('starting astro preview server')
-    const proc = $({ cwd })`npx astro preview`
+    const proc = $({ cwd: root })`npx astro preview`
 
     return new Promise(async (resolve) => {
         const tid = setTimeout(() => resolve(undefined), timeout ?? 5000)

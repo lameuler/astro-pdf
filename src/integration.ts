@@ -2,7 +2,7 @@ import { type AstroIntegration } from 'astro'
 import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser, executablePath } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
-import { dirname } from 'path'
+import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { chalk } from 'zx'
 import { installBrowser, astroPreview, resolvePathname } from './utils'
@@ -11,7 +11,7 @@ import version from 'virtual:version'
 export interface Options {
     install?: boolean | Partial<InstallOptions>,
     launch?: PuppeteerLaunchOptions,
-    cacheDir?: string,
+    cacheDir?: string | URL,
     pages: (pathname: string) => PageOptions | null | undefined | false | void
     port: number
 }
@@ -32,21 +32,23 @@ export interface Logger {
 }
 
 export function astroPdf(options: Options): AstroIntegration {
-    let cacheDir: string | undefined = undefined
+    let root: string
+    let cacheDir: string
     return {
         name: 'astro-pdf',
         hooks: {
             'astro:config:done': ({ config }) => {
-                cacheDir = options.cacheDir ?? new URL('.astro-pdf', config.cacheDir).pathname
-            },
-            'astro:build:done': async ({ dir, pages, logger: l }) => {
-                const forked = l.fork('')
-                const logger: Logger = {
-                    info: forked.info.bind(forked),
-                    warn: l.warn.bind(l),
-                    error: l.error.bind(l),
-                    debug: l.debug.bind(l)
+                root = fileURLToPath(config.root)
+                cacheDir = fileURLToPath(config.cacheDir)
+                const cacheDirOption = options.cacheDir ?? config.cacheDir
+                if (typeof cacheDirOption === 'string') {
+                    cacheDir = resolve(root, cacheDirOption)
+                } else {
+                    cacheDir = fileURLToPath(cacheDirOption)
                 }
+            },
+            'astro:build:done': async ({ dir, pages, logger }) => {
+                logger.info = logger.info.bind(logger.fork(''))
 
                 if (typeof cacheDir !== 'string') {
                     logger.error('cacheDir is undefined. ending execution...')
@@ -63,7 +65,7 @@ export function astroPdf(options: Options): AstroIntegration {
                 const outDir = fileURLToPath(dir)
 
                 // run astro preview
-                const { url, close } = await astroPreview({ debug: logger.debug.bind(logger) })
+                const { url, close } = await astroPreview({ root, debug: logger.debug.bind(logger) })
                 logger.info(`using server at ${chalk.blue(url)}`)
                 
                 const browser = await launch({
@@ -134,9 +136,15 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const location = new URL(pathname, baseUrl)
 
     logger.debug(`visiting ${location.href}`)
-    await page.goto(location.href, {
+    const response = await page.goto(location.href, {
         waitUntil: pageOptions.waitUntil ?? 'networkidle2'
     })
+
+    if (!response.ok()) {
+        env.totalCount--
+        logger.info(chalk.red(`✖︎ /${pathname} (${response.status()} ${response.statusText()})`))
+        return
+    }
 
     if (pageOptions.light) {
         await page.emulateMediaFeatures([{
