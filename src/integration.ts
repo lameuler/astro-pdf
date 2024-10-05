@@ -2,10 +2,10 @@ import { type AstroIntegration } from 'astro'
 import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser, executablePath } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
-import { dirname, relative, resolve, sep } from 'path'
+import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { chalk } from 'zx'
-import { installBrowser, astroPreview } from './utils'
+import { installBrowser, astroPreview, resolvePathname } from './utils'
 import version from 'virtual:version'
 
 export interface Options {
@@ -128,13 +128,7 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     logger.debug(`starting processing ${pathname}`)
 
     // resolve pdf output relative to astro output directory
-    const outputPath = resolve(outDir, pageOptions.path)
-    const rel = relative(outDir, outputPath).replace(sep, '/')
-    if (rel.startsWith('../')) {
-        env.totalCount--
-        logger.warn(`cannot write page ${chalk.yellow(pathname)} to ${chalk.yellow(pageOptions.path)} as it is outside the output directory`)
-        return
-    }
+    const output = resolvePathname(pageOptions.path, outDir)
 
     const page = await browser.newPage()
     const location = new URL(pathname, baseUrl)
@@ -155,13 +149,13 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
         await pageOptions.callback(page)
     }
 
-    const dir = dirname(outputPath)
+    const dir = dirname(output.path)
     await mkdir(dir, { recursive: true })
 
     await page.pdf({
         ...pageOptions.pdf,
-        path: outputPath
+        path: output.path
     })
     logger.info(`${chalk.green('▶')} ${'/'+pathname}`)
-    logger.info(`  ${chalk.blue('└─')} ${chalk.dim(`${'/' + rel.replace(/^.\//, '')} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
+    logger.info(`  ${chalk.blue('└─')} ${chalk.dim(`${output.pathname} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
 }

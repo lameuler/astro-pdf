@@ -1,4 +1,6 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
+import { resolve, sep } from 'path'
+import { fileURLToPath, pathToFileURL } from 'url'
 import { $, type ProcessPromise } from 'zx'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
@@ -73,4 +75,26 @@ async function kill(proc: ProcessPromise, signal: NodeJS.Signals, timeout?: numb
         })
         proc.kill(signal)
     })
+}
+
+export function resolvePathname(pathname: string, rootDir: string | URL) {
+    const root = (typeof rootDir === 'string') ? pathToFileURL(resolve(rootDir)+sep) : rootDir
+    
+    if (!pathname.startsWith('/') && !pathname.startsWith('\\')) {
+        pathname = '/' + pathname
+    }
+
+    const url = new URL(pathname, 'file://')
+
+    // ensure root is treated as a directory
+    if (!root.pathname.endsWith('/')) {
+        root.pathname += '/'
+    }
+
+    const location = new URL('.'+url.pathname, root)
+
+    return {
+        path: fileURLToPath(location),
+        pathname: url.pathname
+    }
 }
