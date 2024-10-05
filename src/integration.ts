@@ -1,5 +1,5 @@
 import { type AstroIntegration } from 'astro'
-import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser } from 'puppeteer'
+import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser, executablePath } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
 import { dirname, relative, resolve, sep } from 'path'
@@ -22,6 +22,13 @@ export interface PageOptions {
     waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     pdf: Omit<PDFOptions, 'path'>,
     callback?: (page: Page) => any
+}
+
+export interface Logger {
+    info(message: string): void
+    warn(message: string): void
+    error(message: string): void
+    debug(message: string): void
 }
 
 export function astroPdf(options: Options): AstroIntegration {
@@ -50,11 +57,8 @@ export function astroPdf(options: Options): AstroIntegration {
                 const versionColour = version.includes('-') ? chalk.yellow : chalk.green
                 logger.info(`\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v'+version)} – generating pdf files`)
 
-                const executablePath = options.install ? await installBrowser(
-                    typeof options.install === 'object' ? options.install : {},
-                    cacheDir
-                ) : null
-                if (executablePath) logger.info(`installed browser at ${chalk.blue(executablePath)}`)
+                const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
+                logger.debug(`using browser at ${chalk.blue(executablePath)}`)
 
                 const outDir = fileURLToPath(dir)
 
@@ -97,11 +101,14 @@ export function astroPdf(options: Options): AstroIntegration {
     }
 }
 
-export interface Logger {
-    info(message: string): void
-    warn(message: string): void
-    error(message: string): void
-    debug(message: string): void
+export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean, defaultCacheDir: string, logger: Logger) {
+    const defaultPath = executablePath()
+    if (options || !defaultPath) {
+        logger.info(chalk.dim(`installing browser...`))
+        return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
+    } else {
+        return defaultPath
+    }
 }
 
 export type GenerationEnv = {
