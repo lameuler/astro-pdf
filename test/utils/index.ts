@@ -3,6 +3,7 @@ import { type AstroInlineConfig, build, preview, type PreviewServer } from 'astr
 
 export interface TestFixture {
     root: string
+    resolveOutput: (p?: string) => string
     build: (config?: AstroInlineConfig) => Promise<void>
     preview: (config?: AstroInlineConfig, restart?: boolean) => Promise<PreviewServer>
     previewUrl: string | undefined,
@@ -10,17 +11,18 @@ export interface TestFixture {
 }
 
 export async function loadFixture(fixture: string) {
-    const root = path.resolve(process.cwd(), './test', 'fixtures', fixture)
+    const root = path.resolve('./test', 'fixtures', fixture)
 
     const self: TestFixture = {
         root,
+        resolveOutput: p => path.resolve(root, './dist', p ?? ''),
         build: async (config) => await build({
             logLevel: 'silent',
             mode: 'production',
             ...config,
             // override root and outDir options
             root,
-            outDir: './dist'
+            outDir: self.resolveOutput()
         }),
         preview: async (config, restart = false) => {
             if (self.previewServer) {

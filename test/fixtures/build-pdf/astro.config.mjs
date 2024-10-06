@@ -7,7 +7,7 @@ export default defineConfig({
         astroPdf({
             install: true,
             pages: path => {
-                if (path === 'testing/') {
+                if (path === '/testing') {
                     return {
                         path: 'testing.pdf',
                         waitUntil: 'networkidle0',
@@ -25,15 +25,18 @@ export default defineConfig({
                         }
                     }
                 }
-                if (path === 'testing2/') return { path: 'testing2.pdf' }
-                if (path === 'testing3/') return { path: 'testing3.pdf' }
+                if (path === '/testing2') return {}
+                if (path === '/testing3') return true
             }
         }),
         astroPdf({
-            pages: path => {
-                if (path === 'testing/') return { path: '../testing1.pdf' }
-                if (path === 'testing2/') return { path: 'testing2.pdf' }
-                if (path === 'testing3/') return { path: 'testing3.pdf' }
+            pages: {
+                'testing': { path: '../testing4.pdf', pdf: { printBackground: true } },
+                'testing2': { path: 'testing5.pdf' },
+                'testing3': 'testing3/testing4/testing5/testing6.pdf',
+                'https://fake.example.com': 'fake.pdf',
+                'https://example.com': true,
+                'https://developer.mozilla.org/404/page/not/found': true
             }
         })
     ]

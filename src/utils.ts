@@ -2,10 +2,11 @@ import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOp
 import { resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { $, type ProcessPromise } from 'zx'
+import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap } from './integration'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
-    const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform(), 'stable')
+    const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform()!!, 'stable')
     const installOptions: InstallOptions = {
         ...options,
         browser,
@@ -75,6 +76,47 @@ async function kill(proc: ProcessPromise, signal: NodeJS.Signals, timeout?: numb
         })
         proc.kill(signal)
     })
+}
+
+export function mergePages(builtPages: { pathname: string }[], pagesOption: PagesFunction | PagesMap) {
+
+    const map: { [location: string]: PagesEntry } = {}
+    if (typeof pagesOption === 'object') {
+        for (const key in pagesOption) {
+            if (key !== 'fallback') {
+                const url = new URL(key, 'base://')
+                if (url.protocol === 'http:' || url.protocol === 'https:') {
+                    map[url.href] = pagesOption[key as PagesKey]
+                } else {
+                    map[url.pathname.replace(/(?<=\/.*)\/+$/, '') + url.search] = pagesOption[key as PagesKey]
+                }
+            }
+        }
+    }
+    const locations = new Set<string>(Object.keys(map))
+
+    for (const { pathname } of builtPages) {
+        locations.add(new URL(pathname, 'base://').pathname.replace(/(?<=\/.*)\/+$/, ''))
+    }
+
+    const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function(){}
+
+    return { map, fallback, locations: Array.from(locations) }
+}
+
+export function getPageOptions(location: string, baseOptions: PageOptions, map: { [location: string]: PagesEntry }, fallback: PagesFunction) {
+    const pageOptions = map[location] ?? fallback(location)
+    if (pageOptions) {
+        const partial = typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
+        const options = {
+            ...baseOptions,
+            ...partial
+        }
+        const pathname = new URL(location, 'base://').pathname.replace(/\/+$/, '') || '/index'
+        options.path = options.path.replace('[pathname]', pathname)
+        return options
+    }
+    return undefined
 }
 
 export function resolvePathname(pathname: string, rootDir: string | URL) {

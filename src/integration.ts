@@ -5,23 +5,41 @@ import { mkdir } from 'fs/promises'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { chalk } from 'zx'
-import { installBrowser, astroPreview, resolvePathname } from './utils'
+import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptions } from './utils'
 import version from 'virtual:version'
 
 export interface Options {
     install?: boolean | Partial<InstallOptions>,
     launch?: PuppeteerLaunchOptions,
     cacheDir?: string | URL,
-    pages: (pathname: string) => PageOptions | null | undefined | false | void
-    port: number
+    pageOptions?: Partial<PageOptions>,
+    pages: PagesFunction | PagesMap
+}
+
+export type PagesKey = `/${string}` | `http://${string}` | `https://${string}`
+
+export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
+
+export type PagesFunction = (pathname: string) => PagesEntry
+
+export type PagesMap = {
+    [pathname: PagesKey]: PagesEntry
+    fallback?: PagesFunction
 }
 
 export interface PageOptions {
     path: string,
-    light?: boolean,
-    waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
+    light: boolean,
+    waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     pdf: Omit<PDFOptions, 'path'>,
     callback?: (page: Page) => any
+}
+
+const defaultPageOptions: PageOptions = {
+    path: '[pathname].pdf',
+    light: false,
+    waitUntil: 'networkidle2',
+    pdf: {}
 }
 
 export interface Logger {
@@ -55,6 +73,11 @@ export function astroPdf(options: Options): AstroIntegration {
                     return
                 }
 
+                const basePageOptions = {
+                    ...defaultPageOptions,
+                    ...options.pageOptions
+                }
+
                 const startTime = Date.now()
                 const versionColour = version.includes('-') ? chalk.yellow : chalk.green
                 logger.info(`\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v'+version)} – generating pdf files`)
@@ -65,7 +88,12 @@ export function astroPdf(options: Options): AstroIntegration {
                 const outDir = fileURLToPath(dir)
 
                 // run astro preview
-                const { url, close } = await astroPreview({ root, debug: logger.debug.bind(logger) })
+                const server = await astroPreview({ root, debug: logger.debug.bind(logger) })
+                if (!server) {
+                    logger.error('failed to start astro preview server')
+                    return
+                }
+                const { url, close } = server
                 logger.info(`using server at ${chalk.blue(url)}`)
                 
                 const browser = await launch({
@@ -74,11 +102,13 @@ export function astroPdf(options: Options): AstroIntegration {
                 })
                 logger.debug(`launched browser ${await browser.version()}`)
 
-                const queue: { pathname: string, pageOptions: PageOptions }[] = []
-                pages.forEach(({ pathname }) => {
-                    const pageOptions = options.pages(pathname)
+                const { locations, map, fallback } = mergePages(pages, options.pages)
+
+                const queue: { location: string, pageOptions: PageOptions }[] = []
+                locations.forEach(location => {
+                    const pageOptions = getPageOptions(location, basePageOptions, map, fallback)
                     if (pageOptions) {
-                        queue.push({ pathname, pageOptions })
+                        queue.push({ location, pageOptions })
                     }
                 })
 
@@ -91,8 +121,8 @@ export function astroPdf(options: Options): AstroIntegration {
                     totalCount: queue.length
                 }
 
-                await Promise.all(queue.map(({ pathname, pageOptions }) => 
-                    processPage(pathname, pageOptions, env)
+                await Promise.all(queue.map(({ location, pageOptions }) => 
+                    processPage(location, pageOptions, env)
                 ))
 
                 await browser.close()
@@ -103,7 +133,7 @@ export function astroPdf(options: Options): AstroIntegration {
     }
 }
 
-export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean, defaultCacheDir: string, logger: Logger) {
+export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean | undefined, defaultCacheDir: string, logger: Logger) {
     const defaultPath = executablePath()
     if (options || !defaultPath) {
         logger.info(chalk.dim(`installing browser...`))
@@ -127,7 +157,7 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const { outDir, browser, baseUrl, logger } = env
 
     const start = Date.now()
-    logger.debug(`starting processing ${pathname}`)
+    logger.debug(`starting processing of ${pathname}`)
 
     // resolve pdf output relative to astro output directory
     const output = resolvePathname(pageOptions.path, outDir)
@@ -136,13 +166,28 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const location = new URL(pathname, baseUrl)
 
     logger.debug(`visiting ${location.href}`)
-    const response = await page.goto(location.href, {
-        waitUntil: pageOptions.waitUntil ?? 'networkidle2'
-    })
+    try {
+        const response = await page.goto(location.href, {
+            waitUntil: pageOptions.waitUntil
+        })
 
-    if (!response.ok()) {
+        if (!response) {
+            env.totalCount--
+            logger.info(chalk.red(`✖︎ ${pathname} ()`))
+            return
+        }
+    
+        if (!response.ok()) {
+            env.totalCount--
+            const message = response.status() + (response.statusText() ? ' '+response.statusText() : '')
+            logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
+            return
+        }
+    } catch (e) {
         env.totalCount--
-        logger.info(chalk.red(`✖︎ /${pathname} (${response.status()} ${response.statusText()})`))
+        const message = ((e && typeof e === 'object' && 'message' in e) ? e.message : null) || 'error while navigating'
+        logger.debug(`${pathname}: ${e}`)
+        logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
         return
     }
 
@@ -164,6 +209,8 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
         ...pageOptions.pdf,
         path: output.path
     })
-    logger.info(`${chalk.green('▶')} ${'/'+pathname}`)
+    logger.info(`${chalk.green('▶')} ${pathname}`)
     logger.info(`  ${chalk.blue('└─')} ${chalk.dim(`${output.pathname} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
+
+    page.close()
 }
