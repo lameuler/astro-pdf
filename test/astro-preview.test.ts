@@ -18,8 +18,8 @@ let server2: AstroPreviewResult | undefined
 
 describe('test server', () => {
     beforeAll(async () => {
-        server1 = await astroPreview({ cwd: fixture1.root })
-        server2 = await astroPreview({ cwd: fixture2.root })
+        server1 = await astroPreview({ root: fixture1.root })
+        server2 = await astroPreview({ root: fixture2.root })
     })
 
     test('returns value', () => {
