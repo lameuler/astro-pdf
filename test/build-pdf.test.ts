@@ -12,7 +12,6 @@ describe('build', () => {
         if(existsSync(resolve(fixture.root, 'node_modules/.astro'))) {
             await rm(resolve(fixture.root, 'node_modules/.astro'), { recursive: true })
         }
-        await rm(fixture.resolveOutput(), { recursive: true })
         await fixture.build()
     }, 80_000)
 
