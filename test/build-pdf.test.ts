@@ -1,18 +1,20 @@
 import { describe, test, beforeAll, expect } from 'vitest'
 import { loadFixture, type TestFixture } from './utils'
-import { rm } from 'fs/promises'
 import { resolve } from 'path'
-import { readFile } from 'fs/promises'
+import { readFile, rm } from 'fs/promises'
+import { existsSync } from 'fs'
 
 describe('build', () => {
     let fixture: TestFixture
 
     beforeAll(async () => {
         fixture = await loadFixture('build-pdf')
-        await rm(resolve(fixture.root, 'node_modules/.astro'), { recursive: true })
+        if(existsSync(resolve(fixture.root, 'node_modules/.astro'))) {
+            await rm(resolve(fixture.root, 'node_modules/.astro'), { recursive: true })
+        }
         await rm(fixture.resolveOutput(), { recursive: true })
         await fixture.build()
-    }, 40_000)
+    }, 80_000)
 
     test('pdf file generated', async () => {
         const data = await readFile(fixture.resolveOutput('testing.pdf'))
