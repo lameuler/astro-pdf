@@ -4,7 +4,7 @@ import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { chalk } from 'zx'
+import chalk from 'chalk'
 import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptions } from './utils'
 import version from 'virtual:version'
 

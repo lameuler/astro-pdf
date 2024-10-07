@@ -1,7 +1,8 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
 import { resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { $, type ProcessPromise } from 'zx'
+import { spawn } from 'child_process'
+import kill from 'tree-kill'
 import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap } from './integration'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
@@ -27,12 +28,12 @@ export function astroPreview(options: { debug?: (message: string) => any, root?:
     const { debug, root, timeout } = options
 
     debug?.('starting astro preview server')
-    const proc = $({ cwd: root })`npx astro preview`
+    const proc = spawn('npx', ['astro', 'preview'], { cwd: root, shell: true })
 
     return new Promise(async (resolve) => {
         const tid = setTimeout(() => resolve(undefined), timeout ?? 5000)
 
-        for await (const chunk of proc.stdout) {
+        proc.stdout.on('data', chunk => {
             const text: string = chunk.toString('utf8')
     
             // look for server url
@@ -43,13 +44,15 @@ export function astroPreview(options: { debug?: (message: string) => any, root?:
                     debug?.(`started astro preview server at ${url.href}`)
     
                     // function to end astro preview process
-                    const close = async function () {
-                        debug?.('closing astro preview server')
-                        if (! await kill(proc, 'SIGTERM', 1000)) {
-                            debug?.('killing server with SIGKILL')
-                            await kill(proc, 'SIGKILL')
-                        }
-                        debug?.('successfully closed astro preview server')
+                    const close = function () {
+                        return new Promise<void>(re => {
+                            debug?.('closing astro preview server')
+                            kill(proc.pid!!, err => {
+                                if (err) debug?.('tree-kill: '+err)
+                                else debug?.('successfully closed astro preview server')
+                                re()
+                            })
+                        })
                     }
     
                     clearTimeout(tid)
@@ -58,23 +61,11 @@ export function astroPreview(options: { debug?: (message: string) => any, root?:
                     debug?.(`failed to parse ${m[0]}. continuing to listen for server url`)
                 }
             }
-        }
-    })
-}
-
-async function kill(proc: ProcessPromise, signal: NodeJS.Signals, timeout?: number) {
-    return new Promise<boolean>((resolve, reject) => {
-        const t = timeout !== undefined ? setTimeout(() => resolve(false), timeout) : -1
-        proc.catch(p => {
-            if(p.signal === signal) {
-                clearTimeout(t)
-                resolve(true)
-            } else {
-                clearTimeout(t)
-                reject(p)
-            }
         })
-        proc.kill(signal)
+
+        proc.stderr.on('data', chunk => {
+            debug?.(`stderr: ${chunk.toString('utf8')}`)
+        })
     })
 }
 

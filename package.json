@@ -26,8 +26,9 @@
 	],
 	"dependencies": {
 		"@puppeteer/browsers": "^2.2.3",
+		"chalk": "^5.3.0",
 		"puppeteer": "^22.12.1",
-		"zx": "^8.1.8"
+		"tree-kill": "^1.2.2"
 	},
 	"devDependencies": {
 		"@rollup/plugin-node-resolve": "^15.3.0",
