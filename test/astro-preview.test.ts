@@ -1,7 +1,8 @@
-import { beforeAll, describe, expect, expectTypeOf, test } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
 import { load } from 'cheerio'
-import { astroPreview, AstroPreviewResult } from '../src/utils'
+import { astroPreview } from '../src/utils'
 import { loadFixture, type TestFixture } from './utils'
+import { ServerOutput } from '../src/integration'
 
 let fixture1: TestFixture
 let fixture2: TestFixture
@@ -13,18 +14,24 @@ beforeAll(async () => {
     await fixture2.build()
 })
 
-let server1: AstroPreviewResult | undefined
-let server2: AstroPreviewResult | undefined
+let server1: ServerOutput | undefined
+let server2: ServerOutput | undefined
 
 describe('test server', () => {
     beforeAll(async () => {
-        server1 = await astroPreview({ root: fixture1.root })
-        server2 = await astroPreview({ root: fixture2.root })
+        server1 = await astroPreview(fixture1.root)
+        server2 = await astroPreview(fixture2.root)
     })
 
-    test('returns value', () => {
+    test('returns url and close', () => {
         expect(server1).toBeDefined()
         expect(server2).toBeDefined()
+
+        expect(server1?.url).toBeDefined()
+        expect(server2?.url).toBeDefined()
+
+        expect(server1?.close).toBeTypeOf('function')
+        expect(server2?.close).toBeTypeOf('function')
     })
 
     test('server 1 and server 2 have different urls', () => {
@@ -32,7 +39,7 @@ describe('test server', () => {
     })
 
     test('server 1 running', async () => {
-        const res = await fetch(server1!!.url)
+        const res = await fetch(server1!!.url!!)
         expect(res.status).toBe(200)
         const text = await res.text()
         const $ = load(text)
@@ -40,7 +47,7 @@ describe('test server', () => {
     })
 
     test('server 2 running', async () => {
-        const res = await fetch(server2!!.url)
+        const res = await fetch(server2!!.url!!)
         expect(res.status).toBe(200)
         const text = await res.text()
         const $ = load(text)
@@ -51,20 +58,15 @@ describe('test server', () => {
 
 describe('stop servers', () => {
     beforeAll(async () => {
-        await server1!!.close()
-        await server2!!.close()
+        await server1!!.close!!()
+        await server2!!.close!!()
     })
 
     test('server 1 closed', async () => {
-        await expect(fetch(server1!!.url)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server1!!.url!!)).rejects.toThrowError('fetch failed')
     })
 
     test('server 2 closed', async () => {
-        await expect(fetch(server2!!.url)).rejects.toThrowError('fetch failed')
-    })
-
-    test('can call close again', async () => {
-        expect(server1!!.close()).resolves.toBeUndefined()
-        expect(server2!!.close()).resolves.toBeUndefined()
+        await expect(fetch(server2!!.url!!)).rejects.toThrowError('fetch failed')
     })
 })
