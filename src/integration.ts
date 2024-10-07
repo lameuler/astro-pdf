@@ -4,7 +4,7 @@ import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { chalk } from 'zx'
+import chalk from 'chalk'
 import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptions } from './utils'
 import version from 'virtual:version'
 
@@ -40,6 +40,11 @@ const defaultPageOptions: PageOptions = {
     light: false,
     waitUntil: 'networkidle2',
     pdf: {}
+}
+
+export interface ServerOutput {
+    url?: URL,
+    close?: () => Promise<any>
 }
 
 export interface Logger {
@@ -88,13 +93,22 @@ export function astroPdf(options: Options): AstroIntegration {
                 const outDir = fileURLToPath(dir)
 
                 // run astro preview
-                const server = await astroPreview({ root, debug: logger.debug.bind(logger) })
-                if (!server) {
-                    logger.error('failed to start astro preview server')
+                logger.debug('running astro preview server')
+                let url: URL | undefined = undefined
+                let close: (() => Promise<void>) | undefined = undefined
+                try {
+                    const server = await astroPreview(root)
+                    url = server.url
+                    close = server.close
+                } catch (e) {
+                    logger.error('error when setting up server: '+e)
                     return
                 }
-                const { url, close } = server
-                logger.info(`using server at ${chalk.blue(url)}`)
+                if (url) {
+                    logger.info(`using server at ${chalk.blue(url)}`)
+                } else {
+                    logger.warn(`no url returned from server. all locations must be full urls.`)
+                }
                 
                 const browser = await launch({
                     executablePath,
@@ -126,7 +140,9 @@ export function astroPdf(options: Options): AstroIntegration {
                 ))
 
                 await browser.close()
-                await close()
+                if (typeof close === 'function') {
+                    await close()
+                }
                 logger.info(chalk.green(`✓ Completed in ${ Date.now()-startTime }ms.\n`))
             }
         }
@@ -146,7 +162,7 @@ export async function findOrInstallBrowser(options: Partial<InstallOptions> | bo
 export type GenerationEnv = {
     outDir: string,
     browser: Browser,
-    baseUrl: URL,
+    baseUrl?: URL,
     logger: Logger,
     count: number,
     totalCount: number
@@ -163,6 +179,10 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
     const output = resolvePathname(pageOptions.path, outDir)
 
     const page = await browser.newPage()
+    if (!URL.canParse(pathname, baseUrl)) {
+        logger.info(chalk.yellow(`${chalk.bold('?')} ${pathname}`))
+        return
+    }
     const location = new URL(pathname, baseUrl)
 
     logger.debug(`visiting ${location.href}`)
