@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.3",
-    "@astrojs/node": "^8.3.4",
     "astro": "^4.14.5",
     "astro-pdf": "file:../../../",
     "typescript": "^5.5.4"
