@@ -25,9 +25,10 @@
 		"pdf"
 	],
 	"dependencies": {
+		"@changesets/cli": "^2.27.9",
 		"@puppeteer/browsers": "^2.2.3",
-		"puppeteer": "^22.12.1",
-		"chalk": "^5.3.0"
+		"chalk": "^5.3.0",
+		"puppeteer": "^22.12.1"
 	},
 	"peerDependencies": {
 		"astro": "^4.4.4"
