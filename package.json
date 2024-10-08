@@ -11,7 +11,7 @@
 	],
 	"scripts": {
 		"build": "rollup -c",
-		"prepack": "npm ci && npm run build && npm test",
+		"prepack": "npm run build && npm test",
 		"test": "vitest run --dir=./test"
 	},
 	"author": "Lam Eu Ler",
