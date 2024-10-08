@@ -29,7 +29,7 @@ jobs:
         uses: changesets/action@v1
         with:
           version: npx changeset version
-          publish: npm run release
+          publish: npx changeset publish
           commit: "chore: release"
           title: "[changesets] release"
         env:
