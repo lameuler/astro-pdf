@@ -1,8 +1,12 @@
 # astro-pdf
 
+[![CI](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/astro-pdf.svg)](https://badge.fury.io/js/astro-pdf)
+
 A simple Astro integration to generate PDFs from built pages.
 
-This package is still under development and is not stable yet.
+> [!IMPORTANT]
+> This documentation is for `astro-pdf@1.0.0` which is not released yet.
 
 ## Quickstart
 Install and add `astro-pdf`:
@@ -10,6 +14,14 @@ Install and add `astro-pdf`:
 npx astro add astro-pdf
 ```
 and follow the CLI prompts.
+
+Or, manually install `astro-pdf`:
+```sh
+npm i -D astro-pdf
+```
+and add it to `astro.config.mjs` (see the example below).
+
+See the [Astro Integrations Guide](https://docs.astro.build/en/guides/integrations-guide/) for more details.
 
 ## Example
 ```js
@@ -21,21 +33,222 @@ import pdf from 'astro-pdf'
 export default defineConfig({
     integrations: [
         pdf({
+            // specify base options as defaults for options pages dont return
+            baseOptions: {
+                path: '/pdf[pathname].pdf',
+                waitUntil: 'networkidle2',
+                ...
+            },
             // pages will receive the pathname of each page being built
-            pages: path => {
-                if (path === 'testing/') {
-                    return { // return options for pages to be generated
-                        path: 'testing.pdf', // output path
-                        light: true, // set system theme to light
-                        waitUntil: 'networkidle0', // for puppeteer page loading
-                        pdf: { // puppeteer PDFOptions
-                            format: 'A4',
-                            printBackground: true
-                        }
+            pages: {
+                '/some-page': '/pages/some.pdf', // output path
+                '/other-page': true,
+                'https://example.com': {
+                    path: 'example.pdf',
+                    light: true, // set system theme to light
+                    waitUntil: 'networkidle0', // for puppeteer page loading
+                    pdf: { // puppeteer PDFOptions
+                        format: 'A4',
+                        printBackground: true
                     }
-                }
+                },
+                ...,
+                fallback: (pathname) => ... // receives pathnames not specified above
             }
         })
     ]
 });
 ```
+
+See [`PagesMap`](#pagesmap) for a more detailed example on how pages are generated from the config.
+
+## Reference
+
+### `pdf()`
+```ts
+export default function pdf(options: Options): AstroIntegration {}
+```
+
+- **`options`**: [`Options`](#options)
+
+  Configure `astro-pdf` and specify which pages to build to pdf.
+
+### `Options`
+```ts
+export interface Options
+```
+
+- **`pages`**: [`PagesMap`](#pagesmap) | [`PagesFunction`](#pagesfunction)
+
+  Specifies which pages in the site to convert to PDF and the options for each page.
+
+- **`install`**: `boolean` | [`Partial<InstallOptions>`]() _(optional)_
+
+  Specifies whether to install a browser, or options to pass to Puppeteer [`install`](https://pptr.dev/browsers-api/browsers.install). By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
+
+  If `install` is `false` or undefined, but no browser is found, it will automatically install a browser.
+
+- **`launch`**: [`PuppeteerLaunchOptions`](https://pptr.dev/api/puppeteer.puppeteerlaunchoptions) _(optional)_
+  
+  Options to pass to Puppeteer [`launch`](https://pptr.dev/api/puppeteer.puppeteernode.launch) for launching the browser.
+  
+- **`baseOptions`**: [`Partial<PageOptions>`](#pageoptions) _(optional)_
+
+  Default options to use for each page. Overrides the default options of [`PageOptions`](#pageoptions).
+
+
+### `PageOptions`
+```ts
+export interface PageOptions
+```
+
+Specifies options for generating each PDF.
+
+- **`path`**: `string`
+
+  Default: `'[pathname].pdf'`
+
+  Specify the location where the PDF will be generated. This is treated like a `href` in the site, so absolute paths will be resolved relative to the root of the site. For example, `/path/to/file.pdf` and `path/to/file.pdf` are equivalent.
+
+  If the path contains `[pathname]`, it will be substituted for the pathname of the page generated e.g. `/path/to/page` will be substituted into `[pathname].pdf` to get `/path/to/page.pdf`.
+
+- **`light`**: `boolean`
+
+  Default: `false`
+
+  Set whether to set [`prefers-color-scheme`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme) to `light` before the PDF is generated. This is run before `callback`.
+
+- **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`]()
+  
+  Default: `'networkidle2'`
+
+  Used when Puppeteer is loading the page in [`Page.goto`](https://pptr.dev/api/puppeteer.page.goto)
+
+- **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.page)
+
+  Options to  be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
+
+- **`callback`**: `(page: Page) => any`  _(optional)_
+
+  Receives a Puppeteer [`Page`]() after the page has loaded. This callback is run before the PDF is generated.
+
+### `PagesEntry`
+```ts
+export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
+```
+
+If `PagesEntry` is truthy, `astro-pdf` will try to resolve options and generate the page. Any missing options will inherit from the `baseOptions` if given, otherwise the default options will be used.
+
+If `PagesEntry` is a `string`, it will be used as the `path` value. If it is `true`, then the page will be generated completely using the base or default options.
+
+### `PagesFunction`
+```ts
+export type PagesFunction = (pathname: string) => PageEntry
+```
+
+Will be called with pathnames of the pages generated by astro. The pathnames are normalised to have a leading slash and no trailing slash.
+
+**Example:**
+
+```js
+{
+    pages: (pathname) => {
+        if (pathname === '/specific/page') {
+            return {
+                path: 'specific-page.pdf',
+                light: true
+            }
+        }
+        if (pathname.startsWith('/documents/')) {
+            return pathname.replace(/^\/documents/, '/generated')
+        }
+    }
+}
+```
+
+### `PagesMap`
+```ts
+export type PagesMap = {
+    [location: PagesKey]: PagesEntry
+    fallback?: PagesFunction
+}
+export type PagesKey = `/${string}` | `http://${string}` | `https://${string}`
+```
+
+Specify locations\. Locations should be an absolute pathname or a full url.
+
+Optionally provide a `fallback` function which will be called with the pathnames of pages generated by astro which are not already in the map.
+
+If the pathname is in the map, but the `PagesEntry` for that pathname is `null` or `undefined`, it will still be passed to the `fallback` function. Only routes generated by astro will be passed into `fallback`. If `PagesEntry` for a pathname is `false`, then the page is skipped.
+
+If any error is encountered when loading the location, the page will be skipped.
+
+**Example:**
+
+```js
+{
+    pages: {
+        'https://example.com': 'example.pdf',
+        '/specific/page': {
+            path: 'specific-page.pdf',
+            light: true
+        },
+        '/documents/dynamic': false, // will not be passed to fallback
+        fallback: (pathname) => {
+            if (pathname.startsWith('/documents/')) {
+                return pathname.replace(/^\/documents/, '/generated')
+            }
+        }
+    }
+}
+```
+
+Given the following project structure:
+```
+pages/
+├── documents/
+│   ├── index.astro
+│   ├── static1.astro
+│   ├── static2.astro
+│   └── dynamic.astro
+├── specific/
+│   └── page.astro
+└── other/
+    └── page.astro
+```
+
+The above config will generate:
+```
+example.pdf
+specific-page.pdf
+generated/
+├── static1.pdf
+└── static2.pdf
+```
+
+with the `fallback` function being called with:
+```
+/documents
+/documents/static1
+/documents/static2
+/other/page
+```
+
+## Configuring Puppeteer
+
+`astro-pdf` relies on [Puppeteer](https://pptr.dev) to generate PDFs. By default, installing `astro-pdf` will install `puppeteer`, which will automatically install a recent version of Chrome for Testing. To prevent this, add a [Puppeteer Configuration File](https://pptr.dev/guides/configuration/#configuration-files) and set `skipDownload` to `true`. Then, you can set [`Options.install`](#options) to specify a specific browser version to install.
+
+If Puppeteer times out after calling `Page.pdf` on Windows, it may be due to [sandbox errors](https://pptr.dev/troubleshooting#chrome-reports-sandbox-errors-on-windows).
+
+To address this, you can run the following command in command prompt if you are using the default installation of Chrome.
+```
+icacls "%USERPROFILE%/.cache/puppeteer/chrome" /grant *S-1-15-2-1:(OI)(CI)(RX)
+```
+
+Or, if you have set `Options.install`, run:
+```
+icacls "<cacheDir>/chrome" /grant *S-1-15-2-1:(OI)(CI)(RX)
+```
+with the specified cacheDir (defaults to Astro's cacheDir of `node_modules/.astro`).
+
+Refer to the [Puppeteer Troubleshooting Guide](https://pptr.dev/troubleshooting) if there are any other issues.
