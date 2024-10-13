@@ -2,7 +2,7 @@ import { type AstroIntegration } from 'astro'
 import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser, executablePath } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
-import { dirname, resolve } from 'path'
+import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptions } from './utils'
@@ -143,7 +143,12 @@ export function pdf(options: Options): AstroIntegration {
 }
 
 export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean | undefined, defaultCacheDir: string, logger: Logger) {
-    const defaultPath = executablePath()
+    let defaultPath: string | null
+    try {
+        defaultPath = executablePath()
+    } catch (e) {
+        defaultPath = null
+    }
     if (options || !defaultPath) {
         logger.info(chalk.dim(`installing browser...`))
         return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
