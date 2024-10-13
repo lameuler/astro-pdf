@@ -31,7 +31,7 @@ export interface PageOptions {
     light: boolean,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     pdf: Omit<PDFOptions, 'path'>,
-    callback?: (page: Page) => any
+    callback?: (page: Page) => void | Promise<void>
 }
 
 const defaultPageOptions: PageOptions = {
@@ -43,7 +43,7 @@ const defaultPageOptions: PageOptions = {
 
 export interface ServerOutput {
     url?: URL,
-    close?: () => Promise<any>
+    close?: () => Promise<void>
 }
 
 export interface Logger {
@@ -143,14 +143,18 @@ export function pdf(options: Options): AstroIntegration {
 }
 
 export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean | undefined, defaultCacheDir: string, logger: Logger) {
-    let defaultPath: string | null
-    try {
-        defaultPath = executablePath()
-    } catch (e) {
-        defaultPath = null
-    }
-    if (options || !defaultPath) {
+    let defaultPath: string | null = null
+    if (!options) {
+        try {
+            defaultPath = executablePath()
+        } catch (e) {
+            logger.debug('error: '+e)
+            logger.info(chalk.yellow(`could not find default browser. installing browser...`))
+        }
+    } else {
         logger.info(chalk.dim(`installing browser...`))
+    }
+    if (!defaultPath) {
         return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
     } else {
         return defaultPath

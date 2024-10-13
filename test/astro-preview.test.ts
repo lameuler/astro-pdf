@@ -35,11 +35,11 @@ describe('test server', () => {
     })
 
     test('server 1 and server 2 have different urls', () => {
-        expect(server1!!.url).not.toBe(server2!!.url)
+        expect(server1!.url).not.toBe(server2!.url)
     })
 
     test('server 1 running', async () => {
-        const res = await fetch(server1!!.url!!)
+        const res = await fetch(server1!.url!)
         expect(res.status).toBe(200)
         const text = await res.text()
         const $ = load(text)
@@ -47,7 +47,7 @@ describe('test server', () => {
     })
 
     test('server 2 running', async () => {
-        const res = await fetch(server2!!.url!!)
+        const res = await fetch(server2!.url!)
         expect(res.status).toBe(200)
         const text = await res.text()
         const $ = load(text)
@@ -58,15 +58,15 @@ describe('test server', () => {
 
 describe('stop servers', () => {
     beforeAll(async () => {
-        await server1!!.close!!()
-        await server2!!.close!!()
+        await server1!.close!()
+        await server2!.close!()
     })
 
     test('server 1 closed', async () => {
-        await expect(fetch(server1!!.url!!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server1!.url!)).rejects.toThrowError('fetch failed')
     })
 
     test('server 2 closed', async () => {
-        await expect(fetch(server2!!.url!!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server2!.url!)).rejects.toThrowError('fetch failed')
     })
 })

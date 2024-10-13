@@ -128,7 +128,7 @@ Specifies options for generating each PDF.
 
   Options to  be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
 
-- **`callback`**: `(page: Page) => any`  _(optional)_
+- **`callback`**: `(page: Page) => void | Promise<void>`  _(optional)_
 
   Receives a Puppeteer [`Page`]() after the page has loaded. This callback is run before the PDF is generated.
 

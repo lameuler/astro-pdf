@@ -7,7 +7,7 @@ import { Server } from 'http'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
-    const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform()!!, 'stable')
+    const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform()!, 'stable')
     const installOptions: InstallOptions & { unpack: true } = {
         ...options,
         browser,
