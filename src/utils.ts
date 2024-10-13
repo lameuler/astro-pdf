@@ -8,14 +8,14 @@ import { Server } from 'http'
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
     const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform()!!, 'stable')
-    const installOptions: InstallOptions = {
+    const installOptions: InstallOptions & { unpack: true } = {
         ...options,
         browser,
         buildId,
-        cacheDir: options.cacheDir ?? defaultCacheDir
+        cacheDir: options.cacheDir ?? defaultCacheDir,
+        unpack: true // ensure that browser is unpacked so it can be used
     }
-    // cast to any to handle overloading of install (theres probably a better way to do this)
-    const installed = await install(installOptions as any)
+    const installed = await install(installOptions)
     return installed.executablePath
 }
 
