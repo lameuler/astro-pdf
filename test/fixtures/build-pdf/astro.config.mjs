@@ -34,9 +34,11 @@ export default defineConfig({
                 'testing': { path: '../testing4.pdf', pdf: { printBackground: true } },
                 'testing2': { path: 'testing5.pdf' },
                 'testing3': 'testing3/testing4/testing5/testing6.pdf',
+                'index.html': undefined,
                 'https://fake.example.com': 'fake.pdf',
                 'https://example.com': true,
-                'https://developer.mozilla.org/404/page/not/found': true
+                'https://developer.mozilla.org/404/page/not/found': true,
+                fallback: pathname => pathname === '/index.html'
             }
         })
     ]
