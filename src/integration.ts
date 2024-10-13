@@ -1,5 +1,13 @@
 import { type AstroIntegration } from 'astro'
-import { launch, type PuppeteerLaunchOptions, type PDFOptions, type Page, type PuppeteerLifeCycleEvent, type Browser, executablePath } from 'puppeteer'
+import {
+    launch,
+    type PuppeteerLaunchOptions,
+    type PDFOptions,
+    type Page,
+    type PuppeteerLifeCycleEvent,
+    type Browser,
+    executablePath
+} from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { mkdir } from 'fs/promises'
 import { dirname } from 'path'
@@ -9,9 +17,9 @@ import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptio
 import version from 'virtual:version'
 
 export interface Options {
-    install?: boolean | Partial<InstallOptions>,
-    launch?: PuppeteerLaunchOptions,
-    baseOptions?: Partial<PageOptions>,
+    install?: boolean | Partial<InstallOptions>
+    launch?: PuppeteerLaunchOptions
+    baseOptions?: Partial<PageOptions>
     pages: PagesFunction | PagesMap
 }
 
@@ -27,10 +35,10 @@ export type PagesMap = {
 }
 
 export interface PageOptions {
-    path: string,
-    light: boolean,
-    waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
-    pdf: Omit<PDFOptions, 'path'>,
+    path: string
+    light: boolean
+    waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
+    pdf: Omit<PDFOptions, 'path'>
     callback?: (page: Page) => void | Promise<void>
 }
 
@@ -42,7 +50,7 @@ const defaultPageOptions: PageOptions = {
 }
 
 export interface ServerOutput {
-    url?: URL,
+    url?: URL
     close?: () => Promise<void>
 }
 
@@ -78,7 +86,9 @@ export function pdf(options: Options): AstroIntegration {
 
                 const startTime = Date.now()
                 const versionColour = version.includes('-') ? chalk.yellow : chalk.green
-                logger.info(`\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v'+version)} – generating pdf files`)
+                logger.info(
+                    `\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v' + version)} – generating pdf files`
+                )
 
                 const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
                 logger.debug(`using browser at ${chalk.blue(executablePath)}`)
@@ -94,7 +104,7 @@ export function pdf(options: Options): AstroIntegration {
                     url = server.url
                     close = server.close
                 } catch (e) {
-                    logger.error('error when setting up server: '+e)
+                    logger.error('error when setting up server: ' + e)
                     return
                 }
                 if (url) {
@@ -102,7 +112,7 @@ export function pdf(options: Options): AstroIntegration {
                 } else {
                     logger.warn(`no url returned from server. all locations must be full urls.`)
                 }
-                
+
                 const browser = await launch({
                     executablePath,
                     ...options.launch
@@ -111,8 +121,8 @@ export function pdf(options: Options): AstroIntegration {
 
                 const { locations, map, fallback } = mergePages(pages, options.pages)
 
-                const queue: { location: string, pageOptions: PageOptions }[] = []
-                locations.forEach(location => {
+                const queue: { location: string; pageOptions: PageOptions }[] = []
+                locations.forEach((location) => {
                     const pageOptions = getPageOptions(location, basePageOptions, map, fallback)
                     if (pageOptions) {
                         queue.push({ location, pageOptions })
@@ -128,27 +138,29 @@ export function pdf(options: Options): AstroIntegration {
                     totalCount: queue.length
                 }
 
-                await Promise.all(queue.map(({ location, pageOptions }) => 
-                    processPage(location, pageOptions, env)
-                ))
+                await Promise.all(queue.map(({ location, pageOptions }) => processPage(location, pageOptions, env)))
 
                 await browser.close()
                 if (typeof close === 'function') {
                     await close()
                 }
-                logger.info(chalk.green(`✓ Completed in ${ Date.now()-startTime }ms.\n`))
+                logger.info(chalk.green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }
         }
     }
 }
 
-export async function findOrInstallBrowser(options: Partial<InstallOptions> | boolean | undefined, defaultCacheDir: string, logger: Logger) {
+export async function findOrInstallBrowser(
+    options: Partial<InstallOptions> | boolean | undefined,
+    defaultCacheDir: string,
+    logger: Logger
+) {
     let defaultPath: string | null = null
     if (!options) {
         try {
             defaultPath = executablePath()
         } catch (e) {
-            logger.debug('error: '+e)
+            logger.debug('error: ' + e)
             logger.info(chalk.yellow(`could not find default browser. installing browser...`))
         }
     } else {
@@ -162,11 +174,11 @@ export async function findOrInstallBrowser(options: Partial<InstallOptions> | bo
 }
 
 export type GenerationEnv = {
-    outDir: string,
-    browser: Browser,
-    baseUrl?: URL,
-    logger: Logger,
-    count: number,
+    outDir: string
+    browser: Browser
+    baseUrl?: URL
+    logger: Logger
+    count: number
     totalCount: number
 }
 
@@ -198,26 +210,28 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
             logger.info(chalk.red(`✖︎ ${pathname} ()`))
             return
         }
-    
+
         if (!response.ok()) {
             env.totalCount--
-            const message = response.status() + (response.statusText() ? ' '+response.statusText() : '')
+            const message = response.status() + (response.statusText() ? ' ' + response.statusText() : '')
             logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
             return
         }
     } catch (e) {
         env.totalCount--
-        const message = ((e && typeof e === 'object' && 'message' in e) ? e.message : null) || 'error while navigating'
+        const message = (e && typeof e === 'object' && 'message' in e ? e.message : null) || 'error while navigating'
         logger.debug(`${pathname}: ${e}`)
         logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
         return
     }
 
     if (pageOptions.light) {
-        await page.emulateMediaFeatures([{
-            name: 'prefers-color-scheme',
-            value: 'light'
-        }])
+        await page.emulateMediaFeatures([
+            {
+                name: 'prefers-color-scheme',
+                value: 'light'
+            }
+        ])
     }
     if (pageOptions.callback) {
         logger.debug('running user callback')
@@ -232,7 +246,9 @@ export async function processPage(pathname: string, pageOptions: PageOptions, en
         path: output.path
     })
     logger.info(`${chalk.green('▶')} ${pathname}`)
-    logger.info(`  ${chalk.blue('└─')} ${chalk.dim(`${output.pathname} (+${Date.now()-start}ms) (${++env.count}/${env.totalCount})`)}`)
+    logger.info(
+        `  ${chalk.blue('└─')} ${chalk.dim(`${output.pathname} (+${Date.now() - start}ms) (${++env.count}/${env.totalCount})`)}`
+    )
 
     page.close()
 }

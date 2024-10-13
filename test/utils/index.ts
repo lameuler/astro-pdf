@@ -6,7 +6,7 @@ export interface TestFixture {
     resolveOutput: (p?: string) => string
     build: (config?: AstroInlineConfig) => Promise<void>
     preview: (config?: AstroInlineConfig, restart?: boolean) => Promise<PreviewServer>
-    previewUrl: string | undefined,
+    previewUrl: string | undefined
     previewServer: PreviewServer | undefined
 }
 
@@ -15,15 +15,16 @@ export async function loadFixture(fixture: string) {
 
     const self: TestFixture = {
         root,
-        resolveOutput: p => path.resolve(root, './dist', p ?? ''),
-        build: async (config) => await build({
-            logLevel: 'silent',
-            mode: 'production',
-            ...config,
-            // override root and outDir options
-            root,
-            outDir: self.resolveOutput()
-        }),
+        resolveOutput: (p) => path.resolve(root, './dist', p ?? ''),
+        build: async (config) =>
+            await build({
+                logLevel: 'silent',
+                mode: 'production',
+                ...config,
+                // override root and outDir options
+                root,
+                outDir: self.resolveOutput()
+            }),
         preview: async (config, restart = false) => {
             if (self.previewServer) {
                 if (restart) {

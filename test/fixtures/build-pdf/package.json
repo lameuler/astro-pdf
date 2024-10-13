@@ -1,18 +1,18 @@
 {
-  "name": "@test/build-pdf",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "devDependencies": {
-    "@astrojs/check": "^0.9.4",
-    "astro": "^4.15.12",
-    "astro-pdf": "^0.0.1-beta.7",
-    "typescript": "^5.6.2"
-  }
+    "name": "@test/build-pdf",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "astro dev",
+        "start": "astro dev",
+        "build": "astro check && astro build",
+        "preview": "astro preview",
+        "astro": "astro"
+    },
+    "devDependencies": {
+        "@astrojs/check": "^0.9.4",
+        "astro": "^4.15.12",
+        "astro-pdf": "^0.0.1-beta.7",
+        "typescript": "^5.6.2"
+    }
 }

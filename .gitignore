@@ -2,9 +2,9 @@
 
 node_modules
 
-/dist
+/**/dist
 
-/.astro
+/**/.astro
 
 .env
 .env.*
@@ -14,3 +14,6 @@ env.d.ts
 
 .vscode
 .idea
+
+/**/env.d.ts
+/**/types.d.ts

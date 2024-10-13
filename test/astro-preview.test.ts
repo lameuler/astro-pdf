@@ -53,7 +53,6 @@ describe('test server', () => {
         const $ = load(text)
         expect($('h1').text()).toBe('astro-preview-2')
     })
-    
 })
 
 describe('stop servers', () => {

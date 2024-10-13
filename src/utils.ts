@@ -7,7 +7,7 @@ import { Server } from 'http'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
-    const buildId = options.buildId ?? await resolveBuildId(browser, detectBrowserPlatform()!, 'stable')
+    const buildId = options.buildId ?? (await resolveBuildId(browser, detectBrowserPlatform()!, 'stable'))
     const installOptions: InstallOptions & { unpack: true } = {
         ...options,
         browser,
@@ -23,7 +23,7 @@ export async function astroPreview(root: string): Promise<ServerOutput> {
     // ** `preview` is an experimental API **
     const server = await preview({ root, logLevel: 'error' })
     // get the actual port number for static preview server
-    const address = ('server' in server && server.server instanceof Server) ? server.server.address() : undefined
+    const address = 'server' in server && server.server instanceof Server ? server.server.address() : undefined
     let host: string | undefined = undefined
     let port: number | undefined = undefined
     if (address && typeof address === 'object') {
@@ -38,7 +38,6 @@ export async function astroPreview(root: string): Promise<ServerOutput> {
 }
 
 export function mergePages(builtPages: { pathname: string }[], pagesOption: PagesFunction | PagesMap) {
-
     const map: { [location: string]: Exclude<PagesEntry, null | undefined> } = {}
     if (typeof pagesOption === 'object') {
         for (const key in pagesOption) {
@@ -61,15 +60,21 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
         locations.add(new URL(pathname, 'base://').pathname.replace(/(?<=\/.*)\/+$/, ''))
     }
 
-    const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function(){}
+    const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function () {}
 
     return { map, fallback, locations: Array.from(locations) }
 }
 
-export function getPageOptions(location: string, baseOptions: PageOptions, map: { [location: string]: Exclude<PagesEntry, null | undefined> }, fallback: PagesFunction) {
+export function getPageOptions(
+    location: string,
+    baseOptions: PageOptions,
+    map: { [location: string]: Exclude<PagesEntry, null | undefined> },
+    fallback: PagesFunction
+) {
     const pageOptions = map[location] ?? fallback(location)
     if (pageOptions) {
-        const partial = typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
+        const partial =
+            typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
         const options = {
             ...baseOptions,
             ...partial
@@ -82,8 +87,8 @@ export function getPageOptions(location: string, baseOptions: PageOptions, map: 
 }
 
 export function resolvePathname(pathname: string, rootDir: string | URL) {
-    const root = (typeof rootDir === 'string') ? pathToFileURL(resolve(rootDir)+sep) : rootDir
-    
+    const root = typeof rootDir === 'string' ? pathToFileURL(resolve(rootDir) + sep) : rootDir
+
     if (!pathname.startsWith('/') && !pathname.startsWith('\\')) {
         pathname = '/' + pathname
     }
@@ -95,7 +100,7 @@ export function resolvePathname(pathname: string, rootDir: string | URL) {
         root.pathname += '/'
     }
 
-    const location = new URL('.'+url.pathname, root)
+    const location = new URL('.' + url.pathname, root)
 
     return {
         path: fileURLToPath(location),
