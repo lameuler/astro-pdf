@@ -39,15 +39,18 @@ export async function astroPreview(root: string): Promise<ServerOutput> {
 
 export function mergePages(builtPages: { pathname: string }[], pagesOption: PagesFunction | PagesMap) {
 
-    const map: { [location: string]: PagesEntry } = {}
+    const map: { [location: string]: Exclude<PagesEntry, null | undefined> } = {}
     if (typeof pagesOption === 'object') {
         for (const key in pagesOption) {
             if (key !== 'fallback') {
                 const url = new URL(key, 'base://')
-                if (url.protocol === 'http:' || url.protocol === 'https:') {
-                    map[url.href] = pagesOption[key as PagesKey]
-                } else {
-                    map[url.pathname.replace(/(?<=\/.*)\/+$/, '') + url.search] = pagesOption[key as PagesKey]
+                const options = pagesOption[key as PagesKey]
+                if (options !== null && options !== undefined) {
+                    if (url.protocol === 'http:' || url.protocol === 'https:') {
+                        map[url.href] = options
+                    } else {
+                        map[url.pathname.replace(/(?<=\/.*)\/+$/, '') + url.search] = options
+                    }
                 }
             }
         }
@@ -63,7 +66,7 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
     return { map, fallback, locations: Array.from(locations) }
 }
 
-export function getPageOptions(location: string, baseOptions: PageOptions, map: { [location: string]: PagesEntry }, fallback: PagesFunction) {
+export function getPageOptions(location: string, baseOptions: PageOptions, map: { [location: string]: Exclude<PagesEntry, null | undefined> }, fallback: PagesFunction) {
     const pageOptions = map[location] ?? fallback(location)
     if (pageOptions) {
         const partial = typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
