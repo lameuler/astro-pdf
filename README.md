@@ -233,3 +233,22 @@ with the `fallback` function being called with:
 /documents/static2
 /other/page
 ```
+
+## Configuring Puppeteer
+
+`astro-pdf` relies on [Puppeteer](https://pptr.dev) to generate PDFs. By default, installing `astro-pdf` will install `puppeteer`, which will automatically install a recent version of Chrome for Testing. To prevent this, add a [Puppeteer Configuration File](https://pptr.dev/guides/configuration/#configuration-files) and set `skipDownload` to `true`. Then, you can set [`Options.install`](#options) to specify a specific browser version to install.
+
+If Puppeteer times out after calling `Page.pdf` on Windows, it may be due to [sandbox errors](https://pptr.dev/troubleshooting#chrome-reports-sandbox-errors-on-windows).
+
+To address this, you can run the following command in command prompt if you are using the default installation of Chrome.
+```
+icacls "%USERPROFILE%/.cache/puppeteer/chrome" /grant *S-1-15-2-1:(OI)(CI)(RX)
+```
+
+Or, if you have set `Options.install`, run:
+```
+icacls "<cacheDir>/chrome" /grant *S-1-15-2-1:(OI)(CI)(RX)
+```
+with the specified cacheDir (defaults to Astro's cacheDir of `node_modules/.astro`).
+
+Refer to the [Puppeteer Troubleshooting Guide](https://pptr.dev/troubleshooting) if there are any other issues.
