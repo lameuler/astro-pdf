@@ -11,8 +11,7 @@ import version from 'virtual:version'
 export interface Options {
     install?: boolean | Partial<InstallOptions>,
     launch?: PuppeteerLaunchOptions,
-    cacheDir?: string | URL,
-    pageOptions?: Partial<PageOptions>,
+    baseOptions?: Partial<PageOptions>,
     pages: PagesFunction | PagesMap
 }
 
@@ -54,7 +53,7 @@ export interface Logger {
     debug(message: string): void
 }
 
-export function astroPdf(options: Options): AstroIntegration {
+export function pdf(options: Options): AstroIntegration {
     let root: string
     let cacheDir: string
     return {
@@ -63,12 +62,6 @@ export function astroPdf(options: Options): AstroIntegration {
             'astro:config:done': ({ config }) => {
                 root = fileURLToPath(config.root)
                 cacheDir = fileURLToPath(config.cacheDir)
-                const cacheDirOption = options.cacheDir ?? config.cacheDir
-                if (typeof cacheDirOption === 'string') {
-                    cacheDir = resolve(root, cacheDirOption)
-                } else {
-                    cacheDir = fileURLToPath(cacheDirOption)
-                }
             },
             'astro:build:done': async ({ dir, pages, logger }) => {
                 logger.info = logger.info.bind(logger.fork(''))
@@ -80,7 +73,7 @@ export function astroPdf(options: Options): AstroIntegration {
 
                 const basePageOptions = {
                     ...defaultPageOptions,
-                    ...options.pageOptions
+                    ...options.baseOptions
                 }
 
                 const startTime = Date.now()

@@ -1,4 +1,4 @@
-import { astroPdf } from './integration'
+import { pdf } from './integration'
 
 export type { Options, PageOptions } from './integration'
-export default astroPdf
+export default pdf
