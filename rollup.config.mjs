@@ -20,7 +20,8 @@ export default defineConfig({
         typescript({
             declaration: true,
             declarationDir: 'dist/types'
-        }), virtual({
+        }),
+        virtual({
             'virtual:version': `const version = ${JSON.stringify(version)}; export default version`
         })
     ]

@@ -3,7 +3,7 @@ import { resolvePathname } from '../src/utils'
 import { pathToFileURL } from 'url'
 import path, { resolve, sep } from 'path'
 
-function createTests(name: string, resolveRoot: (root: string) => string | URL, slash='/') {
+function createTests(name: string, resolveRoot: (root: string) => string | URL, slash = '/') {
     const d = resolveRoot
     const r = resolve
     function s(pathname: string) {
@@ -63,7 +63,7 @@ function createTests(name: string, resolveRoot: (root: string) => string | URL, 
 }
 
 function resolvePath(p: string) {
-    return resolve(p) + ((p.endsWith(sep) || p.endsWith('/')) ? path.sep : '')
+    return resolve(p) + (p.endsWith(sep) || p.endsWith('/') ? path.sep : '')
 }
 
 function resolveUrl(p: string) {
@@ -75,8 +75,8 @@ function resolveUrl(p: string) {
 }
 
 createTests('forward slash and absolute path root', resolvePath, '/')
-createTests('forward slash and relative path root', p => p, '/')
+createTests('forward slash and relative path root', (p) => p, '/')
 createTests('forward slash and url root', resolveUrl, '/')
 createTests('back slash and absolute path root', resolvePath, '\\')
-createTests('back slash and relative path root', p => p, '\\')
+createTests('back slash and relative path root', (p) => p, '\\')
 createTests('back slash and url', resolveUrl, '\\')
