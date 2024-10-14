@@ -1,8 +1,9 @@
 import { Browser, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
 import { type PageOptions } from './integration'
-import { resolvePathname } from './utils'
-import { dirname } from 'path'
-import { mkdir } from 'fs/promises'
+import { filepathToPathname, pathnameToFilepath } from './utils'
+import { dirname, extname } from 'path'
+import { FileHandle, mkdir } from 'fs/promises'
+import { open } from 'fs/promises'
 
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
@@ -42,9 +43,6 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    // resolve pdf output relative to astro output directory
-    const output = resolvePathname(pageOptions.path, outDir)
-
     const page = await browser.newPage()
 
     let url: URL
@@ -71,21 +69,32 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         await pageOptions.callback(page)
     }
 
-    const dir = dirname(output.path)
+    // resolve pdf output relative to astro output directory
+    const outPath = pathnameToFilepath(pageOptions.path, outDir)
+
+    const dir = dirname(outPath)
     await mkdir(dir, { recursive: true })
 
-    debug(`generating pdf for ${page}`)
-    await page.pdf({
-        ...pageOptions.pdf,
-        path: output.path
-    })
-    debug(`wrote pdf to ${output.path}`)
+    const { fd, path } = await openFd(outPath, debug)
+
+    try {
+        const stream = await page.createPDFStream(pageOptions.pdf)
+
+        await pipeToFd(stream, fd)
+    } catch (err) {
+        throw new PageError(location, 'failed to write pdf', { cause: err })
+    } finally {
+        await fd.close()
+    }
 
     await page.close()
 
     return {
         location,
-        output
+        output: {
+            path,
+            pathname: filepathToPathname(path, outDir)
+        }
     }
 }
 
@@ -147,4 +156,41 @@ function loadPage(
                 )
             })
     })
+}
+
+async function openFd(path: string, debug: (message: string) => void) {
+    const ext = extname(path)
+    const name = path.substring(0, path.length - ext.length)
+    let i = 0
+    let fd: FileHandle | null = null
+    let p: string = path
+    while (fd === null) {
+        try {
+            const suffix = i ? '-' + i : ''
+            p = name + suffix + ext
+            fd = await open(p, 'wx')
+            break
+        } catch (err) {
+            debug('openFd: ' + err)
+            i++
+        }
+    }
+    return { fd, path: p }
+}
+
+async function pipeToFd(stream: ReadableStream<Uint8Array>, fd: FileHandle) {
+    const writeStream = fd.createWriteStream()
+    const reader = stream.getReader()
+
+    try {
+        while (true) {
+            const { value, done } = await reader.read()
+            if (done) {
+                break
+            }
+            writeStream.write(value)
+        }
+    } finally {
+        writeStream.end()
+    }
 }

@@ -35,7 +35,7 @@ export default defineConfig({
                     path: '../testing4.pdf',
                     pdf: { printBackground: true }
                 },
-                testing2: { path: 'testing5.pdf' },
+                testing2: { path: 'testing3/testing4/testing5/testing6.pdf' },
                 testing3: 'testing3/testing4/testing5/testing6.pdf',
                 'index.html': undefined,
                 'https://fake.example.com': 'fake.pdf',
