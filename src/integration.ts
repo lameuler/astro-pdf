@@ -5,16 +5,14 @@ import {
     type PDFOptions,
     type Page,
     type PuppeteerLifeCycleEvent,
-    type Browser,
     executablePath
 } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
-import { mkdir } from 'fs/promises'
-import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
-import { installBrowser, astroPreview, resolvePathname, mergePages, getPageOptions } from './utils'
+import { installBrowser, astroPreview, mergePages, getPageOptions } from './utils'
 import version from 'virtual:version'
+import { PageError, processPage } from './page'
 
 export interface Options {
     install?: boolean | Partial<InstallOptions>
@@ -133,12 +131,34 @@ export function pdf(options: Options): AstroIntegration {
                     outDir,
                     browser,
                     baseUrl: url,
-                    logger,
-                    count: 0,
-                    totalCount: queue.length
+                    debug: logger.debug.bind(logger)
                 }
 
-                await Promise.all(queue.map(({ location, pageOptions }) => processPage(location, pageOptions, env)))
+                let count = 0
+                let totalCount = queue.length
+
+                await Promise.all(
+                    queue.map(async ({ location, pageOptions }) => {
+                        const start = Date.now()
+                        try {
+                            const result = await processPage(location, pageOptions, env)
+                            const time = Date.now() - start
+                            logger.info(`${chalk.green('▶')} ${result.location}`)
+                            logger.info(
+                                `  ${chalk.blue('└─')} ${chalk.dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                            )
+                        } catch (err) {
+                            totalCount--
+                            if (err instanceof PageError) {
+                                const time = Date.now() - start
+                                logger.info(
+                                    chalk.red(`✖︎ ${err.location} (${err.title}) ${chalk.dim(`(+${time}ms)`)}`)
+                                )
+                            }
+                            logger.debug(chalk.red.bold(`error while processing ${location}: `) + err)
+                        }
+                    })
+                )
 
                 await browser.close()
                 if (typeof close === 'function') {
@@ -171,84 +191,4 @@ export async function findOrInstallBrowser(
     } else {
         return defaultPath
     }
-}
-
-export type GenerationEnv = {
-    outDir: string
-    browser: Browser
-    baseUrl?: URL
-    logger: Logger
-    count: number
-    totalCount: number
-}
-
-// exported for testing only
-export async function processPage(pathname: string, pageOptions: PageOptions, env: GenerationEnv) {
-    const { outDir, browser, baseUrl, logger } = env
-
-    const start = Date.now()
-    logger.debug(`starting processing of ${pathname}`)
-
-    // resolve pdf output relative to astro output directory
-    const output = resolvePathname(pageOptions.path, outDir)
-
-    const page = await browser.newPage()
-    if (!URL.canParse(pathname, baseUrl)) {
-        logger.info(chalk.yellow(`${chalk.bold('?')} ${pathname}`))
-        return
-    }
-    const location = new URL(pathname, baseUrl)
-
-    logger.debug(`visiting ${location.href}`)
-    try {
-        const response = await page.goto(location.href, {
-            waitUntil: pageOptions.waitUntil
-        })
-
-        if (!response) {
-            env.totalCount--
-            logger.info(chalk.red(`✖︎ ${pathname} ()`))
-            return
-        }
-
-        if (!response.ok()) {
-            env.totalCount--
-            const message = response.status() + (response.statusText() ? ' ' + response.statusText() : '')
-            logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
-            return
-        }
-    } catch (e) {
-        env.totalCount--
-        const message = (e && typeof e === 'object' && 'message' in e ? e.message : null) || 'error while navigating'
-        logger.debug(`${pathname}: ${e}`)
-        logger.info(chalk.red(`✖︎ ${pathname} (${message})`))
-        return
-    }
-
-    if (pageOptions.light) {
-        await page.emulateMediaFeatures([
-            {
-                name: 'prefers-color-scheme',
-                value: 'light'
-            }
-        ])
-    }
-    if (pageOptions.callback) {
-        logger.debug('running user callback')
-        await pageOptions.callback(page)
-    }
-
-    const dir = dirname(output.path)
-    await mkdir(dir, { recursive: true })
-
-    await page.pdf({
-        ...pageOptions.pdf,
-        path: output.path
-    })
-    logger.info(`${chalk.green('▶')} ${pathname}`)
-    logger.info(
-        `  ${chalk.blue('└─')} ${chalk.dim(`${output.pathname} (+${Date.now() - start}ms) (${++env.count}/${env.totalCount})`)}`
-    )
-
-    page.close()
 }
