@@ -1,12 +1,14 @@
 import { Browser, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
 import { type PageOptions } from './integration'
-import { resolvePathname } from './utils'
-import { dirname } from 'path'
-import { mkdir } from 'fs/promises'
+import { filepathToPathname, pathnameToFilepath } from './utils'
+import { dirname, extname } from 'path'
+import { FileHandle, mkdir } from 'fs/promises'
+import { open } from 'fs/promises'
 
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
     details: string | null
+    src: string | null
 }
 
 export class PageError extends Error implements PageErrorOptions {
@@ -15,6 +17,7 @@ export class PageError extends Error implements PageErrorOptions {
     title: string
     status: number | null
     details: string | null
+    src: string | null
 
     constructor(location: string, title: string, options?: Partial<PageErrorOptions>) {
         let message = `Failed to load \`${location}\`: ${title}`
@@ -25,8 +28,12 @@ export class PageError extends Error implements PageErrorOptions {
 
         this.location = location
         this.title = title
-        this.status = options?.status ?? null
-        this.details = options?.details ?? null
+
+        const { status, details, src } = options ?? {}
+
+        this.status = status ?? null
+        this.details = details ?? null
+        this.src = src && src !== location ? src : null
     }
 }
 
@@ -42,21 +49,9 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    // resolve pdf output relative to astro output directory
-    const output = resolvePathname(pageOptions.path, outDir)
-
     const page = await browser.newPage()
 
-    let url: URL
-    try {
-        url = new URL(location, baseUrl)
-    } catch (err) {
-        throw new PageError(location, 'invalid location', { cause: err })
-    }
-
-    debug(`visiting ${url.href}`)
-
-    await loadPage(location, page, url, pageOptions.waitUntil)
+    await loadPage(location, baseUrl, page, pageOptions.waitUntil)
 
     if (pageOptions.light) {
         await page.emulateMediaFeatures([
@@ -71,42 +66,75 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         await pageOptions.callback(page)
     }
 
-    const dir = dirname(output.path)
+    const url = page.url()
+    const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
+
+    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
+    // resolve pdf output relative to astro output directory
+    const outPath = pathnameToFilepath(outPathRaw, outDir)
+
+    const dir = dirname(outPath)
     await mkdir(dir, { recursive: true })
 
-    debug(`generating pdf for ${page}`)
-    await page.pdf({
-        ...pageOptions.pdf,
-        path: output.path
-    })
-    debug(`wrote pdf to ${output.path}`)
+    const { fd, path } = await openFd(outPath, debug)
+
+    try {
+        const stream = await page.createPDFStream(pageOptions.pdf)
+
+        await pipeToFd(stream, fd)
+    } catch (err) {
+        throw new PageError(location, 'failed to write pdf', { cause: err })
+    } finally {
+        await fd.close()
+    }
 
     await page.close()
 
     return {
-        location,
-        output
+        src: location !== dest ? location : null,
+        location: dest,
+        output: {
+            path,
+            pathname: filepathToPathname(path, outDir)
+        }
     }
 }
 
 function loadPage(
     location: string,
+    baseUrl: URL | undefined,
     page: Page,
-    url: URL,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
 ): Promise<HTTPResponse> {
     return new Promise((resolve, reject) => {
+        let url: URL
+        try {
+            url = new URL(location, baseUrl)
+        } catch (err) {
+            reject(new PageError(location, 'invalid location', { cause: err }))
+            return
+        }
+
+        function rejectResponse(res: HTTPResponse) {
+            const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
+            let dest = res.url()
+            if (baseUrl && dest.startsWith(baseUrl.origin)) {
+                dest = dest.substring(baseUrl.origin.length)
+            }
+            reject(
+                new PageError(dest, title, {
+                    status: res.status(),
+                    src: location
+                })
+            )
+        }
+
         // reject early if response status is not ok
         page.waitForNavigation({ waitUntil: [] })
             .then((res) => {
                 // let goto handle null response
-                if (res !== null && !res.ok()) {
-                    const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-                    reject(
-                        new PageError(location, title, {
-                            status: res.status()
-                        })
-                    )
+                if (res !== null && !res.ok) {
+                    rejectResponse(res)
                 }
             })
             .catch((err) => {
@@ -128,12 +156,7 @@ function loadPage(
                         })
                     )
                 } else if (!res.ok()) {
-                    const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-                    reject(
-                        new PageError(location, title, {
-                            status: res.status()
-                        })
-                    )
+                    rejectResponse(res)
                 } else {
                     resolve(res)
                 }
@@ -147,4 +170,41 @@ function loadPage(
                 )
             })
     })
+}
+
+async function openFd(path: string, debug: (message: string) => void) {
+    const ext = extname(path)
+    const name = path.substring(0, path.length - ext.length)
+    let i = 0
+    let fd: FileHandle | null = null
+    let p: string = path
+    while (fd === null) {
+        try {
+            const suffix = i ? '-' + i : ''
+            p = name + suffix + ext
+            fd = await open(p, 'wx')
+            break
+        } catch (err) {
+            debug('openFd: ' + err)
+            i++
+        }
+    }
+    return { fd, path: p }
+}
+
+async function pipeToFd(stream: ReadableStream<Uint8Array>, fd: FileHandle) {
+    const writeStream = fd.createWriteStream()
+    const reader = stream.getReader()
+
+    try {
+        while (true) {
+            const { value, done } = await reader.read()
+            if (done) {
+                break
+            }
+            writeStream.write(value)
+        }
+    } finally {
+        writeStream.end()
+    }
 }

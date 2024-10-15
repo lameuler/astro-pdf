@@ -1,5 +1,5 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
-import { resolve, sep } from 'path'
+import { relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap, ServerOutput } from './integration'
 import { preview } from 'astro'
@@ -79,14 +79,19 @@ export function getPageOptions(
             ...baseOptions,
             ...partial
         }
-        const pathname = new URL(location, 'base://').pathname.replace(/\/+$/, '') || '/index'
-        options.path = options.path.replace('[pathname]', pathname)
+        const path = options.path
+        if (typeof path === 'string' && path.includes('[pathname]')) {
+            options.path = (url: URL) => {
+                const pathname = url.pathname.replace(/\/+$/, '') || '/index'
+                return path.replace('[pathname]', pathname)
+            }
+        }
         return options
     }
     return undefined
 }
 
-export function resolvePathname(pathname: string, rootDir: string | URL) {
+export function pathnameToFilepath(pathname: string, rootDir: string | URL) {
     const root = typeof rootDir === 'string' ? pathToFileURL(resolve(rootDir) + sep) : rootDir
 
     if (!pathname.startsWith('/') && !pathname.startsWith('\\')) {
@@ -102,8 +107,17 @@ export function resolvePathname(pathname: string, rootDir: string | URL) {
 
     const location = new URL('.' + url.pathname, root)
 
-    return {
-        path: fileURLToPath(location),
-        pathname: url.pathname
+    return fileURLToPath(location)
+}
+
+export function filepathToPathname(path: string, rootDir: string | URL) {
+    const root = typeof rootDir === 'string' ? rootDir : fileURLToPath(rootDir)
+
+    let pathname = relative(root, path)
+    if (pathname.startsWith('./') || pathname.startsWith('.\\')) {
+        pathname = pathname.substring(1)
+    } else if (!pathname.startsWith('.') && !pathname.startsWith('/') && !pathname.startsWith('\\')) {
+        pathname = '/' + pathname
     }
+    return pathname.replaceAll(sep, '/')
 }
