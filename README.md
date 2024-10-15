@@ -112,13 +112,17 @@ export interface PageOptions
 
 Specifies options for generating each PDF.
 
--   **`path`**: `string`
+-   **`path`**: `string` | `((url: URL) => string)`
 
     Default: `'[pathname].pdf'`
 
     Specify the location where the PDF will be generated. This is treated like a `href` in the site, so absolute paths will be resolved relative to the root of the site. For example, `/path/to/file.pdf` and `path/to/file.pdf` are equivalent.
 
-    If the path contains `[pathname]`, it will be substituted for the pathname of the page generated e.g. `/path/to/page` will be substituted into `[pathname].pdf` to get `/path/to/page.pdf`.
+    If the path contains `[pathname]`, it will be substituted for the pathname of the page generated e.g. `/path/to/page` will be substituted into `[pathname].pdf` to get `/path/to/page.pdf`. If there are any redirects, the pathname will be the final location that is used to generate the PDF.
+
+    `path` can also be a function which receives the URL of the page used to generate the PDF and returns the path where the PDF will be generated.
+
+    If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-2.pdf` then `example-3.pdf`.
 
 -   **`light`**: `boolean`
 
