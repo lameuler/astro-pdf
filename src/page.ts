@@ -69,8 +69,10 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         await pageOptions.callback(page)
     }
 
+
+    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(page.url())) : pageOptions.path
     // resolve pdf output relative to astro output directory
-    const outPath = pathnameToFilepath(pageOptions.path, outDir)
+    const outPath = pathnameToFilepath(outPathRaw, outDir)
 
     const dir = dirname(outPath)
     await mkdir(dir, { recursive: true })

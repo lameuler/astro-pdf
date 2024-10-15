@@ -79,8 +79,13 @@ export function getPageOptions(
             ...baseOptions,
             ...partial
         }
-        const pathname = new URL(location, 'base://').pathname.replace(/\/+$/, '') || '/index'
-        options.path = options.path.replace('[pathname]', pathname)
+        const path = options.path
+        if (typeof path === 'string' && path.includes('[pathname]')) {
+            options.path = (url: URL) => {
+                const pathname = url.pathname.replace(/\/+$/, '') || '/index'
+                return path.replace('[pathname]', pathname)
+            }
+        }
         return options
     }
     return undefined

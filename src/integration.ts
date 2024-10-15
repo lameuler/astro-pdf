@@ -33,7 +33,7 @@ export type PagesMap = {
 }
 
 export interface PageOptions {
-    path: string
+    path: string | ((url: URL) => string)
     light: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
     pdf: Omit<PDFOptions, 'path'>
