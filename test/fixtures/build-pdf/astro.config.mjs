@@ -39,8 +39,12 @@ export default defineConfig({
                 testing3: 'testing3/testing4/testing5/testing6.pdf',
                 'index.html': undefined,
                 'https://fake.example.com': 'fake.pdf',
+                'https://ler.sg/to/fake.example.com': 'fake.pdf',
                 'https://example.com': true,
                 'https://developer.mozilla.org/404/page/not/found': true,
+                'https://ler.sg/cv': { pdf: { printBackground: true } },
+                'http://eu.ler.sg/resume': true,
+                'http://ler.sg/to/ler.sg/cv': true,
                 fallback: (pathname) => pathname === '/index.html'
             }
         })

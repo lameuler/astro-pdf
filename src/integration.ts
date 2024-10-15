@@ -143,7 +143,8 @@ export function pdf(options: Options): AstroIntegration {
                         try {
                             const result = await processPage(location, pageOptions, env)
                             const time = Date.now() - start
-                            logger.info(`${chalk.green('▶')} ${result.location}`)
+                            const src = result.src ? chalk.dim(' ← ' + result.src) : ''
+                            logger.info(`${chalk.green('▶')} ${result.location}${src}`)
                             logger.info(
                                 `  ${chalk.blue('└─')} ${chalk.dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
                             )
@@ -151,8 +152,9 @@ export function pdf(options: Options): AstroIntegration {
                             totalCount--
                             if (err instanceof PageError) {
                                 const time = Date.now() - start
+                                const src = err.src ? chalk.dim(' ← ' + err.src) : ''
                                 logger.info(
-                                    chalk.red(`✖︎ ${err.location} (${err.title}) ${chalk.dim(`(+${time}ms)`)}`)
+                                    chalk.red(`✖︎ ${err.location} (${err.title}) ${chalk.dim(`(+${time}ms)`)}${src}`)
                                 )
                             }
                             logger.debug(chalk.red.bold(`error while processing ${location}: `) + err)

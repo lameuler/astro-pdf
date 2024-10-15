@@ -8,6 +8,7 @@ import { open } from 'fs/promises'
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
     details: string | null
+    src: string | null
 }
 
 export class PageError extends Error implements PageErrorOptions {
@@ -16,6 +17,7 @@ export class PageError extends Error implements PageErrorOptions {
     title: string
     status: number | null
     details: string | null
+    src: string | null
 
     constructor(location: string, title: string, options?: Partial<PageErrorOptions>) {
         let message = `Failed to load \`${location}\`: ${title}`
@@ -26,8 +28,12 @@ export class PageError extends Error implements PageErrorOptions {
 
         this.location = location
         this.title = title
-        this.status = options?.status ?? null
-        this.details = options?.details ?? null
+
+        const { status, details, src } = options ?? {}
+
+        this.status = status ?? null
+        this.details = details ?? null
+        this.src = src && src !== location ? src : null
     }
 }
 
@@ -45,16 +51,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     const page = await browser.newPage()
 
-    let url: URL
-    try {
-        url = new URL(location, baseUrl)
-    } catch (err) {
-        throw new PageError(location, 'invalid location', { cause: err })
-    }
-
-    debug(`visiting ${url.href}`)
-
-    await loadPage(location, page, url, pageOptions.waitUntil)
+    await loadPage(location, baseUrl, page, pageOptions.waitUntil)
 
     if (pageOptions.light) {
         await page.emulateMediaFeatures([
@@ -69,8 +66,10 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         await pageOptions.callback(page)
     }
 
+    const url = page.url()
+    const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
 
-    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(page.url())) : pageOptions.path
+    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
     // resolve pdf output relative to astro output directory
     const outPath = pathnameToFilepath(outPathRaw, outDir)
 
@@ -92,7 +91,8 @@ export async function processPage(location: string, pageOptions: PageOptions, en
     await page.close()
 
     return {
-        location,
+        src: location !== dest ? location : null,
+        location: dest,
         output: {
             path,
             pathname: filepathToPathname(path, outDir)
@@ -102,22 +102,39 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
 function loadPage(
     location: string,
+    baseUrl: URL | undefined,
     page: Page,
-    url: URL,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
 ): Promise<HTTPResponse> {
     return new Promise((resolve, reject) => {
+        let url: URL
+        try {
+            url = new URL(location, baseUrl)
+        } catch (err) {
+            reject(new PageError(location, 'invalid location', { cause: err }))
+            return
+        }
+
+        function rejectResponse(res: HTTPResponse) {
+            const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
+            let dest = res.url()
+            if (baseUrl && dest.startsWith(baseUrl.origin)) {
+                dest = dest.substring(baseUrl.origin.length)
+            }
+            reject(
+                new PageError(dest, title, {
+                    status: res.status(),
+                    src: location
+                })
+            )
+        }
+
         // reject early if response status is not ok
         page.waitForNavigation({ waitUntil: [] })
             .then((res) => {
                 // let goto handle null response
-                if (res !== null && !res.ok()) {
-                    const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-                    reject(
-                        new PageError(location, title, {
-                            status: res.status()
-                        })
-                    )
+                if (res !== null && !res.ok) {
+                    rejectResponse(res)
                 }
             })
             .catch((err) => {
@@ -139,12 +156,7 @@ function loadPage(
                         })
                     )
                 } else if (!res.ok()) {
-                    const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-                    reject(
-                        new PageError(location, title, {
-                            status: res.status()
-                        })
-                    )
+                    rejectResponse(res)
                 } else {
                     resolve(res)
                 }
