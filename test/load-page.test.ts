@@ -38,7 +38,7 @@ describe('load errors', () => {
         expect(response.ok()).toBe(true)
         expect(response.url()).toBe(new URL('/index.html', base).href)
         expect(response.url()).toBe(page.url())
-        expect(await response.text()).toContain('<h1>Page Loaded!</h1>');
+        expect(await response.text()).toContain('<h1>Page Loaded!</h1>')
     })
 
     test('404 page', async () => {
