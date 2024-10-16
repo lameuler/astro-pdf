@@ -22,7 +22,7 @@ describe('load errors', () => {
     })
 
     test('404 page', async () => {
-        const base = new URL('http://localhost:'+port)
+        const base = new URL('http://localhost:' + port)
         const fn = loadPage('/page.html', base, page, 'networkidle0')
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
     })
@@ -30,9 +30,7 @@ describe('load errors', () => {
     test('unresolved hostname', async () => {
         const location = 'https://fake-gxcskbrl.example.com/page.html'
         const fn = loadPage(location, undefined, page, 'networkidle0')
-        await expect(fn).rejects.toThrowError(
-            new PageError(location, 'net::ERR_NAME_NOT_RESOLVED at '+location)
-        )
+        await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED at ' + location))
     })
 
     afterAll(async () => {

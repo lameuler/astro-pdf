@@ -32,7 +32,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         try {
             const file = await readFile(path)
             res.writeHead(200)
-            switch(extname(path)) {
+            switch (extname(path)) {
                 case '.html':
                     res.setHeader('Content-Type', 'text/html')
                     break
@@ -41,7 +41,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
                     break
             }
             setTimeout(() => res.end(file.buffer), timeout)
-        } catch (err) {
+        } catch {
             res.writeHead(500, 'Internal Server Error')
             setTimeout(() => res.end(), timeout)
         }
