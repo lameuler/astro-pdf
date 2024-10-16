@@ -18,32 +18,49 @@ export function start(timeout = 5000) {
     })
 }
 
+function wait(timeout: number) {
+    return new Promise((resolve) => setTimeout(resolve, timeout))
+}
+
 async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     if (req.url) {
-        const url = new URL(req.url, new URL('./public/', import.meta.url))
+        const url = new URL(req.url.replace(/^(\.{0,2}\/)+/, ''), new URL('./public/', import.meta.url))
         const delay = parseInt(url.searchParams.get('delay') || '0')
         const timeout = isFinite(delay) ? delay : 0
         const path = fileURLToPath(url)
-        if (!existsSync(path)) {
-            res.writeHead(404, 'Not Found!!')
-            setTimeout(() => res.end(), timeout)
-            return
-        }
+
         try {
-            const file = await readFile(path)
-            res.writeHead(200)
-            switch (extname(path)) {
-                case '.html':
-                    res.setHeader('Content-Type', 'text/html')
-                    break
-                case '.svg':
-                    res.setHeader('Content-Type', 'image/svg+xml')
-                    break
+            if (existsSync(path)) {
+                const file = await readFile(path)
+                switch (extname(path)) {
+                    case '.html':
+                        res.setHeader('Content-Type', 'text/html')
+                        break
+                    case '.svg':
+                        res.setHeader('Content-Type', 'image/svg+xml')
+                        break
+                }
+                res.writeHead(200)
+                await wait(timeout)
+                res.end(Buffer.from(file.buffer))
+            } else {
+                res.setHeader('Content-Type', 'text/html')
+                res.writeHead(404, 'Not Found!!')
+                const errorPage = fileURLToPath(new URL('./public/404.html', import.meta.url))
+                if (existsSync(errorPage)) {
+                    const file = await readFile(errorPage)
+                    res.write(Buffer.from(file.buffer))
+                } else {
+                    res.write('<h1>Page Not Found</h1>')
+                }
+                await wait(timeout)
+                res.end()
             }
-            setTimeout(() => res.end(file.buffer), timeout)
-        } catch {
+        } catch (err) {
+            console.log(res.closed, err)
+            await wait(timeout)
             res.writeHead(500, 'Internal Server Error')
-            setTimeout(() => res.end(), timeout)
+            res.end()
         }
     }
 }
