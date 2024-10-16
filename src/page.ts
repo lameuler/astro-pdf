@@ -1,4 +1,4 @@
-import { Browser, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
+import { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
 import { type PageOptions } from './integration'
 import { filepathToPathname, pathnameToFilepath } from './utils'
 import { dirname, extname } from 'path'
@@ -100,9 +100,9 @@ export async function processPage(location: string, pageOptions: PageOptions, en
     }
 }
 
-class PageLoadedSignal extends Error {
+class AbortPageLoad extends Error {
     constructor() {
-        super('abort signal: page loaded')
+        super('abort signal: abort page load')
     }
 }
 
@@ -121,12 +121,10 @@ export function loadPage(
             return
         }
 
+        let dest = location
+
         function rejectResponse(res: HTTPResponse) {
             const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-            let dest = res.url()
-            if (baseUrl && dest.startsWith(baseUrl.origin)) {
-                dest = dest.substring(baseUrl.origin.length)
-            }
             reject(
                 new PageError(dest, title, {
                     status: res.status(),
@@ -137,27 +135,38 @@ export function loadPage(
 
         const controller = new AbortController()
 
-        // reject early if response status is not ok
-        page.waitForResponse((res) => res.request().url() === url.href, {
-            signal: controller.signal
-        })
-            .then((res) => {
-                if (!res.ok()) {
+        const requestListener = (req: HTTPRequest) => {
+            if (req.url() === new URL(dest, baseUrl).href) {
+                const err = req.failure()?.errorText ?? 'request failed'
+                page.off('response', responseListener)
+                page.off('requestfailed', requestListener)
+                controller.abort(new AbortPageLoad())
+                reject(new PageError(dest, err, { src: location }))
+            }
+        }
+        page.on('requestfailed', requestListener)
+
+        const responseListener = (res: HTTPResponse) => {
+            if (res.url() === new URL(dest, baseUrl).href) {
+                const s = res.status()
+                if (s >= 200 && s < 100) {
+                    page.off('response', responseListener)
+                    page.off('requestfailed', requestListener)
+                } else if (s >= 300 && s < 400) {
+                    const destUrl = new URL(res.headers()['location'], res.url())
+                    dest = destUrl.href
+                    if (baseUrl && dest.startsWith(baseUrl.origin)) {
+                        dest = dest.substring(baseUrl.origin.length)
+                    }
+                } else if (s >= 400) {
+                    controller.abort(new AbortPageLoad())
                     rejectResponse(res)
                 }
-            })
-            .catch((err) => {
-                if (!(err instanceof PageLoadedSignal)) {
-                    const message = err instanceof Error ? err.message : 'error while navigating'
-                    reject(
-                        new PageError(location, message, {
-                            cause: err
-                        })
-                    )
-                }
-            })
+            }
+        }
+        page.on('response', responseListener)
 
-        page.goto(url.href, { waitUntil })
+        page.goto(url.href, { waitUntil, signal: controller.signal })
             .then((res) => {
                 if (res === null) {
                     reject(
@@ -173,15 +182,14 @@ export function loadPage(
                 }
             })
             .catch((err) => {
+                if (err instanceof AbortPageLoad) return
                 const message = err instanceof Error ? err.message : 'error while navigating'
                 reject(
-                    new PageError(location, message, {
-                        cause: err
+                    new PageError(dest, message, {
+                        cause: err,
+                        src: location
                     })
                 )
-            })
-            .finally(() => {
-                controller.abort(new PageLoadedSignal())
             })
     })
 }
