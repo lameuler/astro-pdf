@@ -100,7 +100,13 @@ export async function processPage(location: string, pageOptions: PageOptions, en
     }
 }
 
-function loadPage(
+class PageLoadedSignal extends Error {
+    constructor() {
+        super('abort signal: page loaded')
+    }
+}
+
+export function loadPage(
     location: string,
     baseUrl: URL | undefined,
     page: Page,
@@ -129,21 +135,26 @@ function loadPage(
             )
         }
 
+        const controller = new AbortController()
+
         // reject early if response status is not ok
-        page.waitForNavigation({ waitUntil: [] })
+        page.waitForResponse((res) => res.request().url() === url.href, {
+            signal: controller.signal
+        })
             .then((res) => {
-                // let goto handle null response
-                if (res !== null && !res.ok) {
+                if (!res.ok()) {
                     rejectResponse(res)
                 }
             })
             .catch((err) => {
-                const message = err instanceof Error ? err.message : 'error while navigating'
-                reject(
-                    new PageError(location, message, {
-                        cause: err
-                    })
-                )
+                if (!(err instanceof PageLoadedSignal)) {
+                    const message = err instanceof Error ? err.message : 'error while navigating'
+                    reject(
+                        new PageError(location, message, {
+                            cause: err
+                        })
+                    )
+                }
             })
 
         page.goto(url.href, { waitUntil })
@@ -168,6 +179,9 @@ function loadPage(
                         cause: err
                     })
                 )
+            })
+            .finally(() => {
+                controller.abort(new PageLoadedSignal())
             })
     })
 }
