@@ -21,6 +21,26 @@ describe('load errors', () => {
         page = await browser.newPage()
     })
 
+    test('relative path with no base url', async () => {
+        const fn = loadPage('/page.html', undefined, page, 'load')
+        await expect(fn).rejects.toThrowError(new PageError('/page.html', 'invalid location'))
+    })
+
+    test('invalid url', async () => {
+        const base = new URL('http://localhost:' + port)
+        const fn = loadPage('https://[pathname]', base, page, 'load')
+        await expect(fn).rejects.toThrowError(new PageError('https://[pathname]', 'invalid location'))
+    })
+
+    test('valid page', async () => {
+        const base = new URL('http://localhost:' + port)
+        const response = await loadPage('/index.html', base, page, 'networkidle0')
+        expect(response.ok()).toBe(true)
+        expect(response.url()).toBe(new URL('/index.html', base).href)
+        expect(response.url()).toBe(page.url())
+        expect(await response.text()).toContain('<h1>Page Loaded!</h1>');
+    })
+
     test('404 page', async () => {
         const base = new URL('http://localhost:' + port)
         const fn = loadPage('/page.html', base, page, 'networkidle0')

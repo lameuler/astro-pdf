@@ -31,7 +31,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
 
         try {
             if (existsSync(path)) {
-                const file = await readFile(path)
+                const file = await readFile(path, 'utf-8')
                 switch (extname(path)) {
                     case '.html':
                         res.setHeader('Content-Type', 'text/html')
@@ -42,14 +42,14 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
                 }
                 res.writeHead(200)
                 await wait(timeout)
-                res.end(Buffer.from(file.buffer))
+                res.end(file)
             } else {
                 res.setHeader('Content-Type', 'text/html')
                 res.writeHead(404, 'Not Found!!')
                 const errorPage = fileURLToPath(new URL('./public/404.html', import.meta.url))
                 if (existsSync(errorPage)) {
-                    const file = await readFile(errorPage)
-                    res.write(Buffer.from(file.buffer))
+                    const file = await readFile(errorPage, 'utf-8')
+                    res.write(file)
                 } else {
                     res.write('<h1>Page Not Found</h1>')
                 }
