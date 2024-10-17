@@ -12,8 +12,8 @@
     "scripts": {
         "build": "rollup -c",
         "prepack": "npm run build && npm test",
-        "test": "vitest run --dir=./test",
-        "coverage": "vitest run --dir=./test --coverage",
+        "test": "vitest run",
+        "coverage": "vitest run --coverage",
         "lint": "eslint",
         "format": "prettier . --write",
         "format:check": "prettier . --check"
