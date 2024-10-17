@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { type AstroInlineConfig, build, preview, type PreviewServer } from 'astro'
 import PDFParser, { Output } from 'pdf2json'
+import { vi } from 'vitest'
 
 export interface TestFixture {
     root: string
@@ -66,4 +67,13 @@ export function parsePdf(path: string) {
     })
     parser.loadPDF(path)
     return promise
+}
+
+export function makeLogger() {
+    return {
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+        debug: vi.fn()
+    }
 }
