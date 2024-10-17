@@ -37,6 +37,15 @@ export class PageError extends Error implements PageErrorOptions {
     }
 }
 
+export interface PageResult {
+    location: string
+    src: string | null
+    output: {
+        path: string
+        pathname: string
+    }
+}
+
 export type PageEnv = {
     outDir: string
     browser: Browser
@@ -44,7 +53,7 @@ export type PageEnv = {
     debug: (message: string) => void
 }
 
-export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv) {
+export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
     const { outDir, browser, baseUrl, debug } = env
 
     debug(`starting processing of ${location}`)
@@ -83,7 +92,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
         await pipeToFd(stream, fd)
     } catch (err) {
-        throw new PageError(location, 'failed to write pdf', { cause: err })
+        throw new PageError(dest, 'failed to write pdf', { cause: err, src: location })
     } finally {
         await fd.close()
     }

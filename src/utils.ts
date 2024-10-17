@@ -81,14 +81,18 @@ export function getPageOptions(
         }
         const path = options.path
         if (typeof path === 'string' && path.includes('[pathname]')) {
-            options.path = (url: URL) => {
-                const pathname = url.pathname.replace(/\/+$/, '') || '/index'
-                return path.replace('[pathname]', pathname)
-            }
+            options.path = defaultPathFunction(path)
         }
         return options
     }
     return undefined
+}
+
+export function defaultPathFunction(path: string) {
+    return (url: URL) => {
+        const pathname = url.pathname.replace(/\/+$/, '') || '/index'
+        return path.replace('[pathname]', pathname)
+    }
 }
 
 export function pathnameToFilepath(pathname: string, rootDir: string | URL) {

@@ -1,5 +1,6 @@
 import * as path from 'path'
 import { type AstroInlineConfig, build, preview, type PreviewServer } from 'astro'
+import PDFParser, { Output } from 'pdf2json'
 
 export interface TestFixture {
     root: string
@@ -51,4 +52,18 @@ export async function loadFixture(fixture: string) {
         previewServer: undefined
     }
     return self
+}
+
+export function parsePdf(path: string) {
+    const parser = new PDFParser()
+    const promise = new Promise<Output>((resolve, reject) => {
+        parser.on('pdfParser_dataReady', (data) => {
+            resolve(data)
+        })
+        parser.on('pdfParser_dataError', (err) => {
+            reject(err.parserError)
+        })
+    })
+    parser.loadPDF(path)
+    return promise
 }

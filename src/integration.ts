@@ -40,12 +40,12 @@ export interface PageOptions {
     callback?: (page: Page) => void | Promise<void>
 }
 
-const defaultPageOptions: PageOptions = {
+export const defaultPageOptions: PageOptions = {
     path: '[pathname].pdf',
     light: false,
     waitUntil: 'networkidle2',
     pdf: {}
-}
+} as const
 
 export interface ServerOutput {
     url?: URL
