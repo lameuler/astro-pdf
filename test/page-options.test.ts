@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest'
-import { mergePages, getPageOptions } from '../src/utils'
-import { defaultPageOptions, PagesEntry, PagesFunction } from '../src/integration'
+import { mergePages, getPageOptions } from '@/utils'
+import { defaultPageOptions, PagesEntry, PagesFunction } from '@/integration'
 
 test('merge pages', () => {
     const routes = [{ pathname: 'route/a' }, { pathname: '/route/b' }, { pathname: 'route/c/' }]

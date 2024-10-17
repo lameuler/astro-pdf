@@ -33,7 +33,7 @@ async function isFile(path: string) {
         const s = await stat(path)
         return s.isFile()
     } catch (err) {
-        if ('code' in err && err.code === 'ENOENT') {
+        if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
             return false
         } else {
             throw err

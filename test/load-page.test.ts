@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest'
 import { start } from './utils/server'
-import { loadPage, PageError } from '../src/page'
 import { Browser, launch, Page } from 'puppeteer'
 import { Server } from 'http'
+import { loadPage, PageError } from '@/page'
 
 describe('load errors', () => {
     let server: Server

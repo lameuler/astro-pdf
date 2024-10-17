@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import { load } from 'cheerio'
-import { astroPreview } from '../src/utils'
 import { loadFixture, type TestFixture } from './utils'
-import { ServerOutput } from '../src/integration'
+import { astroPreview } from '@/utils'
+import { ServerOutput } from '@/integration'
 
 let fixture1: TestFixture
 let fixture2: TestFixture
