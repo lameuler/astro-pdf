@@ -2,7 +2,7 @@ import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOp
 import { relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap, ServerOutput } from './integration'
-import { preview } from 'astro'
+import { AstroIntegrationLogger, preview } from 'astro'
 import { Server } from 'http'
 import { executablePath } from 'puppeteer'
 import chalk from 'chalk'
@@ -21,17 +21,10 @@ export async function installBrowser(options: Partial<InstallOptions>, defaultCa
     return installed.executablePath
 }
 
-export interface Logger {
-    info(message: string): void
-    warn(message: string): void
-    error(message: string): void
-    debug(message: string): void
-}
-
 export async function findOrInstallBrowser(
     options: Partial<InstallOptions> | boolean | undefined,
     defaultCacheDir: string,
-    logger: Logger
+    logger: AstroIntegrationLogger
 ) {
     let defaultPath: string | null = null
     if (!options) {

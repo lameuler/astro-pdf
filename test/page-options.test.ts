@@ -22,7 +22,7 @@ describe('merge pages', () => {
     })
 
     test('pages function', () => {
-        const fn = (pathname: string) => pathname ===  '/page'
+        const fn = (pathname: string) => pathname === '/page'
         const routes = [{ pathname: '/page1' }, { pathname: '/page2' }, { pathname: '/page3' }]
         const { map, locations, fallback } = mergePages(routes, fn)
         locations.sort()
@@ -43,8 +43,8 @@ describe('page options', () => {
             path: undefined,
             'https://example.com': 'example.pdf',
             'route/c/': false,
-            'somewhere': true,
-            'else': { path: 'elsewhere.pdf' },
+            somewhere: true,
+            else: { path: 'elsewhere.pdf' },
             fallback: vi.fn((pathname: string) => {
                 if (pathname === '/route/a') return 'static[pathname].pdf'
             })
@@ -57,7 +57,14 @@ describe('page options', () => {
     })
 
     test('merged options', () => {
-        expect(locations).toStrictEqual(['/else', '/route/a', '/route/b', '/route/c', '/somewhere', 'https://example.com/'])
+        expect(locations).toStrictEqual([
+            '/else',
+            '/route/a',
+            '/route/b',
+            '/route/c',
+            '/somewhere',
+            'https://example.com/'
+        ])
         expect(map).toStrictEqual({
             'https://example.com/': 'example.pdf',
             '/route/c': false,
