@@ -1,0 +1,13 @@
+{
+    "include": ["**/*"],
+    "exclude": ["fixtures/**/*"],
+    "compilerOptions": {
+        "strict": true,
+        "module": "es2020",
+        "target": "es2022",
+        "moduleResolution": "node",
+        "paths": {
+            "@/*": ["../src/*"]
+        }
+    }
+}

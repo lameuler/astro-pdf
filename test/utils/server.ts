@@ -1,7 +1,6 @@
-import { existsSync } from 'fs'
-import { readFile } from 'fs/promises'
+import { readFile, stat } from 'fs/promises'
 import { IncomingMessage, Server, ServerResponse } from 'http'
-import { extname } from 'path'
+import { extname, sep } from 'path'
 import { fileURLToPath } from 'url'
 
 export interface Redirects {
@@ -11,7 +10,7 @@ export interface Redirects {
     }
 }
 
-export function start(root: string, redirects?: Redirects, timeout = 5000) {
+export function start(root: URL, redirects?: Redirects, timeout = 5000) {
     const server = new Server(makeHandler(root, redirects ?? {}))
     server.listen()
     return new Promise<Server>((resolve, reject) => {
@@ -29,7 +28,20 @@ function wait(timeout: number) {
     return new Promise((resolve) => setTimeout(resolve, timeout))
 }
 
-function makeHandler(root: string, redirects: Redirects) {
+async function isFile(path: string) {
+    try {
+        const s = await stat(path)
+        return s.isFile()
+    } catch (err) {
+        if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+            return false
+        } else {
+            throw err
+        }
+    }
+}
+
+function makeHandler(root: URL, redirects: Redirects) {
     return async (req: IncomingMessage, res: ServerResponse) => {
         if (req.url) {
             const url = new URL(req.url, 'base://')
@@ -47,11 +59,35 @@ function makeHandler(root: string, redirects: Redirects) {
 
             const path = fileURLToPath(new URL('.' + url.pathname, root))
             try {
-                if (existsSync(path)) {
-                    const file = await readFile(path, 'utf-8')
-                    switch (extname(path)) {
+                let finalPath: string | null = null
+                if (await isFile(path)) {
+                    finalPath = path
+                } else if (extname(path) === '') {
+                    if (path.endsWith(sep)) {
+                        if (await isFile(path + 'index.html')) {
+                            finalPath = path + 'index.html'
+                        } else {
+                            const sliced = path.slice(0, -1)
+                            if (sliced && !sliced.endsWith(sep) && (await isFile(sliced + '.html'))) {
+                                finalPath = sliced + '.html'
+                            }
+                        }
+                    } else {
+                        if (await isFile(path + '.html')) {
+                            finalPath = path + '.html'
+                        } else if (await isFile(path + sep + 'index.html')) {
+                            finalPath = path + sep + 'index.html'
+                        }
+                    }
+                }
+                if (finalPath) {
+                    const file = await readFile(finalPath)
+                    switch (extname(finalPath)) {
                         case '.html':
                             res.setHeader('Content-Type', 'text/html')
+                            break
+                        case '.js':
+                            res.setHeader('Content-Type', 'application/javascript')
                             break
                         case '.svg':
                             res.setHeader('Content-Type', 'image/svg+xml')
@@ -64,8 +100,8 @@ function makeHandler(root: string, redirects: Redirects) {
                     res.setHeader('Content-Type', 'text/html')
                     res.writeHead(404, 'Not Found!!')
                     const errorPage = fileURLToPath(new URL('./public/404.html', import.meta.url))
-                    if (existsSync(errorPage)) {
-                        const file = await readFile(errorPage, 'utf-8')
+                    if (await isFile(errorPage)) {
+                        const file = await readFile(errorPage)
                         res.write(file)
                     } else {
                         res.write('<h1>Page Not Found</h1>')
@@ -73,8 +109,7 @@ function makeHandler(root: string, redirects: Redirects) {
                     await wait(timeout)
                     res.end()
                 }
-            } catch (err) {
-                console.log(res.closed, err)
+            } catch {
                 await wait(timeout)
                 res.writeHead(500, 'Internal Server Error')
                 res.end()

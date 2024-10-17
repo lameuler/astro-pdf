@@ -1,5 +1,7 @@
 import * as path from 'path'
-import { type AstroInlineConfig, build, preview, type PreviewServer } from 'astro'
+import { type AstroInlineConfig, AstroIntegrationLogger, build, preview, type PreviewServer } from 'astro'
+import PDFParser, { Output } from 'pdf2json'
+import { Mock, vi } from 'vitest'
 
 export interface TestFixture {
     root: string
@@ -51,4 +53,44 @@ export async function loadFixture(fixture: string) {
         previewServer: undefined
     }
     return self
+}
+
+export function parsePdf(path: string) {
+    const parser = new PDFParser()
+    const promise = new Promise<Output>((resolve, reject) => {
+        parser.on('pdfParser_dataReady', (data) => {
+            resolve(data)
+        })
+        parser.on('pdfParser_dataError', (err) => {
+            reject(err.parserError)
+        })
+    })
+    parser.loadPDF(path)
+    return promise
+}
+
+export interface Logger extends AstroIntegrationLogger {
+    fork: Mock<(label: string) => Logger>
+    info: Mock<(message: string) => void>
+    warn: Mock<(message: string) => void>
+    error: Mock<(message: string) => void>
+    debug: Mock<(message: string) => void>
+}
+
+export function makeLogger(): Logger {
+    const logger: Logger = {
+        options: {
+            dest: {
+                write: vi.fn()
+            },
+            level: 'info'
+        },
+        label: '',
+        fork: vi.fn(() => logger),
+        info: vi.fn(() => {}),
+        warn: vi.fn(),
+        error: vi.fn(),
+        debug: vi.fn()
+    }
+    return logger
 }

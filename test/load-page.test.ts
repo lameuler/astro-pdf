@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest'
 import { start } from './utils/server'
-import { loadPage, PageError } from '../src/page'
 import { Browser, launch, Page } from 'puppeteer'
 import { Server } from 'http'
+import { loadPage, PageError } from '@/page'
 
 describe('load errors', () => {
     let server: Server
@@ -16,7 +16,7 @@ describe('load errors', () => {
             '/page2.html': { dest: '/page.html' },
             '/outside': { dest: 'https://fake-gxcskbrl.example.com/page.html' }
         }
-        server = await start(new URL('./fixtures/load-page/public/', import.meta.url).href, redirects)
+        server = await start(new URL('./fixtures/load-page/public/', import.meta.url), redirects)
         const address = server.address()
         if (!address || typeof address !== 'object') {
             throw new Error('test error: invalid server address')

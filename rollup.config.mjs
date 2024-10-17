@@ -7,6 +7,10 @@ import { readFile } from 'fs/promises'
 
 const version = JSON.parse(await readFile('package.json', 'utf-8')).version
 
+export const virtualVersion = virtual({
+    'virtual:version': `const version = ${JSON.stringify(version)}; export default version`
+})
+
 export default defineConfig({
     input: 'src/index.ts',
     output: {
@@ -21,8 +25,6 @@ export default defineConfig({
             declaration: true,
             declarationDir: 'dist/types'
         }),
-        virtual({
-            'virtual:version': `const version = ${JSON.stringify(version)}; export default version`
-        })
+        virtualVersion
     ]
 })

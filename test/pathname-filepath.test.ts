@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { filepathToPathname, pathnameToFilepath } from '../src/utils'
 import { pathToFileURL } from 'url'
-import path, { resolve, sep } from 'path'
+import { resolve, sep } from 'path'
+import { filepathToPathname, pathnameToFilepath } from '@/utils'
 
 function createTests(name: string, resolveRoot: (root: string) => string | URL, slash = '/') {
     const d = resolveRoot
@@ -77,7 +77,7 @@ function createTests(name: string, resolveRoot: (root: string) => string | URL, 
 }
 
 function resolvePath(p: string) {
-    return resolve(p) + (p.endsWith(sep) || p.endsWith('/') ? path.sep : '')
+    return resolve(p) + (p.endsWith(sep) || p.endsWith('/') ? sep : '')
 }
 
 function resolveUrl(p: string) {
