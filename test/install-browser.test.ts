@@ -45,7 +45,9 @@ describe('install browser', () => {
     })
 
     test('install firefox', { timeout: 30000 }, async () => {
-        const result = await installBrowser({ browser: Browser.FIREFOX }, cacheDir)
+        const logger = makeLogger()
+        const result = await findOrInstallBrowser({ browser: Browser.FIREFOX }, cacheDir, logger)
+        expect(logger.info).toHaveBeenCalled()
         const fn = access(result, constants.X_OK)
         await expect(fn).resolves.toBeUndefined()
         const browsers = await getInstalledBrowsers({ cacheDir })
