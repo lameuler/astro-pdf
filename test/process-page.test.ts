@@ -139,7 +139,9 @@ describe('process page', () => {
             pdf: {}
         }
         const fn = processPage('/somewhere', options, env)
-        expect(fn).rejects.toThrowError(new PageError('/somewhere/else', '404 Not Found!!', { src: '/somewhere', status: 404 }))
+        expect(fn).rejects.toThrowError(
+            new PageError('/somewhere/else', '404 Not Found!!', { src: '/somewhere', status: 404 })
+        )
         expect(existsSync(resolve(env.outDir, 'somewhere.pdf'))).toBe(false)
     })
 
@@ -150,10 +152,7 @@ describe('process page', () => {
             waitUntil: 'networkidle2',
             pdf: {}
         }
-        const results = await Promise.all([
-            processPage('/docs', options, env),
-            processPage('/docs/page', options, env)
-        ])
+        const results = await Promise.all([processPage('/docs', options, env), processPage('/docs/page', options, env)])
         expect(results[0].location).toBe(results[1].location)
         const paths = [results[0].output.path, results[1].output.path]
         expect(paths).toContain(resolve(env.outDir, 'output.pdf'))
