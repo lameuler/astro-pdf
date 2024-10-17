@@ -13,6 +13,7 @@
         "build": "rollup -c",
         "prepack": "npm run build && npm test",
         "test": "vitest run --dir=./test",
+        "coverage": "vitest run --dir=./test --coverage",
         "lint": "eslint",
         "format": "prettier . --write",
         "format:check": "prettier . --check"
@@ -44,6 +45,7 @@
         "@types/eslint__js": "^8.42.3",
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/node": "^22.7.4",
+        "@vitest/coverage-v8": "^2.1.2",
         "astro": "^4.15.9",
         "cheerio": "^1.0.0",
         "eslint": "^9.12.0",
