@@ -11,7 +11,7 @@ export interface Redirects {
     }
 }
 
-export function start(root: string, redirects?: Redirects, timeout = 5000) {
+export function start(root: URL, redirects?: Redirects, timeout = 5000) {
     const server = new Server(makeHandler(root, redirects ?? {}))
     server.listen()
     return new Promise<Server>((resolve, reject) => {
@@ -29,7 +29,7 @@ function wait(timeout: number) {
     return new Promise((resolve) => setTimeout(resolve, timeout))
 }
 
-function makeHandler(root: string, redirects: Redirects) {
+function makeHandler(root: URL, redirects: Redirects) {
     return async (req: IncomingMessage, res: ServerResponse) => {
         if (req.url) {
             const url = new URL(req.url, 'base://')

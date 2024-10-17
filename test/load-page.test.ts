@@ -16,7 +16,7 @@ describe('load errors', () => {
             '/page2.html': { dest: '/page.html' },
             '/outside': { dest: 'https://fake-gxcskbrl.example.com/page.html' }
         }
-        server = await start(new URL('./fixtures/load-page/public/', import.meta.url).href, redirects)
+        server = await start(new URL('./fixtures/load-page/public/', import.meta.url), redirects)
         const address = server.address()
         if (!address || typeof address !== 'object') {
             throw new Error('test error: invalid server address')
