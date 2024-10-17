@@ -158,7 +158,7 @@ export function loadPage(
         const responseListener = (res: HTTPResponse) => {
             if (res.url() === new URL(dest, baseUrl).href) {
                 const s = res.status()
-                if (s >= 200 && s < 100) {
+                if (s >= 200 && s < 300) {
                     page.off('response', responseListener)
                     page.off('requestfailed', requestListener)
                 } else if (s >= 300 && s < 400) {
