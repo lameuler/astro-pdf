@@ -82,7 +82,7 @@ describe('process page', () => {
         })
 
         test('callback called', async () => {
-            expect(options.callback).toBeCalledTimes(1)
+            expect(options.callback).toHaveBeenCalledOnce()
         })
 
         describe('parse pdf', () => {
