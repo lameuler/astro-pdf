@@ -1,14 +1,14 @@
-import { beforeAll, describe, expect, test } from 'vitest'
-import { PageEnv, PageResult, processPage } from '../src/page'
+import { beforeAll, describe, expect, test, vi } from 'vitest'
+import { PageEnv, PageError, PageResult, processPage } from '../src/page'
 import { Server } from 'http'
 import { start } from './utils/server'
-import { launch } from 'puppeteer'
+import { launch, Page } from 'puppeteer'
 import { fileURLToPath } from 'url'
 import { PageOptions } from '../src/integration'
 import { defaultPathFunction } from '../src/utils'
 import { Output } from 'pdf2json'
 import { existsSync } from 'fs'
-import { rm } from 'fs/promises'
+import { lstat, rm } from 'fs/promises'
 import { parsePdf } from './utils'
 import { resolve } from 'path'
 
@@ -18,7 +18,11 @@ describe('process page', () => {
 
     beforeAll(async () => {
         const root = new URL('./fixtures/process-page/', import.meta.url)
-        server = await start(new URL('./public/', root))
+        const redirects = {
+            '/docs': { dest: '/docs/page' },
+            '/somewhere': { dest: '/somewhere/else' }
+        }
+        server = await start(new URL('./public/', root), redirects)
         const address = server.address()
         if (!address || typeof address !== 'object') {
             throw new Error('test error: invalid server address')
@@ -47,7 +51,7 @@ describe('process page', () => {
                 format: 'a4',
                 landscape: true
             },
-            callback: async (page) => {
+            callback: vi.fn(async (page: Page) => {
                 await page.$eval(
                     'body',
                     (body, args) => {
@@ -58,7 +62,7 @@ describe('process page', () => {
                     },
                     { injectedTitle, injectedText }
                 )
-            }
+            })
         }
         let result: PageResult
 
@@ -71,9 +75,14 @@ describe('process page', () => {
             expect(result.src).toBe(null)
         })
 
-        test('output path', () => {
+        test('output path', async () => {
             expect(result.output.path).toBe(resolve(env.outDir, 'index.pdf'))
             expect(result.output.pathname).toBe('/index.pdf')
+            expect((await lstat(result.output.path)).isFile()).toBe(true)
+        })
+
+        test('callback called', async () => {
+            expect(options.callback).toBeCalledTimes(1)
         })
 
         describe('parse pdf', () => {
@@ -103,5 +112,54 @@ describe('process page', () => {
                 expect(texts).toContain(injectedText)
             })
         })
+    })
+
+    test('redirect', async () => {
+        const options: PageOptions = {
+            path: 'docs/page.pdf',
+            light: false,
+            waitUntil: 'networkidle2',
+            pdf: {}
+        }
+        const result = await processPage('/docs', options, env)
+        expect(result.location).toBe('/docs/page')
+        expect(result.src).toBe('/docs')
+        expect(result.output.path).toBe(resolve(env.outDir, 'docs/page.pdf'))
+        expect(result.output.pathname).toBe('/docs/page.pdf')
+        expect((await lstat(result.output.path)).isFile()).toBe(true)
+        const data = await parsePdf(result.output.path)
+        expect(data.Meta['Title']).toBe('docs')
+    })
+
+    test('404 page', async () => {
+        const options: PageOptions = {
+            path: 'somewhere.pdf',
+            light: false,
+            waitUntil: 'networkidle2',
+            pdf: {}
+        }
+        const fn = processPage('/somewhere', options, env)
+        expect(fn).rejects.toThrowError(new PageError('/somewhere/else', '404 Not Found!!', { src: '/somewhere', status: 404 }))
+        expect(existsSync(resolve(env.outDir, 'somewhere.pdf'))).toBe(false)
+    })
+
+    test('conflicting filenames', async () => {
+        const options: PageOptions = {
+            path: 'output.pdf',
+            light: false,
+            waitUntil: 'networkidle2',
+            pdf: {}
+        }
+        const results = await Promise.all([
+            processPage('/docs', options, env),
+            processPage('/docs/page', options, env)
+        ])
+        expect(results[0].location).toBe(results[1].location)
+        const paths = [results[0].output.path, results[1].output.path]
+        expect(paths).toContain(resolve(env.outDir, 'output.pdf'))
+        expect(paths).toContain(resolve(env.outDir, 'output-1.pdf'))
+        const pathnames = [results[0].output.pathname, results[1].output.pathname]
+        expect(pathnames).toContain('/output.pdf')
+        expect(pathnames).toContain('/output-1.pdf')
     })
 })
