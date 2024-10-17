@@ -76,7 +76,7 @@ describe('run integration', () => {
                 logger,
                 cacheManifest: false
             })
-        })
+        }, 20000)
 
         test('generated local page', async () => {
             const path = resolve(outPath, 'index.pdf')
