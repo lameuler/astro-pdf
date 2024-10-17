@@ -2,8 +2,10 @@ import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOp
 import { relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap, ServerOutput } from './integration'
-import { preview } from 'astro'
+import { AstroIntegrationLogger, preview } from 'astro'
 import { Server } from 'http'
+import { executablePath } from 'puppeteer'
+import chalk from 'chalk'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
@@ -17,6 +19,29 @@ export async function installBrowser(options: Partial<InstallOptions>, defaultCa
     }
     const installed = await install(installOptions)
     return installed.executablePath
+}
+
+export async function findOrInstallBrowser(
+    options: Partial<InstallOptions> | boolean | undefined,
+    defaultCacheDir: string,
+    logger: AstroIntegrationLogger
+) {
+    let defaultPath: string | null = null
+    if (!options) {
+        try {
+            defaultPath = executablePath()
+        } catch (e) {
+            logger.debug('error: ' + e)
+            logger.info(chalk.yellow(`could not find default browser. installing browser...`))
+        }
+    } else {
+        logger.info(chalk.dim(`installing browser...`))
+    }
+    if (!defaultPath) {
+        return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
+    } else {
+        return defaultPath
+    }
 }
 
 export async function astroPreview(root: string): Promise<ServerOutput> {

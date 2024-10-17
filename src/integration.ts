@@ -4,13 +4,12 @@ import {
     type PuppeteerLaunchOptions,
     type PDFOptions,
     type Page,
-    type PuppeteerLifeCycleEvent,
-    executablePath
+    type PuppeteerLifeCycleEvent
 } from 'puppeteer'
 import { type InstallOptions } from '@puppeteer/browsers'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
-import { installBrowser, astroPreview, mergePages, getPageOptions } from './utils'
+import { astroPreview, mergePages, getPageOptions, findOrInstallBrowser } from './utils'
 import version from 'virtual:version'
 import { PageError, processPage } from './page'
 
@@ -50,13 +49,6 @@ export const defaultPageOptions: PageOptions = {
 export interface ServerOutput {
     url?: URL
     close?: () => Promise<void>
-}
-
-export interface Logger {
-    info(message: string): void
-    warn(message: string): void
-    error(message: string): void
-    debug(message: string): void
 }
 
 export function pdf(options: Options): AstroIntegration {
@@ -169,28 +161,5 @@ export function pdf(options: Options): AstroIntegration {
                 logger.info(chalk.green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }
         }
-    }
-}
-
-export async function findOrInstallBrowser(
-    options: Partial<InstallOptions> | boolean | undefined,
-    defaultCacheDir: string,
-    logger: Logger
-) {
-    let defaultPath: string | null = null
-    if (!options) {
-        try {
-            defaultPath = executablePath()
-        } catch (e) {
-            logger.debug('error: ' + e)
-            logger.info(chalk.yellow(`could not find default browser. installing browser...`))
-        }
-    } else {
-        logger.info(chalk.dim(`installing browser...`))
-    }
-    if (!defaultPath) {
-        return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
-    } else {
-        return defaultPath
     }
 }
