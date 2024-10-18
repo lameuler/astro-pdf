@@ -30,7 +30,7 @@ export type PagesMap = Record<string, PagesEntry> & {
 
 export interface PageOptions {
     path: string | ((url: URL) => string)
-    light: boolean
+    screen: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
     pdf: Omit<PDFOptions, 'path'>
     callback?: (page: Page) => void | Promise<void>
@@ -38,7 +38,7 @@ export interface PageOptions {
 
 export const defaultPageOptions: PageOptions = {
     path: '[pathname].pdf',
-    light: false,
+    screen: false,
     waitUntil: 'networkidle2',
     pdf: {}
 } as const

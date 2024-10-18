@@ -124,11 +124,11 @@ Specifies options for generating each PDF.
 
     If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
 
--   **`light`**: `boolean`
+-   **`screen`**: `boolean`
 
     Default: `false`
 
-    Set whether to set [`prefers-color-scheme`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme) to `light` before the PDF is generated. This is run before `callback`.
+    Use the CSS `screen` [media type](https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types) instead of the default `print`. This is set before `callback`.
 
 -   **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`]()
 

@@ -12,6 +12,14 @@
                 background-color: rgb(0, 81, 255);
                 color: white;
             }
+            .screen {
+                display: none;
+            }
+            @media screen {
+                .screen {
+                    display: block;
+                }
+            }
         </style>
         <script src="/script.js?delay=2000"></script>
     </head>
@@ -19,5 +27,6 @@
         <h1>Page Loaded!</h1>
         <pre><code>@test/process-page</code></pre>
         <a href="https://example.com">click me!</a>
+        <pre class="screen"><code>@media screen</code></pre>
     </body>
 </html>
