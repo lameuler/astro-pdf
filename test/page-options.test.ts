@@ -12,10 +12,10 @@ describe('merge pages', () => {
         }
         const { map, locations, fallback } = mergePages(routes, pages)
         locations.sort()
-        expect(locations).toStrictEqual(['/route/a', '/route/b', '/route/c', 'https://example.com/'])
+        expect(locations).toStrictEqual(['/route/a', '/route/b', '/route/c/', 'https://example.com/'])
         expect(map).toStrictEqual({
             'https://example.com/': true,
-            '/route/c': false
+            '/route/c/': false
         })
         expect(fallback).toBeDefined()
         expect(fallback('/route/a')).toBeUndefined()
@@ -61,13 +61,13 @@ describe('page options', () => {
             '/else',
             '/route/a',
             '/route/b',
-            '/route/c',
+            '/route/c/',
             '/somewhere',
             'https://example.com/'
         ])
         expect(map).toStrictEqual({
             'https://example.com/': 'example.pdf',
-            '/route/c': false,
+            '/route/c/': false,
             '/somewhere': true,
             '/else': { path: 'elsewhere.pdf' }
         })
@@ -80,9 +80,9 @@ describe('page options', () => {
     })
 
     test('route mapped to false', () => {
-        const result = getPageOptions('/route/c', defaultPageOptions, map, fallback)
+        const result = getPageOptions('/route/c/', defaultPageOptions, map, fallback)
         expect(result).toBeUndefined()
-        expect(fallback).not.toHaveBeenCalledWith('/route/c')
+        expect(fallback).not.toHaveBeenCalledWith('/route/c/')
     })
 
     test('true page entry', () => {

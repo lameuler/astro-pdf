@@ -73,7 +73,7 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
                     if (url.protocol === 'http:' || url.protocol === 'https:') {
                         map[url.href] = options
                     } else {
-                        map[url.pathname.replace(/(?<=\/.*)\/+$/, '') + url.search] = options
+                        map[url.pathname + url.search] = options
                     }
                 }
             }
@@ -82,7 +82,7 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
     const locations = new Set<string>(Object.keys(map))
 
     for (const { pathname } of builtPages) {
-        locations.add(new URL(pathname, 'base://').pathname.replace(/(?<=\/.*)\/+$/, ''))
+        locations.add(new URL(pathname, 'base://').pathname)
     }
 
     const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function () {}
