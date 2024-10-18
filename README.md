@@ -122,7 +122,7 @@ Specifies options for generating each PDF.
 
     `path` can also be a function which receives the URL of the page used to generate the PDF and returns the path where the PDF will be generated.
 
-    If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-2.pdf` then `example-3.pdf`.
+    If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
 
 -   **`light`**: `boolean`
 
