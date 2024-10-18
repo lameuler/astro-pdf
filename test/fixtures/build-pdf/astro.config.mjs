@@ -7,7 +7,7 @@ export default defineConfig({
         astroPdf({
             install: true,
             pages: (path) => {
-                if (path === '/testing') {
+                if (path === '/testing/') {
                     return {
                         path: 'testing.pdf',
                         waitUntil: 'networkidle0',
@@ -25,8 +25,8 @@ export default defineConfig({
                         }
                     }
                 }
-                if (path === '/testing2') return {}
-                if (path === '/testing3') return true
+                if (path === '/testing2/') return {}
+                if (path === '/testing3/') return true
             }
         }),
         astroPdf({

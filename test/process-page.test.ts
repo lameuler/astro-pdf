@@ -44,7 +44,7 @@ describe('process page', () => {
 
         const options: PageOptions = {
             path: defaultPathFunction('[pathname].pdf'),
-            light: false,
+            screen: true,
             waitUntil: 'networkidle0',
             pdf: {
                 printBackground: true,
@@ -110,6 +110,7 @@ describe('process page', () => {
                 expect(texts).toContain('@test/process-page')
                 expect(texts).toContain('[added by script.js]')
                 expect(texts).toContain(injectedText)
+                expect(texts).toContain('@media screen')
             })
         })
     })
@@ -117,7 +118,7 @@ describe('process page', () => {
     test('redirect', async () => {
         const options: PageOptions = {
             path: 'docs/page.pdf',
-            light: false,
+            screen: false,
             waitUntil: 'networkidle2',
             pdf: {}
         }
@@ -134,7 +135,7 @@ describe('process page', () => {
     test('404 page', async () => {
         const options: PageOptions = {
             path: 'somewhere.pdf',
-            light: false,
+            screen: false,
             waitUntil: 'networkidle2',
             pdf: {}
         }
@@ -148,7 +149,7 @@ describe('process page', () => {
     test('conflicting filenames', async () => {
         const options: PageOptions = {
             path: 'output.pdf',
-            light: false,
+            screen: false,
             waitUntil: 'networkidle2',
             pdf: {}
         }

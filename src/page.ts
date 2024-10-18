@@ -62,13 +62,8 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     await loadPage(location, baseUrl, page, pageOptions.waitUntil)
 
-    if (pageOptions.light) {
-        await page.emulateMediaFeatures([
-            {
-                name: 'prefers-color-scheme',
-                value: 'light'
-            }
-        ])
+    if (pageOptions.screen) {
+        await page.emulateMediaType('screen')
     }
     if (pageOptions.callback) {
         debug('running user callback')

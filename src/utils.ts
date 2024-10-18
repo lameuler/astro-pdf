@@ -1,7 +1,7 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
 import { relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { PageOptions, PagesEntry, PagesFunction, PagesKey, PagesMap, ServerOutput } from './integration'
+import { PageOptions, PagesEntry, PagesFunction, PagesMap, ServerOutput } from './integration'
 import { AstroIntegrationLogger, preview } from 'astro'
 import { Server } from 'http'
 import { executablePath } from 'puppeteer'
@@ -68,12 +68,12 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
         for (const key in pagesOption) {
             if (key !== 'fallback') {
                 const url = new URL(key, 'base://')
-                const options = pagesOption[key as PagesKey]
+                const options = pagesOption[key]
                 if (options !== null && options !== undefined) {
                     if (url.protocol === 'http:' || url.protocol === 'https:') {
                         map[url.href] = options
                     } else {
-                        map[url.pathname.replace(/(?<=\/.*)\/+$/, '') + url.search] = options
+                        map[url.pathname + url.search] = options
                     }
                 }
             }
@@ -82,7 +82,7 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
     const locations = new Set<string>(Object.keys(map))
 
     for (const { pathname } of builtPages) {
-        locations.add(new URL(pathname, 'base://').pathname.replace(/(?<=\/.*)\/+$/, ''))
+        locations.add(new URL(pathname, 'base://').pathname)
     }
 
     const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function () {}

@@ -20,20 +20,17 @@ export interface Options {
     pages: PagesFunction | PagesMap
 }
 
-export type PagesKey = `/${string}` | `http://${string}` | `https://${string}`
-
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
 
 export type PagesFunction = (pathname: string) => PagesEntry
 
-export type PagesMap = {
-    [pathname: PagesKey]: PagesEntry
+export type PagesMap = Record<string, PagesEntry> & {
     fallback?: PagesFunction
 }
 
 export interface PageOptions {
     path: string | ((url: URL) => string)
-    light: boolean
+    screen: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
     pdf: Omit<PDFOptions, 'path'>
     callback?: (page: Page) => void | Promise<void>
@@ -41,7 +38,7 @@ export interface PageOptions {
 
 export const defaultPageOptions: PageOptions = {
     path: '[pathname].pdf',
-    light: false,
+    screen: false,
     waitUntil: 'networkidle2',
     pdf: {}
 } as const
