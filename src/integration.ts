@@ -20,14 +20,11 @@ export interface Options {
     pages: PagesFunction | PagesMap
 }
 
-export type PagesKey = `/${string}` | `http://${string}` | `https://${string}`
-
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
 
 export type PagesFunction = (pathname: string) => PagesEntry
 
-export type PagesMap = {
-    [pathname: PagesKey]: PagesEntry
+export type PagesMap = Record<string, PagesEntry> & {
     fallback?: PagesFunction
 }
 
