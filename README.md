@@ -1,9 +1,9 @@
 # astro-pdf
 
 [![CI](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/astro-pdf.svg)](https://badge.fury.io/js/astro-pdf)
+[![npm version](https://img.shields.io/npm/v/astro-pdf)](https://www.npmjs.com/package/astro-pdf)
 
-A simple Astro integration to generate PDFs from built pages.
+A simple Astro integration to generate PDFs from built pages. Generate PDF versions of pages in your Astro site, or pages on external sites. Note that the PDFs will only be generated during builds and not when running the dev server.
 
 > [!IMPORTANT]
 > This documentation is for `astro-pdf@1.0.0` which is not released yet.
@@ -96,6 +96,8 @@ export interface Options
 
     If `install` is `false` or undefined, but no browser is found, it will automatically install a browser.
 
+    See [Configuring Puppeteer](#configuring-puppeteer) for more information.
+
 -   **`launch`**: [`PuppeteerLaunchOptions`](https://pptr.dev/api/puppeteer.puppeteerlaunchoptions) _(optional)_
 
     Options to pass to Puppeteer [`launch`](https://pptr.dev/api/puppeteer.puppeteernode.launch) for launching the browser.
@@ -110,7 +112,7 @@ export interface Options
 export interface PageOptions
 ```
 
-Specifies options for generating each PDF.
+Specifies options for generating each PDF. All options are optional when specifying pages in a [`PagesMap`](#pagesmap) or [`PagesFunction`](#pagesfunction). See [`PagesEntry`](#pagesentry) for more details.
 
 -   **`path`**: `string` | `((url: URL) => string)`
 
@@ -138,6 +140,8 @@ Specifies options for generating each PDF.
 
 -   **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.page)
 
+    Default: `{}`
+
     Options to be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
 
 -   **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
@@ -150,7 +154,7 @@ Specifies options for generating each PDF.
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
 ```
 
-If `PagesEntry` is truthy, `astro-pdf` will try to resolve options and generate the page. Any missing options will inherit from the `baseOptions` if given, otherwise the default options will be used.
+If `PagesEntry` is truthy, `astro-pdf` will try to resolve options and generate the page. Any missing options will inherit from the `baseOptions` if given, otherwise the default options of [`PageOptions`](#pageoptions) will be used.
 
 If `PagesEntry` is a `string`, it will be used as the `path` value. If it is `true`, then the page will be generated completely using the base or default options.
 
