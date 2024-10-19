@@ -14,12 +14,6 @@ jobs:
         if: ${{ github.repository_owner == 'lameuler' }}
         runs-on: ubuntu-latest
 
-        permissions:
-            contents: write
-            pull-requests: write
-            checks: read
-            statuses: read
-
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -42,5 +36,5 @@ jobs:
                   commit: 'chore: release'
                   title: '[changesets] release'
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
