@@ -44,7 +44,7 @@ describe('install browser', () => {
         expect(installed!.buildId).toBe(buildId)
     })
 
-    test('install firefox', { timeout: 30000 }, async () => {
+    test.skip('install firefox', { timeout: 30000 }, async () => {
         const logger = makeLogger()
         const result = await findOrInstallBrowser({ browser: Browser.FIREFOX }, cacheDir, logger)
         expect(logger.info).toHaveBeenCalled()

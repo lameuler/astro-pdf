@@ -5,9 +5,6 @@
 
 A simple Astro integration to generate PDFs from built pages. Generate PDF versions of pages in your Astro site, or pages on external sites. Note that the PDFs will only be generated during builds and not when running the dev server.
 
-> [!IMPORTANT]
-> This documentation is for `astro-pdf@1.0.0` which is not released yet.
-
 ## Quickstart
 
 Install and add `astro-pdf`:
