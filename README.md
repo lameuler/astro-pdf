@@ -1,7 +1,7 @@
 # astro-pdf
 
 [![CI](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/astro-pdf.svg)](https://badge.fury.io/js/astro-pdf)
+[![npm version](https://img.shields.io/npm/v/astro-pdf)](https://www.npmjs.com/package/astro-pdf)
 
 A simple Astro integration to generate PDFs from built pages. Generate PDF versions of pages in your Astro site, or pages on external sites. Note that the PDFs will only be generated during builds and not when running the dev server.
 
