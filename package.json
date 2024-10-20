@@ -64,5 +64,8 @@
     "workspaces": [
         "./",
         "./test/fixtures/**"
-    ]
+    ],
+    "publishConfig": {
+        "provenance": true
+    }
 }
