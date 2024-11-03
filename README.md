@@ -99,7 +99,7 @@ export interface Options
 
     Options to pass to Puppeteer [`launch`](https://pptr.dev/api/puppeteer.puppeteernode.launch) for launching the browser.
 
--   **`server`**: `(config: AstroConfig) => ServerOutput | Promise<ServerOutput>` _(optional)_
+-   **`server`**: `((config: AstroConfig) => ServerOutput | Promise<ServerOutput>)` | `false` _(optional)_
 
     Function to launch a custom server which will be used to serve the built pages. By default, [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview) will be used. However, if you are using an adapter, you will likely need to use a custom server as currently only the [`@astrojs/node` adapter](https://docs.astro.build/en/guides/integrations-guide/node/) supports `astro preview`.
 
@@ -110,7 +110,9 @@ export interface Options
     }
     ```
 
-    The `server` function will be called with the project's [Astro config](https://docs.astro.build/en/reference/configuration-reference/), and should return the URL of the server and optionally a function to close the server. Note that only the `origin` of the server URL will be used. If no URL is returned, then only pages with a full URL specified for the location in [`PagesMap`](#pagesmap) will work.
+    The `server` function will be called with the project's [Astro config](https://docs.astro.build/en/reference/configuration-reference/), and should return the URL of the server and optionally a function to close the server. Note that only the `origin` of the server URL will be used.
+
+    This can also be set to `false` to not run any server. If `server` is set to `false` or returns no URL, then only pages with a full URL specified for the location in [`PagesMap`](#pagesmap) will work.
 
 -   **`baseOptions`**: [`Partial<PageOptions>`](#pageoptions) _(optional)_
 

@@ -6,7 +6,6 @@ dist
 
 .astro
 .cache
-.vercel
 
 .env
 .env.*

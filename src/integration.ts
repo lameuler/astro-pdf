@@ -17,7 +17,7 @@ export interface Options {
     install?: boolean | Partial<InstallOptions>
     launch?: PuppeteerLaunchOptions
     baseOptions?: Partial<PageOptions>
-    server?: (config: AstroConfig) => ServerOutput | Promise <ServerOutput>
+    server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
 }
 
@@ -85,7 +85,9 @@ export function pdf(options: Options): AstroIntegration {
 
                 // run astro preview
                 let serverFn = options.server
-                if (typeof serverFn !== 'function') {
+                if (serverFn === false) {
+                    logger.debug('running without server')
+                } else if (typeof serverFn !== 'function') {
                     logger.debug('running astro preview server')
                     serverFn = astroPreview
                 } else {
@@ -93,18 +95,20 @@ export function pdf(options: Options): AstroIntegration {
                 }
                 let url: URL | undefined = undefined
                 let close: ServerOutput['close'] = undefined
-                try {
-                    const server = await serverFn(astroConfig)
-                    url = server.url
-                    close = server.close
-                } catch (e) {
-                    logger.error('error when setting up server: ' + e)
-                    return
-                }
-                if (url) {
-                    logger.info(`using server at ${chalk.blue(url)}`)
-                } else {
-                    logger.warn(`no url returned from server. all locations must be full urls.`)
+                if (serverFn) {
+                    try {
+                        const server = await serverFn(astroConfig)
+                        url = server.url
+                        close = server.close
+                    } catch (e) {
+                        logger.error('error when setting up server: ' + e)
+                        return
+                    }
+                    if (url) {
+                        logger.info(`using server at ${chalk.blue(url)}`)
+                    } else {
+                        logger.warn(`no url returned from server. all locations must be full urls.`)
+                    }
                 }
 
                 const browser = await launch({
