@@ -2,7 +2,7 @@ import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOp
 import { relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { PageOptions, PagesEntry, PagesFunction, PagesMap, ServerOutput } from './integration'
-import { AstroIntegrationLogger, preview } from 'astro'
+import { AstroConfig, AstroIntegrationLogger, preview } from 'astro'
 import { Server } from 'http'
 import { executablePath } from 'puppeteer'
 import chalk from 'chalk'
@@ -44,9 +44,9 @@ export async function findOrInstallBrowser(
     }
 }
 
-export async function astroPreview(root: string): Promise<ServerOutput> {
+export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {
     // ** `preview` is an experimental API **
-    const server = await preview({ root, logLevel: 'error' })
+    const server = await preview({ root: fileURLToPath(config.root), logLevel: 'error' })
     // get the actual port number for static preview server
     const address = 'server' in server && server.server instanceof Server ? server.server.address() : undefined
     let host: string | undefined = undefined

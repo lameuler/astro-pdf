@@ -63,7 +63,7 @@
     },
     "workspaces": [
         "./",
-        "./test/fixtures/**"
+        "./test/fixtures/**/*"
     ],
     "publishConfig": {
         "provenance": true
