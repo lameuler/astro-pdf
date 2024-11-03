@@ -2,10 +2,10 @@
 
 node_modules
 
-/**/dist
+dist
 
-/**/.astro
-/**/.cache
+.astro
+.cache
 
 .env
 .env.*
@@ -16,7 +16,7 @@ env.d.ts
 .vscode
 .idea
 
-/**/env.d.ts
-/**/types.d.ts
+env.d.ts
+types.d.ts
 
 coverage

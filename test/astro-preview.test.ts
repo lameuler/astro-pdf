@@ -3,6 +3,8 @@ import { load } from 'cheerio'
 import { loadFixture, type TestFixture } from './utils'
 import { astroPreview } from '@/utils'
 import { ServerOutput } from '@/integration'
+import { AstroConfig } from 'astro'
+import { pathToFileURL } from 'url'
 
 let fixture1: TestFixture
 let fixture2: TestFixture
@@ -19,8 +21,11 @@ let server2: ServerOutput | undefined
 
 describe('test server', () => {
     beforeAll(async () => {
-        server1 = await astroPreview(fixture1.root)
-        server2 = await astroPreview(fixture2.root)
+        // astroPreview only needs root from AstroConfig
+        const config1 = { root: pathToFileURL(fixture1.root) } as AstroConfig
+        const config2 = { root: pathToFileURL(fixture2.root) } as AstroConfig
+        server1 = await astroPreview(config1)
+        server2 = await astroPreview(config2)
     })
 
     test('returns url and close', () => {

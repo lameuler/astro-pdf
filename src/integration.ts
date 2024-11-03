@@ -1,4 +1,4 @@
-import { type AstroIntegration } from 'astro'
+import { AstroConfig, type AstroIntegration } from 'astro'
 import {
     launch,
     type PuppeteerLaunchOptions,
@@ -17,6 +17,7 @@ export interface Options {
     install?: boolean | Partial<InstallOptions>
     launch?: PuppeteerLaunchOptions
     baseOptions?: Partial<PageOptions>
+    server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
 }
 
@@ -45,17 +46,17 @@ export const defaultPageOptions: PageOptions = {
 
 export interface ServerOutput {
     url?: URL
-    close?: () => Promise<void>
+    close?: () => unknown | Promise<unknown>
 }
 
 export function pdf(options: Options): AstroIntegration {
-    let root: string
     let cacheDir: string
+    let astroConfig: AstroConfig
     return {
         name: 'astro-pdf',
         hooks: {
             'astro:config:done': ({ config }) => {
-                root = fileURLToPath(config.root)
+                astroConfig = config
                 cacheDir = fileURLToPath(config.cacheDir)
             },
             'astro:build:done': async ({ dir, pages, logger }) => {
@@ -83,21 +84,31 @@ export function pdf(options: Options): AstroIntegration {
                 const outDir = fileURLToPath(dir)
 
                 // run astro preview
-                logger.debug('running astro preview server')
-                let url: URL | undefined = undefined
-                let close: (() => Promise<void>) | undefined = undefined
-                try {
-                    const server = await astroPreview(root)
-                    url = server.url
-                    close = server.close
-                } catch (e) {
-                    logger.error('error when setting up server: ' + e)
-                    return
-                }
-                if (url) {
-                    logger.info(`using server at ${chalk.blue(url)}`)
+                let serverFn = options.server
+                if (serverFn === false) {
+                    logger.debug('running without server')
+                } else if (typeof serverFn !== 'function') {
+                    logger.debug('running astro preview server')
+                    serverFn = astroPreview
                 } else {
-                    logger.warn(`no url returned from server. all locations must be full urls.`)
+                    logger.debug('running custom server')
+                }
+                let url: URL | undefined = undefined
+                let close: ServerOutput['close'] = undefined
+                if (serverFn) {
+                    try {
+                        const server = await serverFn(astroConfig)
+                        url = server.url
+                        close = server.close
+                    } catch (e) {
+                        logger.error('error when setting up server: ' + e)
+                        return
+                    }
+                    if (url) {
+                        logger.info(`using server at ${chalk.blue(url)}`)
+                    } else {
+                        logger.warn(`no url returned from server. all locations must be full urls.`)
+                    }
                 }
 
                 const browser = await launch({
