@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.1.0
+
+### Minor Changes
+
+-   [#38](https://github.com/lameuler/astro-pdf/pull/38) [`5eb12ab`](https://github.com/lameuler/astro-pdf/commit/5eb12ab1034892900dc86a7bc74c8f33ca77ee7b) Thanks [@lameuler](https://github.com/lameuler)! - Allow specifying a custom server to use for loading the built pages instead of the default `astro-preview`
+
 ## 1.0.0
 
 ### Major Changes
