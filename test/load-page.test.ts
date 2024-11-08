@@ -64,6 +64,14 @@ describe('load errors', () => {
         expect(Date.now() - start).toBeLessThan(1000)
     })
 
+    test('empty status message', async () => {
+        const base = new URL('http://localhost:' + port)
+        const fn = loadPage('/403', base, browser, 'networkidle0')
+        const start = Date.now()
+        await expect(fn).rejects.toThrowError(new PageError('/403', '403'))
+        expect(Date.now() - start).toBeLessThan(1000)
+    })
+
     test('unresolved hostname', async () => {
         const location = 'https://fake-gxcskbrl.example.com/page.html'
         const fn = loadPage(location, undefined, browser, 'networkidle0')

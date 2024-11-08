@@ -57,6 +57,17 @@ function makeHandler(root: URL, redirects: Redirects) {
                 return
             }
 
+            let status: number | undefined = undefined
+
+            const match = url.pathname.match(/^\/([1-5][0-9][0-9])(?:\.[a-zA-Z0-9-]+)?$/)
+            if (match) {
+                const s = parseInt(match[1])
+                console.log(s)
+                if (isFinite(s)) {
+                    status = s
+                }
+            }
+
             const path = fileURLToPath(new URL('.' + url.pathname, root))
             try {
                 let finalPath: string | null = null
@@ -93,12 +104,16 @@ function makeHandler(root: URL, redirects: Redirects) {
                             res.setHeader('Content-Type', 'image/svg+xml')
                             break
                     }
-                    res.writeHead(200)
+                    res.writeHead(status ?? 200)
                     await wait(timeout)
                     res.end(file)
                 } else {
                     res.setHeader('Content-Type', 'text/html')
-                    res.writeHead(404, 'Not Found!!')
+                    if (status) {
+                        res.writeHead(status, '')
+                    } else {
+                        res.writeHead(404, 'Not Found!!')
+                    }
                     const errorPage = fileURLToPath(new URL('./public/404.html', import.meta.url))
                     if (await isFile(errorPage)) {
                         const file = await readFile(errorPage)
@@ -111,7 +126,11 @@ function makeHandler(root: URL, redirects: Redirects) {
                 }
             } catch {
                 await wait(timeout)
-                res.writeHead(500, 'Internal Server Error')
+                if (status) {
+                    res.writeHead(status, '')
+                } else {
+                    res.writeHead(500, 'Internal Server Error')
+                }
                 res.end()
             }
         }
