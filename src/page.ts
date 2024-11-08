@@ -1,9 +1,8 @@
-import { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
-import { type PageOptions } from './integration'
-import { filepathToPathname, pathnameToFilepath } from './utils'
-import { dirname, extname } from 'path'
-import { FileHandle, mkdir } from 'fs/promises'
-import { open } from 'fs/promises'
+import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
+import { mkdir } from 'fs/promises'
+import { dirname } from 'path'
+import { type PageOptions } from './options.js'
+import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
 
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
@@ -196,41 +195,4 @@ export function loadPage(
                 )
             })
     })
-}
-
-async function openFd(path: string, debug: (message: string) => void) {
-    const ext = extname(path)
-    const name = path.substring(0, path.length - ext.length)
-    let i = 0
-    let fd: FileHandle | null = null
-    let p: string = path
-    while (fd === null) {
-        try {
-            const suffix = i ? '-' + i : ''
-            p = name + suffix + ext
-            fd = await open(p, 'wx')
-            break
-        } catch (err) {
-            debug('openFd: ' + err)
-            i++
-        }
-    }
-    return { fd, path: p }
-}
-
-async function pipeToFd(stream: ReadableStream<Uint8Array>, fd: FileHandle) {
-    const writeStream = fd.createWriteStream()
-    const reader = stream.getReader()
-
-    try {
-        while (true) {
-            const { value, done } = await reader.read()
-            if (done) {
-                break
-            }
-            writeStream.write(value)
-        }
-    } finally {
-        writeStream.end()
-    }
 }

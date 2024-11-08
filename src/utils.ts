@@ -1,122 +1,41 @@
-import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
-import { relative, resolve, sep } from 'path'
+import { open, type FileHandle } from 'fs/promises'
+import { extname, relative, resolve, sep } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { PageOptions, PagesEntry, PagesFunction, PagesMap, ServerOutput } from './integration'
-import { AstroConfig, AstroIntegrationLogger, preview } from 'astro'
-import { Server } from 'http'
-import { executablePath } from 'puppeteer'
-import chalk from 'chalk'
 
-export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
-    const browser = options.browser ?? Browser.CHROME
-    const buildId = options.buildId ?? (await resolveBuildId(browser, detectBrowserPlatform()!, 'stable'))
-    const installOptions: InstallOptions & { unpack: true } = {
-        ...options,
-        browser,
-        buildId,
-        cacheDir: options.cacheDir ?? defaultCacheDir,
-        unpack: true // ensure that browser is unpacked so it can be used
-    }
-    const installed = await install(installOptions)
-    return installed.executablePath
-}
-
-export async function findOrInstallBrowser(
-    options: Partial<InstallOptions> | boolean | undefined,
-    defaultCacheDir: string,
-    logger: AstroIntegrationLogger
-) {
-    let defaultPath: string | null = null
-    if (!options) {
+export async function openFd(path: string, debug: (message: string) => void) {
+    const ext = extname(path)
+    const name = path.substring(0, path.length - ext.length)
+    let i = 0
+    let fd: FileHandle | null = null
+    let p: string = path
+    while (fd === null) {
         try {
-            defaultPath = executablePath()
-        } catch (e) {
-            logger.debug('error: ' + e)
-            logger.info(chalk.yellow(`could not find default browser. installing browser...`))
+            const suffix = i ? '-' + i : ''
+            p = name + suffix + ext
+            fd = await open(p, 'wx')
+            break
+        } catch (err) {
+            debug('openFd: ' + err)
+            i++
         }
-    } else {
-        logger.info(chalk.dim(`installing browser...`))
     }
-    if (!defaultPath) {
-        return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
-    } else {
-        return defaultPath
-    }
+    return { fd, path: p }
 }
 
-export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {
-    // ** `preview` is an experimental API **
-    const server = await preview({ root: fileURLToPath(config.root), logLevel: 'error' })
-    // get the actual port number for static preview server
-    const address = 'server' in server && server.server instanceof Server ? server.server.address() : undefined
-    let host: string | undefined = undefined
-    let port: number | undefined = undefined
-    if (address && typeof address === 'object') {
-        host = address?.address
-        port = address?.port
-    }
-    const url = new URL(`http://${server.host ?? host ?? 'localhost'}:${port ?? server.port}`)
-    return {
-        url,
-        close: server.stop
-    }
-}
+export async function pipeToFd(stream: ReadableStream<Uint8Array>, fd: FileHandle) {
+    const writeStream = fd.createWriteStream()
+    const reader = stream.getReader()
 
-export function mergePages(builtPages: { pathname: string }[], pagesOption: PagesFunction | PagesMap) {
-    const map: { [location: string]: Exclude<PagesEntry, null | undefined> } = {}
-    if (typeof pagesOption === 'object') {
-        for (const key in pagesOption) {
-            if (key !== 'fallback') {
-                const url = new URL(key, 'base://')
-                const options = pagesOption[key]
-                if (options !== null && options !== undefined) {
-                    if (url.protocol === 'http:' || url.protocol === 'https:') {
-                        map[url.href] = options
-                    } else {
-                        map[url.pathname + url.search] = options
-                    }
-                }
+    try {
+        while (true) {
+            const { value, done } = await reader.read()
+            if (done) {
+                break
             }
+            writeStream.write(value)
         }
-    }
-    const locations = new Set<string>(Object.keys(map))
-
-    for (const { pathname } of builtPages) {
-        locations.add(new URL(pathname, 'base://').pathname)
-    }
-
-    const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function () {}
-
-    return { map, fallback, locations: Array.from(locations) }
-}
-
-export function getPageOptions(
-    location: string,
-    baseOptions: PageOptions,
-    map: { [location: string]: Exclude<PagesEntry, null | undefined> },
-    fallback: PagesFunction
-) {
-    const pageOptions = map[location] ?? fallback(location)
-    if (pageOptions) {
-        const partial =
-            typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
-        const options = {
-            ...baseOptions,
-            ...partial
-        }
-        const path = options.path
-        if (typeof path === 'string' && path.includes('[pathname]')) {
-            options.path = defaultPathFunction(path)
-        }
-        return options
-    }
-    return undefined
-}
-
-export function defaultPathFunction(path: string) {
-    return (url: URL) => {
-        const pathname = url.pathname.replace(/\/+$/, '') || '/index'
-        return path.replace('[pathname]', pathname)
+    } finally {
+        writeStream.end()
     }
 }
 
