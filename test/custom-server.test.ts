@@ -1,10 +1,10 @@
 import { describe, test, beforeAll, expect, vi } from 'vitest'
-import { loadFixture, parsePdf, type TestFixture } from './utils'
+import { loadFixture, parsePdf, type TestFixture } from './utils/index.js'
 import { resolve } from 'path'
 import { rm } from 'fs/promises'
 import { existsSync } from 'fs'
-import { pdf } from '@/integration'
-import { start } from './utils/server'
+import pdf from '@/index.js'
+import { start } from './utils/server.js'
 
 describe('build', () => {
     let fixture: TestFixture

@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import { load } from 'cheerio'
-import { loadFixture, type TestFixture } from './utils'
-import { astroPreview } from '@/utils'
-import { ServerOutput } from '@/integration'
+import { loadFixture, type TestFixture } from './utils/index.js'
+import { astroPreview } from '@/server.js'
+import { ServerOutput } from '@/index.js'
 import { AstroConfig } from 'astro'
 import { pathToFileURL } from 'url'
 

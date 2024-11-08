@@ -1,6 +1,5 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { mergePages, getPageOptions } from '@/utils'
-import { defaultPageOptions, PagesEntry, PagesFunction } from '@/integration'
+import { defaultPageOptions, getPageOptions, mergePages, PagesEntry, PagesFunction } from '@/options.js'
 
 describe('merge pages', () => {
     test('pages map', () => {

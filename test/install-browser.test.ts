@@ -10,8 +10,8 @@ import {
     getInstalledBrowsers,
     resolveBuildId
 } from '@puppeteer/browsers'
-import { makeLogger } from './utils'
-import { findOrInstallBrowser } from '@/utils'
+import { makeLogger } from './utils/index.js'
+import { findOrInstallBrowser } from '@/browser.js'
 
 describe('install browser', () => {
     const cacheDir = fileURLToPath(new URL('./fixtures/.cache/install-browser/', import.meta.url))
