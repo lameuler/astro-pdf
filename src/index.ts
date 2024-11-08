@@ -6,7 +6,6 @@ import { astroPreview, type ServerOutput } from './server.js'
 import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
 import { findOrInstallBrowser } from './browser.js'
 import { PageError, processPage } from './page.js'
-import version from 'virtual:version'
 
 export type { Options, PageOptions }
 export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
@@ -36,9 +35,9 @@ export default function pdf(options: Options): AstroIntegration {
                 }
 
                 const startTime = Date.now()
-                const versionColour = version.includes('-') ? chalk.yellow : chalk.green
+                const versionColour = VERSION.includes('-') ? chalk.yellow : chalk.green
                 logger.info(
-                    `\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v' + version)} – generating pdf files`
+                    `\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v' + VERSION)} – generating pdf files`
                 )
 
                 const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)

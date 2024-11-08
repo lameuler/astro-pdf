@@ -10,9 +10,9 @@
         "!dist/**/*.map"
     ],
     "scripts": {
-        "build": "rollup -c",
+        "build": "tsup && tsc",
         "prepack": "npm run build && npm test",
-        "test": "vitest run",
+        "test": "tsc -p test && vitest run",
         "coverage": "vitest run --coverage",
         "lint": "eslint",
         "format": "prettier . --write",
@@ -33,6 +33,7 @@
     ],
     "dependencies": {
         "@puppeteer/browsers": "^2.4.0",
+        "astro-pdf": "^1.1.0",
         "chalk": "^5.3.0",
         "puppeteer": "^23.5.3"
     },
@@ -43,9 +44,6 @@
         "@changesets/changelog-github": "^0.5.0",
         "@changesets/cli": "^2.27.9",
         "@eslint/js": "^9.12.0",
-        "@rollup/plugin-node-resolve": "^15.3.0",
-        "@rollup/plugin-typescript": "^12.1.0",
-        "@rollup/plugin-virtual": "^3.0.2",
         "@types/eslint__js": "^8.42.3",
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/node": "^22.7.4",
@@ -54,11 +52,11 @@
         "cheerio": "^1.0.0",
         "eslint": "^9.12.0",
         "eslint-config-prettier": "^9.1.0",
-        "globals": "^15.11.0",
+        "glob": "^11.0.0",
         "pdf2json": "^3.1.4",
         "prettier": "^3.3.3",
-        "rollup": "^4.22.4",
-        "typescript-eslint": "^8.8.1",
+        "tsup": "^8.3.5",
+        "typescript-eslint": "^8.13.0",
         "vitest": "^2.1.2"
     },
     "workspaces": [
