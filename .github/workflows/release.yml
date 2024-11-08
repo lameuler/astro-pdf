@@ -36,7 +36,7 @@ jobs:
               id: changesets
               uses: changesets/action@v1
               with:
-                  version: npx changeset version
+                  version: npx changeset version && npm i --lockfile-only
                   publish: npx changeset publish
                   commit: 'chore: release'
                   title: '[changesets] release'
