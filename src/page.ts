@@ -107,7 +107,7 @@ class AbortPageLoad extends Error {
     }
 }
 
-export async  function loadPage(
+export async function loadPage(
     location: string,
     baseUrl: URL | undefined,
     browser: Browser,

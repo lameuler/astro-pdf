@@ -93,7 +93,6 @@ describe('load errors', () => {
         const base = new URL('http://localhost:' + port)
         const fn = loadPage('about:blank', base, browser, 'load')
         await expect(fn).rejects.toThrowError('did not navigate')
-
     })
 
     afterAll(async () => {
