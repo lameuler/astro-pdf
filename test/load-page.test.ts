@@ -81,6 +81,13 @@ describe('load errors', () => {
         expect(Date.now() - start).toBeLessThan(1000)
     })
 
+    test('about:blank', async () => {
+        const base = new URL('http://localhost:' + port)
+        const fn = loadPage('about:blank', base, browser, 'load')
+        await expect(fn).rejects.toThrowError('did not navigate')
+
+    })
+
     afterAll(async () => {
         await browser.close()
         server.close()
