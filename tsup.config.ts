@@ -11,6 +11,7 @@ export default defineConfig({
     clean: true,
     format: 'esm',
     platform: 'node',
+    sourcemap: true,
     define: {
         VERSION: JSON.stringify(pkg.version)
     }
