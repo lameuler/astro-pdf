@@ -3,8 +3,8 @@ import { loadFixture, parsePdf, type TestFixture } from './utils/index.js'
 import { resolve } from 'path'
 import { rm } from 'fs/promises'
 import { existsSync } from 'fs'
-import pdf from '@/index.js'
 import { start } from './utils/server.js'
+import pdf from 'astro-pdf'
 
 describe('build', () => {
     let fixture: TestFixture

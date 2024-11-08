@@ -8,8 +8,8 @@ import { launch, Page } from 'puppeteer'
 import { parsePdf } from './utils/index.js'
 import { start } from './utils/server.js'
 import { Output } from 'pdf2json'
-import { PageEnv, PageError, PageResult, processPage } from '@/page.js'
-import { defaultPathFunction, PageOptions } from '@/options.js'
+import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
+import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 
 describe('process page', () => {
     let server: Server

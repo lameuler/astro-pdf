@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { defaultPageOptions, getPageOptions, mergePages, PagesEntry, PagesFunction } from '@/options.js'
+import { defaultPageOptions, getPageOptions, mergePages, PagesEntry, PagesFunction } from 'astro-pdf/dist/options.js'
 
 describe('merge pages', () => {
     test('pages map', () => {

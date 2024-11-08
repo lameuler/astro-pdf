@@ -4,7 +4,7 @@ import { mkdir, rm } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { install } from '@puppeteer/browsers'
 import { makeLogger } from './utils/index.js'
-import { findOrInstallBrowser } from '@/browser.js'
+import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
 
 vi.mock('puppeteer', async (originalImport) => {
     const cacheDir = fileURLToPath(new URL('./fixtures/.cache/browser-no-default/', import.meta.url))

@@ -11,7 +11,7 @@ import {
     resolveBuildId
 } from '@puppeteer/browsers'
 import { makeLogger } from './utils/index.js'
-import { findOrInstallBrowser } from '@/browser.js'
+import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
 
 describe('install browser', () => {
     const cacheDir = fileURLToPath(new URL('./fixtures/.cache/install-browser/', import.meta.url))
