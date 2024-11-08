@@ -57,9 +57,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    const page = await browser.newPage()
-
-    await loadPage(location, baseUrl, page, pageOptions.waitUntil)
+    const page = await loadPage(location, baseUrl, browser, pageOptions.waitUntil)
 
     if (pageOptions.screen) {
         await page.emulateMediaType('screen')
@@ -109,12 +107,13 @@ class AbortPageLoad extends Error {
     }
 }
 
-export function loadPage(
+export async  function loadPage(
     location: string,
     baseUrl: URL | undefined,
-    page: Page,
+    browser: Browser,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
-): Promise<HTTPResponse> {
+): Promise<Page> {
+    const page = await browser.newPage()
     return new Promise((resolve, reject) => {
         let url: URL
         try {
@@ -181,7 +180,7 @@ export function loadPage(
                 } else if (!res.ok()) {
                     rejectResponse(res)
                 } else {
-                    resolve(res)
+                    resolve(page)
                 }
             })
             .catch((err) => {
