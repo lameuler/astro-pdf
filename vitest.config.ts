@@ -1,12 +1,12 @@
-import { virtualVersion } from './rollup.config.mjs'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
     test: {
         dir: './test',
-        alias: {
-            '@/': new URL('./src/', import.meta.url).pathname
+        coverage: {
+            provider: 'istanbul',
+            include: ['src/**/*', 'dist/**/*.js'],
+            exclude: ['**/*.d.ts']
         }
-    },
-    plugins: [virtualVersion]
+    }
 })

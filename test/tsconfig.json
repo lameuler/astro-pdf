@@ -1,13 +1,11 @@
 {
     "include": ["**/*"],
-    "exclude": ["fixtures/**/*"],
     "compilerOptions": {
         "strict": true,
-        "module": "es2020",
+        "skipLibCheck": true,
         "target": "es2022",
-        "moduleResolution": "node",
-        "paths": {
-            "@/*": ["../src/*"]
-        }
+        "module": "node16",
+        "moduleResolution": "node16",
+        "noEmit": true
     }
 }

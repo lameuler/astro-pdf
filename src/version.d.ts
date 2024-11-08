@@ -1,4 +1,1 @@
-declare module 'virtual:version' {
-    const version: string
-    export default version
-}
+declare const VERSION: string

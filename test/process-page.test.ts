@@ -5,12 +5,11 @@ import { lstat, rm } from 'fs/promises'
 import { resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { launch, Page } from 'puppeteer'
-import { parsePdf } from './utils'
-import { start } from './utils/server'
+import { parsePdf } from './utils/index.js'
+import { start } from './utils/server.js'
 import { Output } from 'pdf2json'
-import { PageEnv, PageError, PageResult, processPage } from '@/page'
-import { PageOptions } from '@/integration'
-import { defaultPathFunction } from '@/utils'
+import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
+import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 
 describe('process page', () => {
     let server: Server
