@@ -1,12 +1,14 @@
-import { describe, test, beforeAll, expect, vi } from 'vitest'
-import { loadFixture, parsePdf, type TestFixture } from './utils/index.js'
+import { describe, test, beforeAll, expect, vi, afterAll } from 'vitest'
+import { AstroConfig, AstroIntegrationLogger } from 'astro'
 import { resolve } from 'path'
-import { rm } from 'fs/promises'
+import { readdir, readFile, rm } from 'fs/promises'
 import { existsSync } from 'fs'
+import { loadFixture, makeLogger, parsePdf, type TestFixture } from './utils/index.js'
 import { start } from './utils/server.js'
 import pdf from 'astro-pdf'
+import { fileURLToPath } from 'url'
 
-describe('build', () => {
+describe('custom server', () => {
     let fixture: TestFixture
     let close: () => unknown
 
@@ -65,5 +67,157 @@ describe('build', () => {
         data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
         expect(texts).toContain('page.astro')
         expect(texts).toContain('@test/custom-server')
+    })
+
+    describe('no server', () => {
+        let logger: AstroIntegrationLogger
+        const root = new URL('./fixtures/tmp/no-server/', import.meta.url)
+
+        beforeAll(async () => {
+            const integration = pdf({
+                server: false,
+                pages: {
+                    'https://example.com': 'example.pdf'
+                }
+            })
+
+            logger = makeLogger()
+            await integration.hooks['astro:config:done']!({
+                config: {
+                    root,
+                    cacheDir: new URL('node_modules/.astro', root)
+                } as AstroConfig,
+                setAdapter: () => {
+                    throw new Error('unimplemented')
+                },
+                injectTypes: () => {
+                    throw new Error('unimplemented')
+                },
+                logger
+            })
+            await integration.hooks['astro:build:done']!({
+                pages: [],
+                dir: new URL('dist', root),
+                routes: [],
+                logger,
+                cacheManifest: false
+            })
+        })
+
+        test('no warning or error', () => {
+            expect(logger.warn).not.toBeCalled()
+            expect(logger.error).not.toBeCalled()
+        })
+
+        test('file generated', async () => {
+            const path = fileURLToPath(new URL('dist/example.pdf', root))
+            const buffer = await readFile(path)
+            expect(buffer.length).toBeGreaterThan(0)
+        })
+    })
+
+    describe('server with empty return', () => {
+        let logger: AstroIntegrationLogger
+        const root = new URL('./fixtures/tmp/server-empty/', import.meta.url)
+
+        beforeAll(async () => {
+            const integration = pdf({
+                server: () => ({}),
+                pages: {
+                    'https://example.com': 'example.pdf'
+                }
+            })
+
+            logger = makeLogger()
+            await integration.hooks['astro:config:done']!({
+                config: {
+                    root,
+                    cacheDir: new URL('node_modules/.astro', root)
+                } as AstroConfig,
+                setAdapter: () => {
+                    throw new Error('unimplemented')
+                },
+                injectTypes: () => {
+                    throw new Error('unimplemented')
+                },
+                logger
+            })
+            await integration.hooks['astro:build:done']!({
+                pages: [],
+                dir: new URL('dist', root),
+                routes: [],
+                logger,
+                cacheManifest: false
+            })
+        })
+
+        test('warning', () => {
+            expect(logger.warn).toBeCalled()
+            expect(logger.error).not.toBeCalled()
+        })
+
+        test('file generated', async () => {
+            const path = fileURLToPath(new URL('dist/example.pdf', root))
+            const buffer = await readFile(path)
+            expect(buffer.length).toBeGreaterThan(0)
+        })
+    })
+
+    describe('server with error', () => {
+        let logger: AstroIntegrationLogger
+        const root = new URL('./fixtures/tmp/server-error/', import.meta.url)
+
+        beforeAll(async () => {
+            const integration = pdf({
+                server: () => {
+                    throw new Error('failed to start server')
+                },
+                pages: {
+                    'https://example.com': 'example.pdf'
+                }
+            })
+
+            logger = makeLogger()
+            await integration.hooks['astro:config:done']!({
+                config: {
+                    root,
+                    cacheDir: new URL('node_modules/.astro', root)
+                } as AstroConfig,
+                setAdapter: () => {
+                    throw new Error('unimplemented')
+                },
+                injectTypes: () => {
+                    throw new Error('unimplemented')
+                },
+                logger
+            })
+            await integration.hooks['astro:build:done']!({
+                pages: [],
+                dir: new URL('dist', root),
+                routes: [],
+                logger,
+                cacheManifest: false
+            })
+        })
+
+        test('error', () => {
+            expect(logger.warn).not.toBeCalled()
+            expect(logger.error).toBeCalled()
+        })
+
+        test('no files generated', async () => {
+            let result: string[]
+            try {
+                result = await readdir(fileURLToPath(new URL('dist', root)))
+            } catch {
+                result = []
+            }
+            expect(result.length).toBe(0)
+        })
+    })
+
+    afterAll(async () => {
+        const root = new URL('./fixtures/tmp/', import.meta.url)
+        await rm(fileURLToPath(root), { recursive: true, force: true })
     })
 })
