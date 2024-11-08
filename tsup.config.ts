@@ -5,7 +5,7 @@ import { glob } from 'glob'
 const pkg = JSON.parse(await readFile('package.json', 'utf8'))
 
 export default defineConfig({
-    entry: await glob('src/**/*.ts', { ignore: 'src/**/*.*.ts' }),
+    entry: await glob('src/**/*.ts', { ignore: 'src/**/*.*.ts', posix: true }),
     outDir: 'dist',
     bundle: false,
     clean: true,
