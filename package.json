@@ -16,7 +16,8 @@
         "coverage": "vitest run --coverage",
         "lint": "eslint",
         "format": "prettier . --write",
-        "format:check": "prettier . --check"
+        "format:check": "prettier . --check",
+        "version": "changeset version && npm install --lockfile-only"
     },
     "author": "Lam Eu Ler",
     "license": "MIT",
