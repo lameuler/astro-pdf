@@ -69,6 +69,9 @@ describe('run integration', () => {
                 },
                 logger
             })
+        })
+
+        beforeAll(async () => {
             await integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: outDir,
