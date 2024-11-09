@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.1.1
+
+### Patch Changes
+
+-   [#42](https://github.com/lameuler/astro-pdf/pull/42) [`4662768`](https://github.com/lameuler/astro-pdf/commit/46627689f203d57cb3fecaba3468e5f55279f3b8) Thanks [@lameuler](https://github.com/lameuler)! - export `ServerOutput` type
+
 ## 1.1.0
 
 ### Minor Changes
