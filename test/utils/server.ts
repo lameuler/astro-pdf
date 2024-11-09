@@ -62,7 +62,6 @@ function makeHandler(root: URL, redirects: Redirects) {
             const match = url.pathname.match(/^\/([1-5][0-9][0-9])(?:\.[a-zA-Z0-9-]+)?$/)
             if (match) {
                 const s = parseInt(match[1])
-                console.log(s)
                 if (isFinite(s)) {
                     status = s
                 }
