@@ -155,10 +155,15 @@ export async function loadPage(
                     page.off('response', responseListener)
                     page.off('requestfailed', requestListener)
                 } else if (s >= 300 && s < 400) {
-                    const destUrl = new URL(res.headers()['location'], res.url())
-                    dest = destUrl.href
-                    if (baseUrl && dest.startsWith(baseUrl.origin)) {
-                        dest = dest.substring(baseUrl.origin.length)
+                    const location = res.headers()['location']
+                    // check if it is a redirect
+                    // let puppeteer handle 3XX response codes which are not redirects
+                    if (typeof location === 'string') {
+                        const destUrl = new URL(res.headers()['location'], res.url())
+                        dest = destUrl.href
+                        if (baseUrl && dest.startsWith(baseUrl.origin)) {
+                            dest = dest.substring(baseUrl.origin.length)
+                        }
                     }
                 } else if (s >= 400) {
                     controller.abort(new AbortPageLoad())
@@ -177,7 +182,7 @@ export async function loadPage(
                                 '`page.goto` returned null. this could mean navigation to about:blank or the same URL with a different hash.'
                         })
                     )
-                } else if (!res.ok()) {
+                } else if (res.status() >= 400) {
                     rejectResponse(res)
                 } else {
                     resolve(page)
