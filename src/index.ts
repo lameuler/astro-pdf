@@ -22,7 +22,7 @@ export default function pdf(options: Options): AstroIntegration {
                 cacheDir = fileURLToPath(config.cacheDir)
             },
             'astro:build:done': async ({ dir, pages, logger }) => {
-                logger.info = logger.info.bind(logger.fork(''))
+                logger.info = logger.fork('').info
 
                 if (typeof cacheDir !== 'string') {
                     logger.error('cacheDir is undefined. ending execution...')
@@ -93,7 +93,7 @@ export default function pdf(options: Options): AstroIntegration {
                     outDir,
                     browser,
                     baseUrl: url,
-                    debug: logger.debug.bind(logger)
+                    debug: (message: string) => logger.debug(message)
                 }
 
                 let count = 0
