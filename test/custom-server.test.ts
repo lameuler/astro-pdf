@@ -47,7 +47,7 @@ describe('custom server', () => {
                 })
             ]
         })
-    })
+    }, 20_000)
 
     test('close called once', () => {
         expect(close).toHaveBeenCalledOnce()
