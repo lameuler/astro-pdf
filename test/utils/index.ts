@@ -87,7 +87,7 @@ export function makeLogger(): Logger {
         },
         label: '',
         fork: vi.fn(() => logger),
-        info: vi.fn(() => {}),
+        info: vi.fn(),
         warn: vi.fn(),
         error: vi.fn(),
         debug: vi.fn()

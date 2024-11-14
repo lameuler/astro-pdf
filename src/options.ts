@@ -13,9 +13,9 @@ export interface Options {
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
 
-export type PagesFunction = (pathname: string) => PagesEntry
+export type PagesFunction = (pathname: string) => PagesEntry | PagesEntry[]
 
-export type PagesMap = Record<string, PagesEntry> & {
+export type PagesMap = Record<string, PagesEntry | PagesEntry[]> & {
     fallback?: PagesFunction
 }
 
@@ -34,18 +34,28 @@ export const defaultPageOptions: PageOptions = {
     pdf: {}
 } as const
 
-export function mergePages(builtPages: { pathname: string }[], pagesOption: PagesFunction | PagesMap) {
-    const map: { [location: string]: Exclude<PagesEntry, null | undefined> } = {}
-    if (typeof pagesOption === 'object') {
-        for (const key in pagesOption) {
+export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>
+
+export function mergePages(builtPages: { pathname: string }[], pages: PagesFunction | PagesMap) {
+    const map: CleanedMap = {}
+    if (typeof pages === 'object') {
+        for (const key in pages) {
             if (key !== 'fallback') {
                 const url = new URL(key, 'base://')
-                const options = pagesOption[key]
-                if (options !== null && options !== undefined) {
+                const options = pages[key]
+                const arr = Array.isArray(options) ? options : [options]
+                const result: CleanedMap[string] = []
+                for (let i = 0; i < arr.length; i++) {
+                    const opts = arr[i]
+                    if (opts !== null && opts !== undefined) {
+                        result.push(opts)
+                    }
+                }
+                if (result.length > 0) {
                     if (url.protocol === 'http:' || url.protocol === 'https:') {
-                        map[url.href] = options
+                        map[url.href] = result
                     } else {
-                        map[url.pathname + url.search] = options
+                        map[url.pathname + url.search] = result
                     }
                 }
             }
@@ -57,7 +67,7 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
         locations.add(new URL(pathname, 'base://').pathname)
     }
 
-    const fallback = (typeof pagesOption === 'function' ? pagesOption : pagesOption.fallback) ?? function () {}
+    const fallback = (typeof pages === 'function' ? pages : pages.fallback) ?? function () {}
 
     return { map, fallback, locations: Array.from(locations) }
 }
@@ -65,24 +75,28 @@ export function mergePages(builtPages: { pathname: string }[], pagesOption: Page
 export function getPageOptions(
     location: string,
     baseOptions: PageOptions,
-    map: { [location: string]: Exclude<PagesEntry, null | undefined> },
+    map: CleanedMap,
     fallback: PagesFunction
-) {
+): PageOptions[] {
     const pageOptions = map[location] ?? fallback(location)
-    if (pageOptions) {
-        const partial =
-            typeof pageOptions === 'object' ? pageOptions : typeof pageOptions === 'string' ? { path: pageOptions } : {}
-        const options = {
-            ...baseOptions,
-            ...partial
+    const arr = Array.isArray(pageOptions) ? pageOptions : [pageOptions]
+    const result: PageOptions[] = []
+    for (let i = 0; i < arr.length; i++) {
+        const opts = arr[i]
+        if (opts) {
+            const partial = typeof opts === 'object' ? opts : typeof opts === 'string' ? { path: opts } : {}
+            const options = {
+                ...baseOptions,
+                ...partial
+            }
+            const path = options.path
+            if (typeof path === 'string' && path.includes('[pathname]')) {
+                options.path = defaultPathFunction(path)
+            }
+            result.push(options)
         }
-        const path = options.path
-        if (typeof path === 'string' && path.includes('[pathname]')) {
-            options.path = defaultPathFunction(path)
-        }
-        return options
     }
-    return undefined
+    return result
 }
 
 export function defaultPathFunction(path: string) {

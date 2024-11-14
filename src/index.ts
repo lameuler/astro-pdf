@@ -83,10 +83,8 @@ export default function pdf(options: Options): AstroIntegration {
 
                 const queue: { location: string; pageOptions: PageOptions }[] = []
                 locations.forEach((location) => {
-                    const pageOptions = getPageOptions(location, basePageOptions, map, fallback)
-                    if (pageOptions) {
-                        queue.push({ location, pageOptions })
-                    }
+                    const arr = getPageOptions(location, basePageOptions, map, fallback)
+                    queue.push(...arr.map((pageOptions) => ({ location, pageOptions })))
                 })
 
                 const env = {
