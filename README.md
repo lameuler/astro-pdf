@@ -45,16 +45,19 @@ export default defineConfig({
             // pages will receive the pathname of each page being built
             pages: {
                 '/some-page': '/pages/some.pdf', // output path
-                '/other-page': true,
-                'https://example.com': {
-                    path: 'example.pdf',
-                    light: true, // set system theme to light
-                    waitUntil: 'networkidle0', // for puppeteer page loading
-                    pdf: { // puppeteer PDFOptions
-                        format: 'A4',
-                        printBackground: true
-                    }
-                },
+                '/other-page': true, // outputs to /other-page.pdf
+                'https://example.com': [
+                    {
+                        path: 'example.pdf',
+                        screen: true, // use screen media type instead of print
+                        waitUntil: 'networkidle0', // for puppeteer page loading
+                        pdf: { // puppeteer PDFOptions
+                            format: 'A4',
+                            printBackground: true
+                        }
+                    },
+                    'basic-example.pdf'
+                ],
                 ...,
                 fallback: (pathname) => ... // receives pathnames not specified above
             }
