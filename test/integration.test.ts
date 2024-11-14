@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 import pdf from 'astro-pdf'
+import { createHash } from 'crypto'
 
 describe('run integration', () => {
     let integration: AstroIntegration
@@ -99,9 +100,13 @@ describe('run integration', () => {
             ]
             const stats = (await Promise.all(paths.map((p) => lstat(p)))).map((stat) => stat.isFile())
             expect(stats).toStrictEqual([true, true, true])
-            const contents = await Promise.all(paths.map((p) => readFile(p)))
-            expect(contents[1]).toStrictEqual(contents[0])
-            expect(contents[2]).toStrictEqual(contents[0])
+            const hashes = (await Promise.all(paths.map((p) => readFile(p)))).map((buf) => {
+                const hash = createHash('md5')
+                hash.update(buf)
+                return hash.digest('base64')
+            })
+            expect(hashes[1]).toBe(hashes[0])
+            expect(hashes[2]).toBe(hashes[0])
         })
 
         test('generated remote page', async () => {
