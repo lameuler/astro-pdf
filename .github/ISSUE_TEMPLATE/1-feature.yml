@@ -1,15 +1,15 @@
 name: Feature Request
 description: Submit a request for a new feature.
-labels: ["enhancement"]
+labels: ['enhancement']
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to submit a feature request!
-  - type: textarea
-    id: describe-feature
-    attributes:
-      label: Describe the feature
-      description: Please provide details about the feature like how it works and its use cases. Do also provide code samples if you have an idea of the possible syntax or implementation of the feature.
-    validations:
-      required: true
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for taking the time to submit a feature request!
+    - type: textarea
+      id: describe-feature
+      attributes:
+          label: Describe the feature
+          description: Please provide details about the feature like how it works and its use cases. Do also provide code samples if you have an idea of the possible syntax or implementation of the feature.
+      validations:
+          required: true
