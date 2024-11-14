@@ -1,0 +1,32 @@
+name: Bug Report
+description: File a bug report.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    attributes:
+      label: astro-pdf version
+      description: Run `npm list astro-pdf` (or equivalent command in your package manager), or check the info output of your build for the version of `astro-pdf` you have installed.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Astro info
+      description: Run the [`astro info`](https://docs.astro.build/en/reference/cli-reference/#astro-info) command and paste the output here.
+    validations:
+      required: true
+  - type: textarea
+    id: describe-bug
+    attributes:
+      label: Describe the bug
+      description: Please provide a clear description of the issue and the expected behaviour.
+    validations:
+      required: true
+  - type: input
+    id: reproduction
+    attributes:
+      label: Link to reproduction
+      description: If possible please provide a [minimal reproduction](https://docs.astro.build/en/guides/troubleshooting/#creating-minimal-reproductions) of the issue to help debug your issue and allow the bug to be fixed more quickly.
