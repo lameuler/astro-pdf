@@ -1,5 +1,15 @@
 # astro-pdf
 
+## 1.2.0
+
+### Minor Changes
+
+-   [#52](https://github.com/lameuler/astro-pdf/pull/52) [`978eb84`](https://github.com/lameuler/astro-pdf/commit/978eb843528ed542586d796a16bfca81cd1eae0b) Thanks [@lameuler](https://github.com/lameuler)! - allow generating multiple PDFs for a location by specifiying an array of entries rather than just one entry for each location
+
+### Patch Changes
+
+-   [#50](https://github.com/lameuler/astro-pdf/pull/50) [`7518212`](https://github.com/lameuler/astro-pdf/commit/75182123e1f455a506f2fcaa31b3efa056e7436f) Thanks [@lameuler](https://github.com/lameuler)! - improves handling of [3XX status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages) which are not redirects (e.g. [`304 Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/304))
+
 ## 1.1.1
 
 ### Patch Changes
