@@ -37,9 +37,7 @@ export default function pdf(options: Options): AstroIntegration {
 
                 const startTime = Date.now()
                 const versionColour = VERSION.includes('-') ? yellow : green
-                logger.info(
-                    `\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`
-                )
+                logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
                 const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
                 logger.debug(`using browser at ${blue(executablePath)}`)
@@ -114,9 +112,7 @@ export default function pdf(options: Options): AstroIntegration {
                             if (err instanceof PageError) {
                                 const time = Date.now() - start
                                 const src = err.src ? dim(' ← ' + err.src) : ''
-                                logger.info(
-                                    red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`)
-                                )
+                                logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
                             }
                             logger.debug(bold(red(`error while processing ${location}: `)) + err)
                         }
