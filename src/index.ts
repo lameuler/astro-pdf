@@ -22,7 +22,8 @@ export default function pdf(options: Options): AstroIntegration {
                 cacheDir = fileURLToPath(config.cacheDir)
             },
             'astro:build:done': async ({ dir, pages, logger }) => {
-                logger.info = logger.fork('').info
+                const forked = logger.fork('')
+                logger.info = (message: string) => forked.info(message)
 
                 if (typeof cacheDir !== 'string') {
                     logger.error('cacheDir is undefined. ending execution...')
