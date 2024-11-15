@@ -1,7 +1,7 @@
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { launch } from 'puppeteer'
 import { fileURLToPath } from 'url'
-import chalk from 'chalk'
+import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
 import { astroPreview, type ServerOutput } from './server.js'
 import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
 import { findOrInstallBrowser } from './browser.js'
@@ -22,7 +22,15 @@ export default function pdf(options: Options): AstroIntegration {
                 cacheDir = fileURLToPath(config.cacheDir)
             },
             'astro:build:done': async ({ dir, pages, logger }) => {
-                logger.info = logger.fork('').info
+                const forked = logger.fork('')
+                logger = {
+                    ...logger,
+                    fork: logger.fork,
+                    info: (message: string) => forked.info(message),
+                    warn: logger.warn,
+                    error: logger.error,
+                    debug: logger.debug
+                }
 
                 if (typeof cacheDir !== 'string') {
                     logger.error('cacheDir is undefined. ending execution...')
@@ -35,13 +43,11 @@ export default function pdf(options: Options): AstroIntegration {
                 }
 
                 const startTime = Date.now()
-                const versionColour = VERSION.includes('-') ? chalk.yellow : chalk.green
-                logger.info(
-                    `\r${chalk.bold.bgBlue(' astro-pdf ')} ${versionColour('v' + VERSION)} – generating pdf files`
-                )
+                const versionColour = VERSION.includes('-') ? yellow : green
+                logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
                 const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
-                logger.debug(`using browser at ${chalk.blue(executablePath)}`)
+                logger.debug(`using browser at ${blue(executablePath)}`)
 
                 const outDir = fileURLToPath(dir)
 
@@ -67,7 +73,7 @@ export default function pdf(options: Options): AstroIntegration {
                         return
                     }
                     if (url) {
-                        logger.info(`using server at ${chalk.blue(url)}`)
+                        logger.info(`using server at ${blue(url.href)}`)
                     } else {
                         logger.warn(`no url returned from server. all locations must be full urls.`)
                     }
@@ -103,21 +109,19 @@ export default function pdf(options: Options): AstroIntegration {
                         try {
                             const result = await processPage(location, pageOptions, env)
                             const time = Date.now() - start
-                            const src = result.src ? chalk.dim(' ← ' + result.src) : ''
-                            logger.info(`${chalk.green('▶')} ${result.location}${src}`)
+                            const src = result.src ? dim(' ← ' + result.src) : ''
+                            logger.info(`${green('▶')} ${result.location}${src}`)
                             logger.info(
-                                `  ${chalk.blue('└─')} ${chalk.dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                                `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
                             )
                         } catch (err) {
                             totalCount--
                             if (err instanceof PageError) {
                                 const time = Date.now() - start
-                                const src = err.src ? chalk.dim(' ← ' + err.src) : ''
-                                logger.info(
-                                    chalk.red(`✖︎ ${err.location} (${err.title}) ${chalk.dim(`(+${time}ms)`)}${src}`)
-                                )
+                                const src = err.src ? dim(' ← ' + err.src) : ''
+                                logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
                             }
-                            logger.debug(chalk.red.bold(`error while processing ${location}: `) + err)
+                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
                         }
                     })
                 )
@@ -126,7 +130,7 @@ export default function pdf(options: Options): AstroIntegration {
                 if (typeof close === 'function') {
                     await close()
                 }
-                logger.info(chalk.green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
+                logger.info(green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }
         }
     }
