@@ -1,7 +1,7 @@
 import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
 import { executablePath } from 'puppeteer'
 import { type AstroIntegrationLogger } from 'astro'
-import chalk from 'chalk'
+import { dim, yellow } from 'kleur/colors'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
@@ -28,10 +28,10 @@ export async function findOrInstallBrowser(
             defaultPath = executablePath()
         } catch (e) {
             logger.debug('error: ' + e)
-            logger.info(chalk.yellow(`could not find default browser. installing browser...`))
+            logger.info(yellow(`could not find default browser. installing browser...`))
         }
     } else {
-        logger.info(chalk.dim(`installing browser...`))
+        logger.info(dim(`installing browser...`))
     }
     if (!defaultPath) {
         return await installBrowser(typeof options === 'object' ? options : {}, defaultCacheDir)
