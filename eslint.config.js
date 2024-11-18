@@ -19,9 +19,14 @@ export default tseslint.config(
         }
     },
     {
-        files: ['test/*.test.ts'],
+        files: ['test/**'],
         rules: {
-            'n/no-missing-import': 'off',
+            'n/no-missing-import': [
+                'error',
+                {
+                    allowModules: ['astro-pdf']
+                }
+            ],
             'n/no-unsupported-features/node-builtins': [
                 'error',
                 {
