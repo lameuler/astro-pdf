@@ -1,8 +1,10 @@
-import { describe, test, beforeAll, expect } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
+
+import { existsSync } from 'node:fs'
+import { readFile, rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
+
 import { loadFixture, type TestFixture } from './utils/index.js'
-import { resolve } from 'path'
-import { readFile, rm } from 'fs/promises'
-import { existsSync } from 'fs'
 
 describe('build', () => {
     let fixture: TestFixture

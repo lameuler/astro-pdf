@@ -1,11 +1,15 @@
 import { beforeAll, describe, expect, test } from 'vitest'
+
+import { existsSync } from 'node:fs'
+import { cp, lstat, mkdir, rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { AstroConfig, AstroIntegration } from 'astro'
-import { Logger, makeLogger, parsePdf } from './utils/index.js'
-import { cp, lstat, mkdir, rm } from 'fs/promises'
-import { fileURLToPath } from 'url'
-import { existsSync } from 'fs'
-import { resolve } from 'path'
+
 import pdf from 'astro-pdf'
+
+import { Logger, makeLogger, parsePdf } from './utils/index.js'
 
 describe('run integration', () => {
     let integration: AstroIntegration

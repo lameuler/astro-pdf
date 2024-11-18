@@ -1,6 +1,7 @@
-import { defineConfig } from 'tsup'
-import { readFile } from 'fs/promises'
+import { readFile } from 'node:fs/promises'
+
 import { glob } from 'glob'
+import { defineConfig } from 'tsup'
 
 const pkg = JSON.parse(await readFile('package.json', 'utf8'))
 

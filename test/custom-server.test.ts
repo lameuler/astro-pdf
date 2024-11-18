@@ -1,12 +1,16 @@
-import { describe, test, beforeAll, expect, vi, afterAll } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
+
+import { existsSync } from 'node:fs'
+import { readdir, readFile, rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { AstroConfig, AstroIntegrationLogger } from 'astro'
-import { resolve } from 'path'
-import { readdir, readFile, rm } from 'fs/promises'
-import { existsSync } from 'fs'
+
+import pdf from 'astro-pdf'
+
 import { loadFixture, makeLogger, parsePdf, type TestFixture } from './utils/index.js'
 import { start } from './utils/server.js'
-import pdf from 'astro-pdf'
-import { fileURLToPath } from 'url'
 
 describe('custom server', () => {
     let fixture: TestFixture

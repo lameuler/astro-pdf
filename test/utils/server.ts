@@ -1,7 +1,7 @@
-import { readFile, stat } from 'fs/promises'
-import { IncomingMessage, Server, ServerResponse } from 'http'
-import { extname, sep } from 'path'
-import { fileURLToPath } from 'url'
+import { readFile, stat } from 'node:fs/promises'
+import { IncomingMessage, Server, ServerResponse } from 'node:http'
+import { extname, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 export interface Redirects {
     [src: string]: {

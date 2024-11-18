@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config'
+
 import astroPdf from 'astro-pdf'
 
 // https://astro.build/config

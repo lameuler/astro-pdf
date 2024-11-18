@@ -1,6 +1,6 @@
-import { open, type FileHandle } from 'fs/promises'
-import { extname, relative, resolve, sep } from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
+import { open, type FileHandle } from 'node:fs/promises'
+import { extname, relative, resolve, sep } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export async function openFd(path: string, debug: (message: string) => void) {
     const ext = extname(path)
@@ -22,6 +22,7 @@ export async function openFd(path: string, debug: (message: string) => void) {
     return { fd, path: p }
 }
 
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
 export async function pipeToFd(stream: ReadableStream<Uint8Array>, fd: FileHandle) {
     const writeStream = fd.createWriteStream()
     const reader = stream.getReader()

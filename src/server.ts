@@ -1,6 +1,7 @@
+import { Server } from 'node:http'
+import { fileURLToPath } from 'node:url'
+
 import { type AstroConfig, preview } from 'astro'
-import { Server } from 'http'
-import { fileURLToPath } from 'url'
 
 export interface ServerOutput {
     url?: URL

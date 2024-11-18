@@ -1,6 +1,8 @@
+import { mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
+
 import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
-import { mkdir } from 'fs/promises'
-import { dirname } from 'path'
+
 import { type PageOptions } from './options.js'
 import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
 

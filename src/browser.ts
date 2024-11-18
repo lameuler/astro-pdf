@@ -1,7 +1,7 @@
-import { detectBrowserPlatform, install, resolveBuildId, Browser, type InstallOptions } from '@puppeteer/browsers'
-import { executablePath } from 'puppeteer'
+import { Browser, detectBrowserPlatform, install, resolveBuildId, type InstallOptions } from '@puppeteer/browsers'
 import { type AstroIntegrationLogger } from 'astro'
 import { dim, yellow } from 'kleur/colors'
+import { executablePath } from 'puppeteer'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME

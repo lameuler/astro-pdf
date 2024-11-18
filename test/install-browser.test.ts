@@ -1,8 +1,10 @@
 import { beforeAll, describe, expect, test } from 'vitest'
-import { existsSync } from 'fs'
-import { access, constants, mkdir, rm } from 'fs/promises'
-import { isAbsolute } from 'path'
-import { fileURLToPath } from 'url'
+
+import { existsSync, constants } from 'node:fs'
+import { access, mkdir, rm } from 'node:fs/promises'
+import { isAbsolute } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import {
     Browser,
     BrowserPlatform,
@@ -10,8 +12,10 @@ import {
     getInstalledBrowsers,
     resolveBuildId
 } from '@puppeteer/browsers'
-import { makeLogger } from './utils/index.js'
+
 import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
+
+import { makeLogger } from './utils/index.js'
 
 describe('install browser', () => {
     const cacheDir = fileURLToPath(new URL('./fixtures/.cache/install-browser/', import.meta.url))
