@@ -1,15 +1,15 @@
 import { type AstroConfig, type AstroIntegration } from 'astro'
+import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
 import { launch } from 'puppeteer'
 import { fileURLToPath } from 'url'
-import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
-import { astroPreview, type ServerOutput } from './server.js'
-import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
 import { findOrInstallBrowser } from './browser.js'
+import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
 import { PageError, processPage } from './page.js'
+import { astroPreview, type ServerOutput } from './server.js'
 
-export type { Options, PageOptions }
 export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
 export type { ServerOutput } from './server.js'
+export type { Options, PageOptions }
 
 export default function pdf(options: Options): AstroIntegration {
     let cacheDir: string

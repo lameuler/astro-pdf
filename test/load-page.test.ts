@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, afterAll } from 'vitest'
-import { start } from './utils/server.js'
-import { Browser, launch } from 'puppeteer'
-import { Server } from 'http'
 import { loadPage, PageError } from 'astro-pdf/dist/page.js'
+import { Server } from 'http'
+import { Browser, launch } from 'puppeteer'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { start } from './utils/server.js'
 
 describe('load errors', () => {
     let server: Server

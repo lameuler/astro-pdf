@@ -1,5 +1,5 @@
-import { defineConfig } from 'astro/config'
 import astroPdf from 'astro-pdf'
+import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({

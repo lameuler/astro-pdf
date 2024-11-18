@@ -1,15 +1,15 @@
-import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { Server } from 'http'
+import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
+import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
 import { existsSync } from 'fs'
 import { lstat, rm } from 'fs/promises'
+import { Server } from 'http'
 import { resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { Output } from 'pdf2json'
 import { launch, Page } from 'puppeteer'
+import { fileURLToPath } from 'url'
+import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { parsePdf } from './utils/index.js'
 import { start } from './utils/server.js'
-import { Output } from 'pdf2json'
-import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
-import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 
 describe('process page', () => {
     let server: Server

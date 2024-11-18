@@ -1,6 +1,6 @@
+import type { InstallOptions } from '@puppeteer/browsers'
 import type { AstroConfig } from 'astro'
 import type { Page, PDFOptions, PuppeteerLaunchOptions, PuppeteerLifeCycleEvent } from 'puppeteer'
-import type { InstallOptions } from '@puppeteer/browsers'
 import type { ServerOutput } from './server.js'
 
 export interface Options {
