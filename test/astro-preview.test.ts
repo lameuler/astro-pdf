@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import { pathToFileURL } from 'node:url'
+
 import { AstroConfig } from 'astro'
 import { load } from 'cheerio'
-import { pathToFileURL } from 'url'
 
 import { astroPreview, ServerOutput } from 'astro-pdf/dist/server.js'
 

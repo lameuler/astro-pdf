@@ -1,7 +1,8 @@
+import { fileURLToPath } from 'node:url'
+
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
 import { launch } from 'puppeteer'
-import { fileURLToPath } from 'url'
 
 import { findOrInstallBrowser } from './browser.js'
 import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'

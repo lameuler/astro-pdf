@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { Server } from 'http'
+import { Server } from 'node:http'
+
 import { Browser, launch } from 'puppeteer'
 
 import { loadPage, PageError } from 'astro-pdf/dist/page.js'

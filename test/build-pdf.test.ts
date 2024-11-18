@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { existsSync } from 'fs'
-import { readFile, rm } from 'fs/promises'
-import { resolve } from 'path'
+import { existsSync } from 'node:fs'
+import { readFile, rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
 
 import { loadFixture, type TestFixture } from './utils/index.js'
 

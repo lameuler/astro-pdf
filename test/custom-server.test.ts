@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
+import { existsSync } from 'node:fs'
+import { readdir, readFile, rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { AstroConfig, AstroIntegrationLogger } from 'astro'
-import { existsSync } from 'fs'
-import { readdir, readFile, rm } from 'fs/promises'
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 import pdf from 'astro-pdf'
 

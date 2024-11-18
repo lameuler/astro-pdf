@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 
+import { existsSync } from 'node:fs'
+import { mkdir, rm } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+
 import { install } from '@puppeteer/browsers'
-import { existsSync } from 'fs'
-import { mkdir, rm } from 'fs/promises'
-import { fileURLToPath } from 'url'
 
 import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
 

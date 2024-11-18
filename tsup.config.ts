@@ -1,4 +1,5 @@
-import { readFile } from 'fs/promises'
+import { readFile } from 'node:fs/promises'
+
 import { glob } from 'glob'
 import { defineConfig } from 'tsup'
 

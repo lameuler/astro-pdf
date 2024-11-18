@@ -5,6 +5,6 @@
     "singleQuote": true,
     "printWidth": 120,
     "plugins": ["@trivago/prettier-plugin-sort-imports"],
-    "importOrder": ["^vitest$", "<THIRD_PARTY_MODULES>", "^astro-pdf(/.*)?$", "^[./]"],
+    "importOrder": ["^vitest$", "^node:", "<THIRD_PARTY_MODULES>", "^astro-pdf(/.*)?$", "^[./]"],
     "importOrderSeparation": true
 }
