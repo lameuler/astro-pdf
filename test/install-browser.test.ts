@@ -1,3 +1,5 @@
+import { beforeAll, describe, expect, test } from 'vitest'
+
 import {
     Browser,
     BrowserPlatform,
@@ -5,12 +7,13 @@ import {
     getInstalledBrowsers,
     resolveBuildId
 } from '@puppeteer/browsers'
-import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
 import { existsSync } from 'fs'
 import { access, constants, mkdir, rm } from 'fs/promises'
 import { isAbsolute } from 'path'
 import { fileURLToPath } from 'url'
-import { beforeAll, describe, expect, test } from 'vitest'
+
+import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
+
 import { makeLogger } from './utils/index.js'
 
 describe('install browser', () => {

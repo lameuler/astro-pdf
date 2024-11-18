@@ -1,7 +1,8 @@
+import { Mock, vi } from 'vitest'
+
 import { type AstroInlineConfig, AstroIntegrationLogger, build, preview, type PreviewServer } from 'astro'
 import * as path from 'path'
 import PDFParser, { Output } from 'pdf2json'
-import { Mock, vi } from 'vitest'
 
 export interface TestFixture {
     root: string

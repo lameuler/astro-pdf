@@ -4,5 +4,7 @@
     "semi": false,
     "singleQuote": true,
     "printWidth": 120,
-    "plugins": ["prettier-plugin-organize-imports"]
+    "plugins": ["@trivago/prettier-plugin-sort-imports"],
+    "importOrder": ["^vitest$", "<THIRD_PARTY_MODULES>", "^astro-pdf(/.*)?$", "^[./]"],
+    "importOrderSeparation": true
 }

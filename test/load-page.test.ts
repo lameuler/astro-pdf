@@ -1,7 +1,10 @@
-import { loadPage, PageError } from 'astro-pdf/dist/page.js'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
 import { Server } from 'http'
 import { Browser, launch } from 'puppeteer'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { loadPage, PageError } from 'astro-pdf/dist/page.js'
+
 import { start } from './utils/server.js'
 
 describe('load errors', () => {

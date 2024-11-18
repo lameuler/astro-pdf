@@ -1,8 +1,11 @@
+import { beforeAll, describe, expect, test } from 'vitest'
+
 import { AstroConfig } from 'astro'
-import { astroPreview, ServerOutput } from 'astro-pdf/dist/server.js'
 import { load } from 'cheerio'
 import { pathToFileURL } from 'url'
-import { beforeAll, describe, expect, test } from 'vitest'
+
+import { astroPreview, ServerOutput } from 'astro-pdf/dist/server.js'
+
 import { loadFixture, type TestFixture } from './utils/index.js'
 
 let fixture1: TestFixture

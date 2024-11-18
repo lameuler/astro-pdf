@@ -1,9 +1,12 @@
+import { beforeAll, describe, expect, test, vi } from 'vitest'
+
 import { install } from '@puppeteer/browsers'
-import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
 import { existsSync } from 'fs'
 import { mkdir, rm } from 'fs/promises'
 import { fileURLToPath } from 'url'
-import { beforeAll, describe, expect, test, vi } from 'vitest'
+
+import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
+
 import { makeLogger } from './utils/index.js'
 
 vi.mock('puppeteer', async (originalImport) => {
