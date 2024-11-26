@@ -76,7 +76,7 @@ See [`PagesMap`](#pagesmap) for a more detailed example on how pages are generat
 export default function pdf(options: Options): AstroIntegration {}
 ```
 
--   **`options`**: [`Options`](#options)
+- **`options`**: [`Options`](#options)
 
     Configure `astro-pdf` and specify which pages to build to pdf.
 
@@ -86,11 +86,11 @@ export default function pdf(options: Options): AstroIntegration {}
 export interface Options
 ```
 
--   **`pages`**: [`PagesMap`](#pagesmap) | [`PagesFunction`](#pagesfunction)
+- **`pages`**: [`PagesMap`](#pagesmap) | [`PagesFunction`](#pagesfunction)
 
     Specifies which pages in the site to convert to PDF and the options for each page.
 
--   **`install`**: `boolean` | [`Partial<InstallOptions>`]() _(optional)_
+- **`install`**: `boolean` | [`Partial<InstallOptions>`]() _(optional)_
 
     Specifies whether to install a browser, or options to pass to Puppeteer [`install`](https://pptr.dev/browsers-api/browsers.install). By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
 
@@ -98,11 +98,11 @@ export interface Options
 
     See [Configuring Puppeteer](#configuring-puppeteer) for more information.
 
--   **`launch`**: [`PuppeteerLaunchOptions`](https://pptr.dev/api/puppeteer.puppeteerlaunchoptions) _(optional)_
+- **`launch`**: [`PuppeteerLaunchOptions`](https://pptr.dev/api/puppeteer.puppeteerlaunchoptions) _(optional)_
 
     Options to pass to Puppeteer [`launch`](https://pptr.dev/api/puppeteer.puppeteernode.launch) for launching the browser.
 
--   **`server`**: `((config: AstroConfig) => ServerOutput | Promise<ServerOutput>)` | `false` _(optional)_
+- **`server`**: `((config: AstroConfig) => ServerOutput | Promise<ServerOutput>)` | `false` _(optional)_
 
     Function to launch a custom server which will be used to serve the built pages. By default, [`astro preview`](https://docs.astro.build/en/reference/cli-reference/#astro-preview) will be used. However, if you are using an adapter, you will likely need to use a custom server as currently only the [`@astrojs/node` adapter](https://docs.astro.build/en/guides/integrations-guide/node/) supports `astro preview`.
 
@@ -117,7 +117,7 @@ export interface Options
 
     This can also be set to `false` to not run any server. If `server` is set to `false` or returns no URL, then only pages with a full URL specified for the location in [`PagesMap`](#pagesmap) will work.
 
--   **`baseOptions`**: [`Partial<PageOptions>`](#pageoptions) _(optional)_
+- **`baseOptions`**: [`Partial<PageOptions>`](#pageoptions) _(optional)_
 
     Default options to use for each page. Overrides the default options of [`PageOptions`](#pageoptions).
 
@@ -129,7 +129,7 @@ export interface PageOptions
 
 Specifies options for generating each PDF. All options are optional when specifying pages in a [`PagesMap`](#pagesmap) or [`PagesFunction`](#pagesfunction). See [`PagesEntry`](#pagesentry) for more details.
 
--   **`path`**: `string` | `((url: URL) => string)`
+- **`path`**: `string` | `((url: URL) => string)`
 
     Default: `'[pathname].pdf'`
 
@@ -141,25 +141,25 @@ Specifies options for generating each PDF. All options are optional when specify
 
     If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
 
--   **`screen`**: `boolean`
+- **`screen`**: `boolean`
 
     Default: `false`
 
     Use the CSS `screen` [media type](https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types) instead of the default `print`. This is set before `callback`.
 
--   **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`]()
+- **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`]()
 
     Default: `'networkidle2'`
 
     Used when Puppeteer is loading the page in [`Page.goto`](https://pptr.dev/api/puppeteer.page.goto)
 
--   **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.page)
+- **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.page)
 
     Default: `{}`
 
     Options to be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
 
--   **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
+- **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 
     Receives a Puppeteer [`Page`]() after the page has loaded. This callback is run before the PDF is generated.
 

@@ -37,7 +37,7 @@ describe('process page', () => {
             debug: () => {}
         }
         if (existsSync(env.outDir)) {
-            rm(env.outDir, { recursive: true })
+            await rm(env.outDir, { recursive: true })
         }
     })
 
@@ -143,7 +143,7 @@ describe('process page', () => {
             pdf: {}
         }
         const fn = processPage('/somewhere', options, env)
-        expect(fn).rejects.toThrowError(
+        await expect(fn).rejects.toThrowError(
             new PageError('/somewhere/else', '404 Not Found!!', { src: '/somewhere', status: 404 })
         )
         expect(existsSync(resolve(env.outDir, 'somewhere.pdf'))).toBe(false)
