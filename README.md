@@ -90,7 +90,7 @@ export interface Options
 
     Specifies which pages in the site to convert to PDF and the options for each page.
 
-- **`install`**: `boolean` | [`Partial<InstallOptions>`]() _(optional)_
+- **`install`**: `boolean` | [`Partial<InstallOptions>`](https://pptr.dev/browsers-api/browsers.installoptions) _(optional)_
 
     Specifies whether to install a browser, or options to pass to Puppeteer [`install`](https://pptr.dev/browsers-api/browsers.install). By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
 
@@ -147,13 +147,13 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Use the CSS `screen` [media type](https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types) instead of the default `print`. This is set before `callback`.
 
-- **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`]()
+- **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`](https://pptr.dev/api/puppeteer.puppeteerlifecycleevent)
 
     Default: `'networkidle2'`
 
     Used when Puppeteer is loading the page in [`Page.goto`](https://pptr.dev/api/puppeteer.page.goto)
 
-- **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.page)
+- **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.pdfoptions)
 
     Default: `{}`
 
