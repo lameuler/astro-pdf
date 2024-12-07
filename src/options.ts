@@ -1,12 +1,12 @@
 import type { InstallOptions } from '@puppeteer/browsers'
 import type { AstroConfig } from 'astro'
-import type { Page, PDFOptions, PuppeteerLaunchOptions, PuppeteerLifeCycleEvent } from 'puppeteer'
+import type { Page, PDFOptions, LaunchOptions, PuppeteerLifeCycleEvent } from 'puppeteer'
 
 import type { ServerOutput } from './server.js'
 
 export interface Options {
     install?: boolean | Partial<InstallOptions>
-    launch?: PuppeteerLaunchOptions
+    launch?: LaunchOptions
     baseOptions?: Partial<PageOptions>
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap

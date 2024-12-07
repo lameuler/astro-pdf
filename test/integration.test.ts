@@ -71,6 +71,7 @@ describe('run integration', () => {
                 injectTypes: () => {
                     throw new Error('unimplemented')
                 },
+                buildOutput: 'static',
                 logger
             })
         })
@@ -81,7 +82,7 @@ describe('run integration', () => {
                 dir: outDir,
                 routes: [],
                 logger,
-                cacheManifest: false
+                assets: new Map()
             })
         }, 20000)
 
