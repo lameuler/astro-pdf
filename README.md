@@ -98,7 +98,7 @@ export interface Options
 
     See [Configuring Puppeteer](#configuring-puppeteer) for more information.
 
-- **`launch`**: [`PuppeteerLaunchOptions`](https://pptr.dev/api/puppeteer.puppeteerlaunchoptions) _(optional)_
+- **`launch`**: [`LaunchOptions`](https://pptr.dev/api/puppeteer.launchoptions) _(optional)_
 
     Options to pass to Puppeteer [`launch`](https://pptr.dev/api/puppeteer.puppeteernode.launch) for launching the browser.
 

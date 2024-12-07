@@ -97,6 +97,7 @@ describe('custom server', () => {
                 injectTypes: () => {
                     throw new Error('unimplemented')
                 },
+                buildOutput: 'static',
                 logger
             })
             await integration.hooks['astro:build:done']!({
@@ -104,7 +105,7 @@ describe('custom server', () => {
                 dir: new URL('dist', root),
                 routes: [],
                 logger,
-                cacheManifest: false
+                assets: new Map()
             })
         })
 
@@ -144,6 +145,7 @@ describe('custom server', () => {
                 injectTypes: () => {
                     throw new Error('unimplemented')
                 },
+                buildOutput: 'static',
                 logger
             })
             await integration.hooks['astro:build:done']!({
@@ -151,7 +153,7 @@ describe('custom server', () => {
                 dir: new URL('dist', root),
                 routes: [],
                 logger,
-                cacheManifest: false
+                assets: new Map()
             })
         })
 
@@ -193,6 +195,7 @@ describe('custom server', () => {
                 injectTypes: () => {
                     throw new Error('unimplemented')
                 },
+                buildOutput: 'static',
                 logger
             })
             await integration.hooks['astro:build:done']!({
@@ -200,7 +203,7 @@ describe('custom server', () => {
                 dir: new URL('dist', root),
                 routes: [],
                 logger,
-                cacheManifest: false
+                assets: new Map()
             })
         })
 

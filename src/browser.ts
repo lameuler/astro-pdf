@@ -1,3 +1,5 @@
+import { lstat } from 'node:fs/promises'
+
 import { Browser, detectBrowserPlatform, install, resolveBuildId, type InstallOptions } from '@puppeteer/browsers'
 import { type AstroIntegrationLogger } from 'astro'
 import { dim, yellow } from 'kleur/colors'
@@ -26,7 +28,11 @@ export async function findOrInstallBrowser(
     if (!options) {
         try {
             defaultPath = executablePath()
+            // puppeteer ^23.10.0 no longer checks if the path exists
+            // using lstat which will also throw if it does not exist
+            await lstat(defaultPath)
         } catch (e) {
+            defaultPath = null
             logger.debug('error: ' + e)
             logger.info(yellow(`could not find default browser. installing browser...`))
         }
