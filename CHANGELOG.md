@@ -1,5 +1,22 @@
 # astro-pdf
 
+## 1.3.0
+
+### Minor Changes
+
+- [#56](https://github.com/lameuler/astro-pdf/pull/56) [`3b78004`](https://github.com/lameuler/astro-pdf/commit/3b78004094dce03eb27dc7bf724b579eac4b85d0) Thanks [@lameuler](https://github.com/lameuler)! - Adds support for Astro v5.0. Upgrading to Astro v5.0 should have no impact on compatibility with `astro-pdf`.
+
+- [#56](https://github.com/lameuler/astro-pdf/pull/56) [`3b78004`](https://github.com/lameuler/astro-pdf/commit/3b78004094dce03eb27dc7bf724b579eac4b85d0) Thanks [@lameuler](https://github.com/lameuler)! - Bumped `puppeteer` to 23.10.1. Updated to use the new merged [`LaunchOptions`](https://pptr.dev/api/puppeteer.launchoptions) type. This should have no impact on compatibility unless you are manually defining the types of your options, in which case you may need to update to the latest version of puppeteer and replace the `PuppeteerLaunchOptions` type with the `LaunchOptions` type if you get type errors.
+
+    ```diff
+    - import type { PuppeteerLaunchOptions } from 'puppeteer'
+    + import type { LaunchOptions } from 'puppeteer'
+    ```
+
+### Patch Changes
+
+- [#56](https://github.com/lameuler/astro-pdf/pull/56) [`3b78004`](https://github.com/lameuler/astro-pdf/commit/3b78004094dce03eb27dc7bf724b579eac4b85d0) Thanks [@lameuler](https://github.com/lameuler)! - Fixes check for default browser executable when using Puppeteer ^23.10.0
+
 ## 1.2.0
 
 ### Minor Changes
