@@ -11,7 +11,6 @@ export interface Options {
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
     maxConcurrent?: number | null
-    throwError?: boolean
 }
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
@@ -29,6 +28,7 @@ export interface PageOptions {
     navTimeout?: number
     pdf: Omit<PDFOptions, 'path'>
     maxRetries?: number
+    throwOnFail?: boolean
     callback?: (page: Page) => void | Promise<void>
 }
 
@@ -37,7 +37,8 @@ export const defaultPageOptions: PageOptions = {
     screen: false,
     waitUntil: 'networkidle2',
     pdf: {},
-    maxRetries: 0
+    maxRetries: 0,
+    throwOnFail: false
 } as const
 
 export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>

@@ -130,7 +130,7 @@ export default function pdf(options: Options): AstroIntegration {
                                     totalCount--
                                 }
 
-                                if (err instanceof PageError && (n > 0 || !options.throwError)) {
+                                if (err instanceof PageError && (n > 0 || !pageOptions.throwOnFail)) {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
@@ -143,7 +143,7 @@ export default function pdf(options: Options): AstroIntegration {
 
                                 if (n > 0) {
                                     await task()
-                                } else if (options.throwError) {
+                                } else if (pageOptions.throwOnFail) {
                                     throw err
                                 }
                             }
