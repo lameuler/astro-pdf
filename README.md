@@ -180,7 +180,7 @@ Specifies options for generating each PDF. All options are optional when specify
 
     The maximum number of times to retry loading and processing a page if there is an error.
 
-- **`throwError`**: `boolean`
+- **`throwOnFail`**: `boolean`
 
     Default: `false`
 

@@ -110,41 +110,42 @@ export default function pdf(options: Options): AstroIntegration {
 
                 await Promise.all(
                     queue.map(({ location, pageOptions }) => {
+                        const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
+                        let i = 0
                         const task = async () => {
                             const start = Date.now()
+                            i++
+                            const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
                             try {
                                 const result = await processPage(location, pageOptions, env)
                                 const time = Date.now() - start
                                 const src = result.src ? dim(' ← ' + result.src) : ''
-                                logger.info(`${green('▶')} ${result.location}${src}`)
+                                const attempts = i > 1 ? dim(retryInfo) : ''
+                                logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
                                 logger.info(
                                     `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
                                 )
                             } catch (err) {
-                                let retryInfo = ''
-                                const n = pageOptions.maxRetries ?? 0
-                                if (n > 0) {
-                                    retryInfo = yellow(` (${n} ${n === 1 ? 'retry' : 'retries'} left)`)
-                                    pageOptions.maxRetries = n - 1
-                                } else {
-                                    totalCount--
-                                }
+                                const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
 
-                                if (err instanceof PageError && (n > 0 || !pageOptions.throwOnFail)) {
+                                if (err instanceof PageError && (i < maxRuns || !pageOptions.throwOnFail)) {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
                                         red(
-                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${retryInfo}`
+                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`
                                         )
                                     )
                                 }
                                 logger.debug(bold(red(`error while processing ${location}: `)) + err)
 
-                                if (n > 0) {
+                                if (i < maxRuns) {
                                     await task()
-                                } else if (pageOptions.throwOnFail) {
-                                    throw err
+                                } else {
+                                    totalCount--
+                                    if (pageOptions.throwOnFail) {
+                                        throw err
+                                    }
                                 }
                             }
                         }
