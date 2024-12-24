@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
+import PQueue from 'p-queue'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
@@ -105,27 +106,31 @@ export default function pdf(options: Options): AstroIntegration {
                 let count = 0
                 let totalCount = queue.length
 
+                const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
+
                 await Promise.all(
-                    queue.map(async ({ location, pageOptions }) => {
-                        const start = Date.now()
-                        try {
-                            const result = await processPage(location, pageOptions, env)
-                            const time = Date.now() - start
-                            const src = result.src ? dim(' ← ' + result.src) : ''
-                            logger.info(`${green('▶')} ${result.location}${src}`)
-                            logger.info(
-                                `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
-                            )
-                        } catch (err) {
-                            totalCount--
-                            if (err instanceof PageError) {
+                    queue.map(({ location, pageOptions }) =>
+                        pool.add(async () => {
+                            const start = Date.now()
+                            try {
+                                const result = await processPage(location, pageOptions, env)
                                 const time = Date.now() - start
-                                const src = err.src ? dim(' ← ' + err.src) : ''
-                                logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
+                                const src = result.src ? dim(' ← ' + result.src) : ''
+                                logger.info(`${green('▶')} ${result.location}${src}`)
+                                logger.info(
+                                    `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                                )
+                            } catch (err) {
+                                totalCount--
+                                if (err instanceof PageError) {
+                                    const time = Date.now() - start
+                                    const src = err.src ? dim(' ← ' + err.src) : ''
+                                    logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
+                                }
+                                logger.debug(bold(red(`error while processing ${location}: `)) + err)
                             }
-                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
-                        }
-                    })
+                        })
+                    )
                 )
 
                 await browser.close()

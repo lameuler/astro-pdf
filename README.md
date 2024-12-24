@@ -90,6 +90,10 @@ export interface Options
 
     Specifies which pages in the site to convert to PDF and the options for each page.
 
+- **`maxConcurrent`**: `number` | `null` _(optional)_
+
+    Set the maximum number of pages to load and process at once. By default, all pages will be loaded in parallel, which may result in a Puppeteer navigation timeout if there are too many pages. If set to `null` or `undefined`, there will be no limit (which is the default behaviour).
+
 - **`install`**: `boolean` | [`Partial<InstallOptions>`](https://pptr.dev/browsers-api/browsers.installoptions) _(optional)_
 
     Specifies whether to install a browser, or options to pass to Puppeteer [`install`](https://pptr.dev/browsers-api/browsers.install). By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
