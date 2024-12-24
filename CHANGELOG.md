@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.4.1
+
+### Patch Changes
+
+- [#63](https://github.com/lameuler/astro-pdf/pull/63) [`46c10df`](https://github.com/lameuler/astro-pdf/commit/46c10df611ee67c498543ee8d41d37f7c98a7be1) Thanks [@lameuler](https://github.com/lameuler)! - log current and max attempts for retries and error message for pdf write errors
+
 ## 1.4.0
 
 ### Minor Changes
