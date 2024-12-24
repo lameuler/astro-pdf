@@ -125,6 +125,12 @@ export interface Options
 
     Default options to use for each page. Overrides the default options of [`PageOptions`](#pageoptions).
 
+- **`throwError`**: `boolean` _(optional)_
+
+    Set to throw errors encountered when loading and processing pages. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for a page.
+
+    By default, errors for failed pages will be logged and the build will still successfully complete.
+
 ### `PageOptions`
 
 ```ts

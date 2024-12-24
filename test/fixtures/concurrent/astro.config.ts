@@ -21,6 +21,7 @@ export default defineConfig({
                 //maxRetries: 2
                 //navTimeout: 0
             },
+            throwError: true,
             maxConcurrent: null //40
         })
     ]

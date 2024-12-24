@@ -130,7 +130,7 @@ export default function pdf(options: Options): AstroIntegration {
                                     totalCount--
                                 }
 
-                                if (err instanceof PageError) {
+                                if (err instanceof PageError && (n > 0 || !options.throwError)) {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
@@ -143,6 +143,8 @@ export default function pdf(options: Options): AstroIntegration {
 
                                 if (n > 0) {
                                     await task()
+                                } else if (options.throwError) {
+                                    throw err
                                 }
                             }
                         }
@@ -153,6 +155,10 @@ export default function pdf(options: Options): AstroIntegration {
                 await browser.close()
                 if (typeof close === 'function') {
                     await close()
+                }
+                if (totalCount < queue.length) {
+                    const n = queue.length - totalCount
+                    logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))
                 }
                 logger.info(green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }

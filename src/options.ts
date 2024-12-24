@@ -11,6 +11,7 @@ export interface Options {
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
     maxConcurrent?: number | null
+    throwError?: boolean
 }
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
