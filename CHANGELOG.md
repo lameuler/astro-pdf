@@ -1,5 +1,17 @@
 # astro-pdf
 
+## 1.4.0
+
+### Minor Changes
+
+- [#61](https://github.com/lameuler/astro-pdf/pull/61) [`6683ed3`](https://github.com/lameuler/astro-pdf/commit/6683ed30da28ca9a6b97d17a6993ecea4805f5a1) Thanks [@lameuler](https://github.com/lameuler)! - added `throwOnFail` page option to throw an error if a page fails (and cause the build to fail) instead of just logging them
+
+- [#61](https://github.com/lameuler/astro-pdf/pull/61) [`6683ed3`](https://github.com/lameuler/astro-pdf/commit/6683ed30da28ca9a6b97d17a6993ecea4805f5a1) Thanks [@lameuler](https://github.com/lameuler)! - added `maxRetries` page options to allow retrying the loading/processing of a page if an error occurs
+
+- [#61](https://github.com/lameuler/astro-pdf/pull/61) [`6683ed3`](https://github.com/lameuler/astro-pdf/commit/6683ed30da28ca9a6b97d17a6993ecea4805f5a1) Thanks [@lameuler](https://github.com/lameuler)! - added `navTimeout` page option to set Puppeteer's default navigation timeout for the page
+
+- [#61](https://github.com/lameuler/astro-pdf/pull/61) [`6683ed3`](https://github.com/lameuler/astro-pdf/commit/6683ed30da28ca9a6b97d17a6993ecea4805f5a1) Thanks [@lameuler](https://github.com/lameuler)! - added `maxConcurrent` option to specify the maximum number of pages to load and process at once. this can help prevent navigation timeouts caused when trying to load too many pages at the same time.
+
 ## 1.3.0
 
 ### Minor Changes
