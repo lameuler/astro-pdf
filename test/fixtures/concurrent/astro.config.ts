@@ -9,7 +9,8 @@ const url = 'https://en.wikipedia.org/wiki/Special:RandomInCategory?wpcategory=F
 const pages: PagesMap = {
     [url]: Array(N)
         .fill(0)
-        .map((_, i) => `random-${i}.pdf`)
+        .map((_, i) => `random-${i}.pdf`),
+    'https://fake.example.com': 'fake.pdf'
 }
 
 export default defineConfig({
@@ -20,7 +21,7 @@ export default defineConfig({
                 waitUntil: 'networkidle0',
                 //maxRetries: 2
                 //navTimeout: 0
-                throwOnFail: true
+                //throwOnFail: true
             },
             maxConcurrent: null //40
         })

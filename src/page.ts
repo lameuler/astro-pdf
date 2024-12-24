@@ -86,7 +86,8 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
         await pipeToFd(stream, fd)
     } catch (err) {
-        throw new PageError(dest, 'failed to write pdf', { cause: err, src: location })
+        const info = err instanceof Error ? ': ' + err.message : ''
+        throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
     } finally {
         await fd.close()
     }
