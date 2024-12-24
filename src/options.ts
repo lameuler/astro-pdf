@@ -25,6 +25,7 @@ export interface PageOptions {
     path: string | ((url: URL) => string)
     screen: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
+    navTimeout?: number
     pdf: Omit<PDFOptions, 'path'>
     maxRetries?: number
     callback?: (page: Page) => void | Promise<void>

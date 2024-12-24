@@ -59,7 +59,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    const page = await loadPage(location, baseUrl, browser, pageOptions.waitUntil)
+    const page = await loadPage(location, baseUrl, browser, pageOptions.waitUntil, pageOptions.navTimeout)
 
     if (pageOptions.screen) {
         await page.emulateMediaType('screen')
@@ -113,9 +113,13 @@ export async function loadPage(
     location: string,
     baseUrl: URL | undefined,
     browser: Browser,
-    waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
+    waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
+    navTimeout?: number
 ): Promise<Page> {
     const page = await browser.newPage()
+    if (typeof navTimeout === 'number') {
+        page.setDefaultNavigationTimeout(navTimeout)
+    }
     return new Promise((resolve, reject) => {
         let url: URL
         try {

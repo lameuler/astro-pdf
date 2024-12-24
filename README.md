@@ -157,6 +157,10 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Used when Puppeteer is loading the page in [`Page.goto`](https://pptr.dev/api/puppeteer.page.goto)
 
+- **`navTimeout`**: `number` _(optional)_
+
+    Set the [default navigation timeout](https://pptr.dev/api/puppeteer.page.setdefaultnavigationtimeout) (in milliseconds) for Puppeteer. The default used by Puppeteer is 30 seconds. This can be set to 0 to have no timeout.
+
 - **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.pdfoptions)
 
     Default: `{}`

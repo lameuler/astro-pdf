@@ -124,16 +124,20 @@ export default function pdf(options: Options): AstroIntegration {
                                 let retryInfo = ''
                                 const n = pageOptions.maxRetries ?? 0
                                 if (n > 0) {
-                                    retryInfo = yellow(` (${n} ${ n === 1 ? 'retry' : 'retries'} left)`)
+                                    retryInfo = yellow(` (${n} ${n === 1 ? 'retry' : 'retries'} left)`)
                                     pageOptions.maxRetries = n - 1
                                 } else {
                                     totalCount--
                                 }
-                                
+
                                 if (err instanceof PageError) {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
-                                    logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${retryInfo}`))
+                                    logger.info(
+                                        red(
+                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${retryInfo}`
+                                        )
+                                    )
                                 }
                                 logger.debug(bold(red(`error while processing ${location}: `)) + err)
 
