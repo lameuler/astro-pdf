@@ -163,6 +163,12 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Options to be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
 
+- **`maxRetries`**: `number`
+
+    Default: `0`
+
+    The maximum number of times to retry loading and processing a page if there is an error.
+
 - **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 
     Receives a Puppeteer [`Page`]() after the page has loaded. This callback is run before the PDF is generated.

@@ -17,9 +17,10 @@ export default defineConfig({
         pdf({
             pages,
             baseOptions: {
-                waitUntil: 'networkidle0'
+                waitUntil: 'networkidle0',
+                maxRetries: 2
             },
-            maxConcurrent: 5
+            maxConcurrent: null //40
         })
     ]
 })

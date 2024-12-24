@@ -26,6 +26,7 @@ export interface PageOptions {
     screen: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
     pdf: Omit<PDFOptions, 'path'>
+    maxRetries?: number
     callback?: (page: Page) => void | Promise<void>
 }
 
@@ -33,7 +34,8 @@ export const defaultPageOptions: PageOptions = {
     path: '[pathname].pdf',
     screen: false,
     waitUntil: 'networkidle2',
-    pdf: {}
+    pdf: {},
+    maxRetries: 0
 } as const
 
 export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>

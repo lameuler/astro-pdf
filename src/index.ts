@@ -109,8 +109,8 @@ export default function pdf(options: Options): AstroIntegration {
                 const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
 
                 await Promise.all(
-                    queue.map(({ location, pageOptions }) =>
-                        pool.add(async () => {
+                    queue.map(({ location, pageOptions }) => {
+                        const task = async () => {
                             const start = Date.now()
                             try {
                                 const result = await processPage(location, pageOptions, env)
@@ -121,16 +121,29 @@ export default function pdf(options: Options): AstroIntegration {
                                     `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
                                 )
                             } catch (err) {
-                                totalCount--
+                                let retryInfo = ''
+                                const n = pageOptions.maxRetries ?? 0
+                                if (n > 0) {
+                                    retryInfo = yellow(` (${n} ${ n === 1 ? 'retry' : 'retries'} left)`)
+                                    pageOptions.maxRetries = n - 1
+                                } else {
+                                    totalCount--
+                                }
+                                
                                 if (err instanceof PageError) {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
-                                    logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
+                                    logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${retryInfo}`))
                                 }
                                 logger.debug(bold(red(`error while processing ${location}: `)) + err)
+
+                                if (n > 0) {
+                                    await task()
+                                }
                             }
-                        })
-                    )
+                        }
+                        return pool.add(task)
+                    })
                 )
 
                 await browser.close()
