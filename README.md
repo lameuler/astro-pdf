@@ -36,12 +36,15 @@ import pdf from 'astro-pdf'
 export default defineConfig({
     integrations: [
         pdf({
-            // specify base options as defaults for options pages dont return
+            // specify base options as defaults for pages
             baseOptions: {
                 path: '/pdf[pathname].pdf',
                 waitUntil: 'networkidle2',
+                maxRetries: 2,
                 ...
             },
+            // max number of pages to load at once
+            maxConcurrent: 2,
             // pages will receive the pathname of each page being built
             pages: {
                 '/some-page': '/pages/some.pdf', // output path
@@ -51,9 +54,13 @@ export default defineConfig({
                         path: 'example.pdf',
                         screen: true, // use screen media type instead of print
                         waitUntil: 'networkidle0', // for puppeteer page loading
+                        navTimeout: 40_000,
+                        maxRetries: 0,
+                        throwOnFail: true,
                         pdf: { // puppeteer PDFOptions
                             format: 'A4',
-                            printBackground: true
+                            printBackground: true,
+                            timeout: 20_000
                         }
                     },
                     'basic-example.pdf'
