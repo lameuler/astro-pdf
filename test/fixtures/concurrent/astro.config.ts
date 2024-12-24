@@ -18,7 +18,7 @@ export default defineConfig({
         pdf({
             pages,
             baseOptions: {
-                waitUntil: 'networkidle0',
+                waitUntil: 'networkidle0'
                 //maxRetries: 2
                 //navTimeout: 0
                 //throwOnFail: true
