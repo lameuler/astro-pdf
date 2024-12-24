@@ -36,12 +36,15 @@ import pdf from 'astro-pdf'
 export default defineConfig({
     integrations: [
         pdf({
-            // specify base options as defaults for options pages dont return
+            // specify base options as defaults for pages
             baseOptions: {
                 path: '/pdf[pathname].pdf',
                 waitUntil: 'networkidle2',
+                maxRetries: 2,
                 ...
             },
+            // max number of pages to load at once
+            maxConcurrent: 2,
             // pages will receive the pathname of each page being built
             pages: {
                 '/some-page': '/pages/some.pdf', // output path
@@ -51,9 +54,13 @@ export default defineConfig({
                         path: 'example.pdf',
                         screen: true, // use screen media type instead of print
                         waitUntil: 'networkidle0', // for puppeteer page loading
+                        navTimeout: 40_000,
+                        maxRetries: 0,
+                        throwOnFail: true,
                         pdf: { // puppeteer PDFOptions
                             format: 'A4',
-                            printBackground: true
+                            printBackground: true,
+                            timeout: 20_000
                         }
                     },
                     'basic-example.pdf'
@@ -89,6 +96,10 @@ export interface Options
 - **`pages`**: [`PagesMap`](#pagesmap) | [`PagesFunction`](#pagesfunction)
 
     Specifies which pages in the site to convert to PDF and the options for each page.
+
+- **`maxConcurrent`**: `number` | `null` _(optional)_
+
+    Set the maximum number of pages to load and process at once. By default, all pages will be loaded in parallel, which may result in a Puppeteer navigation timeout if there are too many pages. If set to `null` or `undefined`, there will be no limit (which is the default behaviour).
 
 - **`install`**: `boolean` | [`Partial<InstallOptions>`](https://pptr.dev/browsers-api/browsers.installoptions) _(optional)_
 
@@ -153,11 +164,29 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Used when Puppeteer is loading the page in [`Page.goto`](https://pptr.dev/api/puppeteer.page.goto)
 
+- **`navTimeout`**: `number` _(optional)_
+
+    Set the [default navigation timeout](https://pptr.dev/api/puppeteer.page.setdefaultnavigationtimeout) (in milliseconds) for Puppeteer. The default used by Puppeteer is 30 seconds. This can be set to 0 to have no timeout.
+
 - **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.pdfoptions)
 
     Default: `{}`
 
     Options to be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
+
+- **`maxRetries`**: `number`
+
+    Default: `0`
+
+    The maximum number of times to retry loading and processing a page if there is an error.
+
+- **`throwError`**: `boolean`
+
+    Default: `false`
+
+    Set to throw errors encountered when loading and processing the page. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for the page.
+
+    By default, errors for failed pages will be logged and the build will still successfully complete.
 
 - **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 

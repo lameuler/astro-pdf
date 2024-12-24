@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
+import PQueue from 'p-queue'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
@@ -105,32 +106,59 @@ export default function pdf(options: Options): AstroIntegration {
                 let count = 0
                 let totalCount = queue.length
 
+                const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
+
                 await Promise.all(
-                    queue.map(async ({ location, pageOptions }) => {
-                        const start = Date.now()
-                        try {
-                            const result = await processPage(location, pageOptions, env)
-                            const time = Date.now() - start
-                            const src = result.src ? dim(' ← ' + result.src) : ''
-                            logger.info(`${green('▶')} ${result.location}${src}`)
-                            logger.info(
-                                `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
-                            )
-                        } catch (err) {
-                            totalCount--
-                            if (err instanceof PageError) {
+                    queue.map(({ location, pageOptions }) => {
+                        const task = async () => {
+                            const start = Date.now()
+                            try {
+                                const result = await processPage(location, pageOptions, env)
                                 const time = Date.now() - start
-                                const src = err.src ? dim(' ← ' + err.src) : ''
-                                logger.info(red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}`))
+                                const src = result.src ? dim(' ← ' + result.src) : ''
+                                logger.info(`${green('▶')} ${result.location}${src}`)
+                                logger.info(
+                                    `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                                )
+                            } catch (err) {
+                                let retryInfo = ''
+                                const n = pageOptions.maxRetries ?? 0
+                                if (n > 0) {
+                                    retryInfo = yellow(` (${n} ${n === 1 ? 'retry' : 'retries'} left)`)
+                                    pageOptions.maxRetries = n - 1
+                                } else {
+                                    totalCount--
+                                }
+
+                                if (err instanceof PageError && (n > 0 || !pageOptions.throwOnFail)) {
+                                    const time = Date.now() - start
+                                    const src = err.src ? dim(' ← ' + err.src) : ''
+                                    logger.info(
+                                        red(
+                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${retryInfo}`
+                                        )
+                                    )
+                                }
+                                logger.debug(bold(red(`error while processing ${location}: `)) + err)
+
+                                if (n > 0) {
+                                    await task()
+                                } else if (pageOptions.throwOnFail) {
+                                    throw err
+                                }
                             }
-                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
                         }
+                        return pool.add(task)
                     })
                 )
 
                 await browser.close()
                 if (typeof close === 'function') {
                     await close()
+                }
+                if (totalCount < queue.length) {
+                    const n = queue.length - totalCount
+                    logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))
                 }
                 logger.info(green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }

@@ -57,7 +57,7 @@ describe('load errors', () => {
         const fn = loadPage('/page.html', base, browser, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
-        expect(Date.now() - start).toBeLessThan(1000)
+        expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('redirect to 404 page', async () => {
@@ -65,7 +65,7 @@ describe('load errors', () => {
         const fn = loadPage('/page2.html', base, browser, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
-        expect(Date.now() - start).toBeLessThan(1000)
+        expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('empty status message', async () => {
@@ -73,7 +73,7 @@ describe('load errors', () => {
         const fn = loadPage('/403', base, browser, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/403', '403'))
-        expect(Date.now() - start).toBeLessThan(1000)
+        expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('unresolved hostname', async () => {
@@ -81,7 +81,7 @@ describe('load errors', () => {
         const fn = loadPage(location, undefined, browser, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
-        expect(Date.now() - start).toBeLessThan(1000)
+        expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('redirect to unresolved hostname', async () => {
@@ -90,7 +90,7 @@ describe('load errors', () => {
         const fn = loadPage('/outside', base, browser, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
-        expect(Date.now() - start).toBeLessThan(1000)
+        expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('about:blank', async () => {

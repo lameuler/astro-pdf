@@ -25,7 +25,10 @@ describe('run integration', () => {
                     }
                 },
                 '/': [true, true, 'index.pdf', 'copy.pdf'],
-                '/missing': 'missing.pdf'
+                '/missing': {
+                    path: 'missing.pdf',
+                    maxRetries: 2
+                }
             }
         })
     })

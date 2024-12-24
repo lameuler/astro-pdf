@@ -10,6 +10,7 @@ export interface Options {
     baseOptions?: Partial<PageOptions>
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
+    maxConcurrent?: number | null
 }
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void
@@ -24,7 +25,10 @@ export interface PageOptions {
     path: string | ((url: URL) => string)
     screen: boolean
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
+    navTimeout?: number
     pdf: Omit<PDFOptions, 'path'>
+    maxRetries?: number
+    throwOnFail?: boolean
     callback?: (page: Page) => void | Promise<void>
 }
 
@@ -32,7 +36,9 @@ export const defaultPageOptions: PageOptions = {
     path: '[pathname].pdf',
     screen: false,
     waitUntil: 'networkidle2',
-    pdf: {}
+    pdf: {},
+    maxRetries: 0,
+    throwOnFail: false
 } as const
 
 export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>
