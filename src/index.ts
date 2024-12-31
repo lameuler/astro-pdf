@@ -49,6 +49,13 @@ export default function pdf(options: Options): AstroIntegration {
                 const versionColour = VERSION.includes('-') ? yellow : green
                 logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
+                if (typeof options.runBefore === 'function') {
+                    logger.info(dim('running runBefore hook...'))
+                    const runStart = Date.now()
+                    await options.runBefore(dir)
+                    logger.debug(`finished running runBefore hook in ${Date.now() - runStart}ms`)
+                }
+
                 const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
                 logger.debug(`using browser at ${blue(executablePath)}`)
 
@@ -108,6 +115,8 @@ export default function pdf(options: Options): AstroIntegration {
 
                 const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
 
+                const generated: string[] = []
+
                 await Promise.all(
                     queue.map(({ location, pageOptions }) => {
                         const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
@@ -125,6 +134,7 @@ export default function pdf(options: Options): AstroIntegration {
                                 logger.info(
                                     `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
                                 )
+                                generated.push(result.output.pathname)
                             } catch (err) {
                                 const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
 
@@ -161,6 +171,14 @@ export default function pdf(options: Options): AstroIntegration {
                     const n = queue.length - totalCount
                     logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))
                 }
+
+                if (typeof options.runAfter === 'function') {
+                    logger.info(dim('running runAfter hook...'))
+                    const runStart = Date.now()
+                    await options.runAfter(dir, generated)
+                    logger.debug(`finished running runAfter hook in ${Date.now() - runStart}ms`)
+                }
+
                 logger.info(green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
             }
         }

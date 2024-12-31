@@ -132,6 +132,21 @@ export interface Options
 
     Default options to use for each page. Overrides the default options of [`PageOptions`](#pageoptions).
 
+- **`runBefore`**: `(dir: URL) => void | Promise<void>` _(optional)_
+
+    Callback to run before `astro-pdf` has started running anything, but after the Astro build has completed.
+    The function will be called with the file URL of the output directory.
+
+- **`runAfter`**: `(dir: URL, pathnames: string[]) => void | Promise<void>` _(optional)_
+
+    Callback to run after `astro-pdf` has finishing running and has generated all the PDFs. The function will be called with the file URL of the output directory, and a list of the pathnames of the generated PDFs.
+
+    The full file URL of each PDF can be resolved using the URL constructor:
+
+    ```ts
+    const pdfUrl = new URL(pathnames[0], dir)
+    ```
+
 ### `PageOptions`
 
 ```ts
@@ -190,7 +205,7 @@ Specifies options for generating each PDF. All options are optional when specify
 
 - **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 
-    Receives a Puppeteer [`Page`]() after the page has loaded. This callback is run before the PDF is generated.
+    Receives a Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page) after the page has loaded. This callback is run before the PDF is generated.
 
 ### `PagesEntry`
 
