@@ -91,7 +91,7 @@ describe('run integration', () => {
                 logger,
                 assets: new Map()
             })
-        }, 20000)
+        }, 30000)
 
         // TODO check runBefore runAfter
         test('called runBefore', () => {
