@@ -11,6 +11,8 @@ export interface Options {
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
     maxConcurrent?: number | null
+    runBefore?: (dir: URL) => void | Promise<void>
+    runAfter?: (dir: URL, pathnames: string[]) => void | Promise<void>
 }
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void

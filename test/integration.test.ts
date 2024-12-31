@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from 'vitest'
+import { beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { existsSync } from 'node:fs'
 import { cp, lstat, mkdir, rm } from 'node:fs/promises'
@@ -13,6 +13,8 @@ import { Logger, makeLogger, parsePdf } from './utils/index.js'
 
 describe('run integration', () => {
     let integration: AstroIntegration
+    const runBefore = vi.fn()
+    const runAfter = vi.fn()
 
     beforeAll(() => {
         integration = pdf({
@@ -29,7 +31,9 @@ describe('run integration', () => {
                     path: 'missing.pdf',
                     maxRetries: 2
                 }
-            }
+            },
+            runBefore,
+            runAfter
         })
     })
 
@@ -88,6 +92,20 @@ describe('run integration', () => {
                 assets: new Map()
             })
         }, 20000)
+
+        // TODO check runBefore runAfter
+        test('called runBefore', () => {
+            expect(runBefore).toBeCalledTimes(1)
+            expect(runBefore).toHaveBeenCalledWith(outDir)
+        })
+
+        test('called runAfter', () => {
+            const calls = runAfter.mock.calls
+            expect(calls.length).toBe(1)
+            expect(calls[0][0]).toBe(outDir)
+            const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf']
+            expect(calls[0][1].sort()).toStrictEqual(expected.sort())
+        })
 
         test('generated local page', async () => {
             const path = resolve(outPath, 'index.pdf')
