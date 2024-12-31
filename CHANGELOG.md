@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.5.0
+
+### Minor Changes
+
+- [#66](https://github.com/lameuler/astro-pdf/pull/66) [`890360d`](https://github.com/lameuler/astro-pdf/commit/890360d1d670e214e9973ff24ce142912fdd7c43) Thanks [@lameuler](https://github.com/lameuler)! - added `runBefore` and `runAfter` hooks to run a callback before or after `astro-pdf` runs
+
 ## 1.4.1
 
 ### Patch Changes
