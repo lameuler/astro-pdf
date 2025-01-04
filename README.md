@@ -57,6 +57,12 @@ export default defineConfig({
                         navTimeout: 40_000,
                         maxRetries: 0,
                         throwOnFail: true,
+                        viewport: { // puppeteer Viewport
+                            width: 800,
+                            height: 600,
+                            // https://github.com/puppeteer/puppeteer/issues/3910
+                            deviceScaleFactor: 3
+                        }
                         pdf: { // puppeteer PDFOptions
                             format: 'A4',
                             printBackground: true,
@@ -172,6 +178,10 @@ Specifies options for generating each PDF. All options are optional when specify
     Default: `false`
 
     Use the CSS `screen` [media type](https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types) instead of the default `print`. This is set before `callback`.
+
+- **`viewport`**: [`Viewport`](https://pptr.dev/api/puppeteer.viewport) _(optional)_
+
+    Set the [viewport](https://pptr.dev/api/puppeteer.page.setviewport) for Puppeteer.
 
 - **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`](https://pptr.dev/api/puppeteer.puppeteerlifecycleevent)
 
