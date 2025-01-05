@@ -72,7 +72,7 @@ jobs:
             - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  export CHROMIUM_BUILD_PATH=/@{HOME}/chromium/src/out/**/chrome
+                  export CHROMIUM_BUILD_PATH=/@{HOME}/.cache/puppeteer/chrome/*/chrome-linux64/chrome
                   sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
                   abi <abi/4.0>,
                   include <tunables/global>
@@ -86,7 +86,6 @@ jobs:
                   EOF
                   sudo service apparmor reload
                   cat /etc/apparmor.d/chrome-dev-builds
-                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
@@ -96,7 +95,7 @@ jobs:
 
             - name: Install Dependencies
               run: npm install
-            
+
             - name: Check executablePath
               run: node <<< "console.log(require('puppeteer').executablePath())"
 
