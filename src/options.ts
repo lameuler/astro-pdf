@@ -1,6 +1,6 @@
 import type { InstallOptions } from '@puppeteer/browsers'
 import type { AstroConfig } from 'astro'
-import type { Page, PDFOptions, LaunchOptions, PuppeteerLifeCycleEvent } from 'puppeteer'
+import type { Page, PDFOptions, LaunchOptions, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
 
 import type { ServerOutput } from './server.js'
 
@@ -26,6 +26,7 @@ export type PagesMap = Record<string, PagesEntry | PagesEntry[]> & {
 export interface PageOptions {
     path: string | ((url: URL) => string)
     screen: boolean
+    viewport?: Viewport
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
     navTimeout?: number
     pdf: Omit<PDFOptions, 'path'>
@@ -34,14 +35,14 @@ export interface PageOptions {
     callback?: (page: Page) => void | Promise<void>
 }
 
-export const defaultPageOptions: PageOptions = {
+export const defaultPageOptions = {
     path: '[pathname].pdf',
     screen: false,
     waitUntil: 'networkidle2',
     pdf: {},
     maxRetries: 0,
     throwOnFail: false
-} as const
+} satisfies PageOptions
 
 export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>
 
