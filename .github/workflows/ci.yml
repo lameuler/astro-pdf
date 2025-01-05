@@ -72,20 +72,24 @@ jobs:
             - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  PUPPETEER_PATH={$HOME/.cache/puppeteer,$PWD/test/fixtures/*/node_modules/.astro}/chrome/*/chrome-linux64/chrome
+                  PUPPETEER_SYSTEM=$HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome
+                  PUPPETEER_LOCAL=$PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome
                   sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
                   abi <abi/4.0>,
                   include <tunables/global>
 
-                  profile chrome $PUPPETEER_PATH flags=(unconfined) {
+                  profile chrome $PUPPETEER_SYSTEM $PUPPETEER_LOCAL flags=(unconfined) {
                     userns,
 
                     # Site-specific additions and overrides. See local/README for details.
                     include if exists <local/chrome>
                   }
                   EOF
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+                  echo parsed
                   sudo service apparmor reload
-                  cat /etc/apparmor.d/chrome-dev-builds
+                  systemctl status apparmor.service
+                  journalctl -xeu apparmor.service
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
