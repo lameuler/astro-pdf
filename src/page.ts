@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
-import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
+import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
 
 import { type PageOptions } from './options.js'
 import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
@@ -59,7 +59,14 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    const page = await loadPage(location, baseUrl, browser, pageOptions.waitUntil, pageOptions.navTimeout)
+    const page = await loadPage(
+        location,
+        baseUrl,
+        browser,
+        pageOptions.waitUntil,
+        pageOptions.viewport,
+        pageOptions.navTimeout
+    )
 
     if (pageOptions.screen) {
         await page.emulateMediaType('screen')
@@ -115,9 +122,15 @@ export async function loadPage(
     baseUrl: URL | undefined,
     browser: Browser,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
+    viewport?: Viewport,
     navTimeout?: number
 ): Promise<Page> {
     const page = await browser.newPage()
+
+    if (viewport) {
+        await page.setViewport(viewport)
+    }
+
     if (typeof navTimeout === 'number') {
         page.setDefaultNavigationTimeout(navTimeout)
     }
