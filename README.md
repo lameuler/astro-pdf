@@ -326,6 +326,45 @@ with the `fallback` function being called with:
 
 `astro-pdf` relies on [Puppeteer](https://pptr.dev) to generate PDFs. By default, installing `astro-pdf` will install `puppeteer`, which will automatically install a recent version of Chrome for Testing. To prevent this, add a [Puppeteer Configuration File](https://pptr.dev/guides/configuration/#configuration-files) and set `skipDownload` to `true`. Then, you can set [`Options.install`](#options) to specify a specific browser version to install.
 
+### Linux
+
+On newer Linux distros like Ubuntu 23.10+, you may run into a `No usable sandbox!` error. This will likely be the case if you are building your site using the `ubuntu-latest` GitHub Actions runner.
+
+To fix this, you can create an AppArmor profile to allow Puppeteer's installations of chrome to run.
+
+```bash
+sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+abi <abi/4.0>,
+include <tunables/global>
+
+# default executable location for puppeteer
+profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+    userns,
+
+    # Site-specific additions and overrides. See local/README for details.
+    include if exists <local/chrome>
+}
+
+# if you are installing other versions using the install option
+profile chrome-local $PWD/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+    userns,
+
+    # Site-specific additions and overrides. See local/README for details.
+    include if exists <local/chrome>
+}
+EOF
+sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+sudo service apparmor reload
+```
+
+You may need to change the target path of the profile depending on where Puppeteer has installed chrome.
+
+For more information and options, refer to the [Chromium Docs](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md).
+
+Alternatively, for GitHub Actions, use the `ubuntu-22.04` runner instead.
+
+### Windows
+
 If Puppeteer times out after calling `Page.pdf` on Windows, it may be due to [sandbox errors](https://pptr.dev/troubleshooting#chrome-reports-sandbox-errors-on-windows).
 
 To address this, you can run the following command in command prompt if you are using the default installation of Chrome.
