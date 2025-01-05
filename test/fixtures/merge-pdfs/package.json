@@ -11,7 +11,7 @@
     "dependencies": {
         "@astrojs/check": "^0.9.4",
         "astro": "^5.1.1",
-        "astro-pdf": "^1.5.0",
+        "astro-pdf": "^1.6.0",
         "pdf-merger-js": "^5.1.2",
         "typescript": "^5.7.2"
     }

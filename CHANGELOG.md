@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.6.0
+
+### Minor Changes
+
+- [#68](https://github.com/lameuler/astro-pdf/pull/68) [`2a2d9cc`](https://github.com/lameuler/astro-pdf/commit/2a2d9cc282e32cff62beb84314bb5a90e681577c) Thanks [@DeyLak](https://github.com/DeyLak)! - added puppeteer `Viewport` option support
+
 ## 1.5.0
 
 ### Minor Changes
