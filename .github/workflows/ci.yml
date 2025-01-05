@@ -72,7 +72,7 @@ jobs:
             - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  PUPPETEER_PATH={$HOME/.cache/puppeteer,$PWD/**/node_modules/.astro}/chrome/*/chrome-linux64/chrome
+                  PUPPETEER_PATH={$HOME/.cache/puppeteer,$PWD/test/fixtures/*/node_modules/.astro}/chrome/*/chrome-linux64/chrome
                   sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
                   abi <abi/4.0>,
                   include <tunables/global>
