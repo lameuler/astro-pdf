@@ -78,7 +78,14 @@ jobs:
                   abi <abi/4.0>,
                   include <tunables/global>
 
-                  profile chrome $PUPPETEER_SYSTEM $PUPPETEER_LOCAL flags=(unconfined) {
+                  profile chrome $PUPPETEER_SYSTEM flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  
+                  profile chrome-local $PUPPETEER_LOCAL flags=(unconfined) {
                     userns,
 
                     # Site-specific additions and overrides. See local/README for details.
@@ -86,10 +93,7 @@ jobs:
                   }
                   EOF
                   sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
-                  echo parsed
                   sudo service apparmor reload
-                  systemctl status apparmor.service
-                  journalctl -xeu apparmor.service
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
