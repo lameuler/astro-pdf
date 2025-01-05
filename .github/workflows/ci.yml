@@ -69,9 +69,22 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Configure Puppeteer sandbox (Linux only)
+            - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
-              run: export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+              run: |
+                  export CHROMIUM_BUILD_PATH=/@{HOME}/chromium/src/out/**/chrome
+                  cat | sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  abi <abi/4.0>,
+                  include <tunables/global>
+
+                  profile chrome $CHROMIUM_BUILD_PATH flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  EOF
+                  sudo service apparmor reload  # reload AppArmor profiles to include the new one
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
