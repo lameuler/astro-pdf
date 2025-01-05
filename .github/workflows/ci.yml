@@ -71,7 +71,7 @@ jobs:
 
             - name: Configure Puppeteer sandbox (Linux only)
               if: matrix.os == 'ubuntu-latest'
-              run: CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+              run: export CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
