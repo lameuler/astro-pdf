@@ -73,7 +73,7 @@ jobs:
               if: matrix.os == 'ubuntu-latest'
               run: |
                   export CHROMIUM_BUILD_PATH=/@{HOME}/chromium/src/out/**/chrome
-                  cat | sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
                   abi <abi/4.0>,
                   include <tunables/global>
 
@@ -84,7 +84,9 @@ jobs:
                     include if exists <local/chrome>
                   }
                   EOF
-                  sudo service apparmor reload  # reload AppArmor profiles to include the new one
+                  sudo service apparmor reload
+                  cat /etc/apparmor.d/chrome-dev-builds
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
 
             - name: Setup node@${{ matrix.node-version }}
               uses: actions/setup-node@v4
