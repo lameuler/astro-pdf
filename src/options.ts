@@ -97,13 +97,7 @@ export function getPageOptions(
             const partial = typeof opts === 'object' ? opts : typeof opts === 'string' ? { path: opts } : {}
             const options = {
                 ...baseOptions,
-                ...partial,
-                ...(!!baseOptions.viewport || !!partial.viewport
-                    ? {
-                          ...baseOptions.viewport,
-                          ...partial?.viewport
-                      }
-                    : {})
+                ...partial
             }
             const path = options.path
             if (typeof path === 'string' && path.includes('[pathname]')) {

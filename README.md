@@ -181,7 +181,7 @@ Specifies options for generating each PDF. All options are optional when specify
 
 - **`viewport`**: [`Viewport`](https://pptr.dev/api/puppeteer.viewport) _(optional)_
 
-    Set the [viewport](https://pptr.dev/api/puppeteer.page.setviewport) for Puppeteer.
+    Set the [viewport](https://pptr.dev/api/puppeteer.page.setviewport) for Puppeteer. This may be useful to set `deviceScaleFactor`. Read [this](https://github.com/puppeteer/puppeteer/issues/3910) puppeteer issue for more info.
 
 - **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`](https://pptr.dev/api/puppeteer.puppeteerlifecycleevent)
 
