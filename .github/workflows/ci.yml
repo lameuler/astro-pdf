@@ -72,20 +72,18 @@ jobs:
             - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  PUPPETEER_SYSTEM=$HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome
-                  PUPPETEER_LOCAL=$PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome
                   sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
                   abi <abi/4.0>,
                   include <tunables/global>
 
-                  profile chrome $PUPPETEER_SYSTEM flags=(unconfined) {
+                  profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
                     userns,
 
                     # Site-specific additions and overrides. See local/README for details.
                     include if exists <local/chrome>
                   }
-                  
-                  profile chrome-local $PUPPETEER_LOCAL flags=(unconfined) {
+
+                  profile chrome-local $PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
                     userns,
 
                     # Site-specific additions and overrides. See local/README for details.
@@ -103,9 +101,6 @@ jobs:
 
             - name: Install Dependencies
               run: npm install
-
-            - name: Check executablePath
-              run: node <<< "console.log(require('puppeteer').executablePath())"
 
             - name: Build Package
               run: npm run build
