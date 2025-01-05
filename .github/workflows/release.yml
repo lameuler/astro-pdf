@@ -28,6 +28,29 @@ jobs:
               with:
                   node-version: 20
                   cache: 'npm'
+            
+            - name: Configure AppArmor profile for Puppeteer
+              run: |
+                  sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  abi <abi/4.0>,
+                  include <tunables/global>
+
+                  profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+
+                  profile chrome-local $PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  EOF
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+                  sudo service apparmor reload
 
             - name: Install Dependencies
               run: npm ci
