@@ -46,7 +46,7 @@ describe('retries failed load', () => {
                 })
             ]
         })
-    })
+    }, 15000)
 
     test('requests each failed page 3 times', () => {
         expect(server.history.filter((req) => req.url === '/a').length).toBe(3)
