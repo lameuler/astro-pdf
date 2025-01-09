@@ -95,6 +95,8 @@ export default function pdf(options: Options): AstroIntegration {
                 })
                 logger.debug(`launched browser ${await browser.version()}`)
 
+                await Promise.all((await browser.pages()).map((page) => page.close()))
+
                 const { locations, map, fallback } = mergePages(pages, options.pages)
 
                 const queue: { location: string; pageOptions: PageOptions }[] = []
@@ -117,56 +119,64 @@ export default function pdf(options: Options): AstroIntegration {
 
                 const generated: string[] = []
 
-                await Promise.all(
-                    queue.map(({ location, pageOptions }) => {
-                        const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
-                        let i = 0
-                        const task = async () => {
-                            const start = Date.now()
-                            i++
-                            const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
-                            try {
-                                const result = await processPage(location, pageOptions, env)
+                async function task(location: string, pageOptions: PageOptions, i: number) {
+                    const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
+                    const start = Date.now()
+                    i++
+                    const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
+                    try {
+                        const result = await processPage(location, pageOptions, env)
+                        const time = Date.now() - start
+                        const src = result.src ? dim(' ← ' + result.src) : ''
+                        const attempts = i > 1 ? dim(retryInfo) : ''
+                        logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
+                        logger.info(
+                            `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                        )
+                        generated.push(result.output.pathname)
+                    } catch (err) {
+                        const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
+
+                        if (err instanceof PageError) {
+                            if (i < maxRuns || !pageOptions.throwOnFail) {
                                 const time = Date.now() - start
-                                const src = result.src ? dim(' ← ' + result.src) : ''
-                                const attempts = i > 1 ? dim(retryInfo) : ''
-                                logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
+                                const src = err.src ? dim(' ← ' + err.src) : ''
                                 logger.info(
-                                    `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                                    red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
                                 )
-                                generated.push(result.output.pathname)
-                            } catch (err) {
-                                const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
+                            }
+                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
+                        } else {
+                            // unexpected errors are always thrown
+                            throw new Error(
+                                `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
+                                    'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                { cause: err }
+                            )
+                        }
 
-                                if (err instanceof PageError && (i < maxRuns || !pageOptions.throwOnFail)) {
-                                    const time = Date.now() - start
-                                    const src = err.src ? dim(' ← ' + err.src) : ''
-                                    logger.info(
-                                        red(
-                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`
-                                        )
-                                    )
-                                }
-                                logger.debug(bold(red(`error while processing ${location}: `)) + err)
-
-                                if (i < maxRuns) {
-                                    await task()
-                                } else {
-                                    totalCount--
-                                    if (pageOptions.throwOnFail) {
-                                        throw err
-                                    }
-                                }
+                        if (i < maxRuns) {
+                            await task(location, pageOptions, i)
+                        } else {
+                            totalCount--
+                            if (pageOptions.throwOnFail) {
+                                throw err
                             }
                         }
-                        return pool.add(task)
-                    })
-                )
-
-                await browser.close()
-                if (typeof close === 'function') {
-                    await close()
+                    }
                 }
+
+                try {
+                    await Promise.all(
+                        queue.map(({ location, pageOptions }) => pool.add(() => task(location, pageOptions, 0)))
+                    )
+                } finally {
+                    await browser.close()
+                    if (typeof close === 'function') {
+                        await close()
+                    }
+                }
+
                 if (totalCount < queue.length) {
                     const n = queue.length - totalCount
                     logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))

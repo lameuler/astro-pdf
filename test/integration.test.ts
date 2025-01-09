@@ -5,7 +5,7 @@ import { cp, lstat, mkdir, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { AstroConfig, AstroIntegration } from 'astro'
+import { AstroConfig, AstroIntegration, build } from 'astro'
 
 import pdf from 'astro-pdf'
 
@@ -93,7 +93,6 @@ describe('run integration', () => {
             })
         }, 30000)
 
-        // TODO check runBefore runAfter
         test('called runBefore', () => {
             expect(runBefore).toBeCalledTimes(1)
             expect(runBefore).toHaveBeenCalledWith(outDir)
@@ -145,4 +144,25 @@ describe('run integration', () => {
             expect(existsSync(path)).toBe(false)
         })
     })
+})
+
+describe('throw on fail', () => {
+    test('causes build to fail with throwOnFail', async () => {
+        const promise = build({
+            logLevel: 'silent',
+            root: 'test/fixtures/.cache/throw-on-fail',
+            integrations: [
+                pdf({
+                    baseOptions: {
+                        waitUntil: 'load',
+                        throwOnFail: true
+                    },
+                    pages: {
+                        'https://example.com/not/a/real/page.php': true
+                    }
+                })
+            ]
+        })
+        await expect(promise).rejects.toThrow('Failed to load')
+    }, 10000)
 })

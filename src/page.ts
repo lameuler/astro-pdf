@@ -59,55 +59,53 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    const page = await loadPage(
-        location,
-        baseUrl,
-        browser,
-        pageOptions.waitUntil,
-        pageOptions.viewport,
-        pageOptions.navTimeout
-    )
-
-    if (pageOptions.screen) {
-        await page.emulateMediaType('screen')
-    }
-    if (pageOptions.callback) {
-        debug('running user callback')
-        await pageOptions.callback(page)
-    }
-
-    const url = page.url()
-    const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
-
-    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
-    // resolve pdf output relative to astro output directory
-    const outPath = pathnameToFilepath(outPathRaw, outDir)
-
-    const dir = dirname(outPath)
-    await mkdir(dir, { recursive: true })
-
-    const { fd, path } = await openFd(outPath, debug)
+    const page = await browser.newPage()
 
     try {
-        const stream = await page.createPDFStream(pageOptions.pdf)
+        await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions.viewport, pageOptions.navTimeout)
 
-        await pipeToFd(stream, fd)
-    } catch (err) {
-        const info = err instanceof Error ? ': ' + err.message : ''
-        throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
-    } finally {
-        await fd.close()
-    }
-
-    await page.close()
-
-    return {
-        src: location !== dest ? location : null,
-        location: dest,
-        output: {
-            path,
-            pathname: filepathToPathname(path, outDir)
+        if (pageOptions.screen) {
+            await page.emulateMediaType('screen')
         }
+        if (pageOptions.callback) {
+            debug('running user callback')
+            await pageOptions.callback(page)
+        }
+
+        const url = page.url()
+        const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
+
+        const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
+        // resolve pdf output relative to astro output directory
+        const outPath = pathnameToFilepath(outPathRaw, outDir)
+
+        const dir = dirname(outPath)
+        await mkdir(dir, { recursive: true })
+
+        const { fd, path } = await openFd(outPath, debug)
+
+        try {
+            const stream = await page.createPDFStream(pageOptions.pdf)
+
+            await pipeToFd(stream, fd)
+        } catch (err) {
+            const info = err instanceof Error ? ': ' + err.message : ''
+            throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
+        } finally {
+            await fd.close()
+        }
+
+        return {
+            src: location !== dest ? location : null,
+            location: dest,
+            output: {
+                path,
+                pathname: filepathToPathname(path, outDir)
+            }
+        }
+    } finally {
+        debug(`closing page for ${location} (page.url: ${page.url()})`)
+        await page.close()
     }
 }
 
@@ -120,12 +118,14 @@ class AbortPageLoad extends Error {
 export async function loadPage(
     location: string,
     baseUrl: URL | undefined,
-    browser: Browser,
+    page: Page,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     viewport?: Viewport,
     navTimeout?: number
 ): Promise<Page> {
-    const page = await browser.newPage()
+    if (page.url() !== 'about:blank' || page.isClosed()) {
+        throw new Error(`internal error: loadPage expects a new page`)
+    }
 
     if (viewport) {
         await page.setViewport(viewport)
