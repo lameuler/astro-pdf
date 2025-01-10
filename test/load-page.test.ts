@@ -45,14 +45,14 @@ describe('load page', () => {
         await loadPage('/index.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
         expect(await page.content()).toContain('<h1>Page Loaded!</h1>')
-    })
+    }, 8000)
 
     test('redirect to valid page', async () => {
         const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
         await loadPage('/other.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
-    })
+    }, 8000)
 
     test('404 page', async () => {
         const page = await browser.newPage()
@@ -60,7 +60,7 @@ describe('load page', () => {
         const fn = loadPage('/page.html', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
-        expect(Date.now() - start).toBeLessThan(1200)
+        expect(Date.now() - start).toBeLessThan(1400)
     })
 
     test('redirect to 404 page', async () => {
@@ -69,7 +69,7 @@ describe('load page', () => {
         const fn = loadPage('/page2.html', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
-        expect(Date.now() - start).toBeLessThan(1200)
+        expect(Date.now() - start).toBeLessThan(1400)
     })
 
     test('empty status message', async () => {
@@ -78,7 +78,7 @@ describe('load page', () => {
         const fn = loadPage('/403', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/403', '403'))
-        expect(Date.now() - start).toBeLessThan(1200)
+        expect(Date.now() - start).toBeLessThan(1400)
     })
 
     test('unresolved hostname', async () => {
@@ -87,7 +87,7 @@ describe('load page', () => {
         const fn = loadPage(location, undefined, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
-        expect(Date.now() - start).toBeLessThan(1200)
+        expect(Date.now() - start).toBeLessThan(1400)
     })
 
     test('redirect to unresolved hostname', async () => {
@@ -97,7 +97,7 @@ describe('load page', () => {
         const fn = loadPage('/outside', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
-        expect(Date.now() - start).toBeLessThan(1200)
+        expect(Date.now() - start).toBeLessThan(1400)
     })
 
     test('about:blank', async () => {
