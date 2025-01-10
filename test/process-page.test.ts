@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { Output } from 'pdf2json'
-import { CookieData, launch, Page } from 'puppeteer'
+import { BrowserContext, CookieData, launch, Page } from 'puppeteer'
 
 import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
@@ -174,9 +174,11 @@ describe('process page', () => {
                 value: 'G19onZSj8uRt1_9ttkHG5'
             }
             await env.browser.defaultBrowserContext().setCookie(cookie)
+            console.log(await env.browser.cookies())
         })
         test('non-isolated page can see cookie', async () => {
             let hasCookie: boolean | null = null
+            let sameContext: boolean | null = null
             await processPage(
                 '/',
                 {
@@ -185,8 +187,9 @@ describe('process page', () => {
                     waitUntil: 'load',
                     pdf: {},
                     async preCallback(page) {
+                        sameContext = page.browserContext() === env.browser.defaultBrowserContext()
                         const cookies = await page.browserContext().cookies()
-                        console.log(cookies)
+                        console.log(cookies, await env.browser.cookies())
                         hasCookie = !!cookies.find(
                             ({ name, value, domain }) =>
                                 domain === cookie.domain && name === cookie.name && value === cookie.value
@@ -195,10 +198,13 @@ describe('process page', () => {
                 },
                 env
             )
+            expect(sameContext).toBe(true)
             expect(hasCookie).toBe(true)
         }, 10000)
         test('isolated pages cannot see cookie', async () => {
             let hasDefaultCookie: boolean | null = null
+            let sameAsDefaultContext: boolean | null = null
+            let isolatedContext: BrowserContext
             await processPage(
                 '/',
                 {
@@ -208,7 +214,9 @@ describe('process page', () => {
                     pdf: {},
                     isolated: true,
                     async preCallback(page) {
-                        const cookies = await page.browserContext().cookies()
+                        isolatedContext = page.browserContext()
+                        sameAsDefaultContext = isolatedContext === env.browser.defaultBrowserContext()
+                        const cookies = await isolatedContext.cookies()
                         hasDefaultCookie = !!cookies.find(
                             ({ name, value, domain }) =>
                                 domain === cookie.domain && name === cookie.name && value === cookie.value
@@ -220,8 +228,11 @@ describe('process page', () => {
                 },
                 env
             )
+            expect(sameAsDefaultContext).toBe(false)
             expect(hasDefaultCookie).toBe(false)
 
+            sameAsDefaultContext = null
+            let sameAsIsolatedContext: boolean | null = null
             let hasIsolatedCookie: boolean | null = null
             await processPage(
                 '/',
@@ -232,6 +243,8 @@ describe('process page', () => {
                     pdf: {},
                     isolated: true,
                     async preCallback(page) {
+                        sameAsDefaultContext = page.browserContext() === env.browser.defaultBrowserContext()
+                        sameAsIsolatedContext = page.browserContext() === isolatedContext
                         const cookies = await page.browserContext().cookies()
                         hasIsolatedCookie = !!cookies.find(
                             ({ name, value, domain }) =>
@@ -241,6 +254,8 @@ describe('process page', () => {
                 },
                 env
             )
+            expect(sameAsDefaultContext).toBe(false)
+            expect(sameAsIsolatedContext).toBe(false)
             expect(hasIsolatedCookie).toBe(false)
         }, 15000)
     })
