@@ -2,17 +2,19 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
-import PQueue from 'p-queue'
+import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
 import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
-import { PageError, processPage } from './page.js'
+import { FatalError, PageError, processPage } from './page.js'
 import { astroPreview, type ServerOutput } from './server.js'
 
 export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
 export type { ServerOutput } from './server.js'
 export type { Options, PageOptions }
+
+const INTERRUPT = Symbol()
 
 export default function pdf(options: Options): AstroIntegration {
     let cacheDir: string
@@ -115,8 +117,6 @@ export default function pdf(options: Options): AstroIntegration {
                 let count = 0
                 let totalCount = queue.length
 
-                const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
-
                 const generated: string[] = []
 
                 async function task(location: string, pageOptions: PageOptions, i: number = 1) {
@@ -146,12 +146,21 @@ export default function pdf(options: Options): AstroIntegration {
                             }
                             logger.debug(bold(red(`error while processing ${location}: `)) + err)
                         } else {
-                            // unexpected errors are always thrown
-                            throw new Error(
-                                `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
-                                    'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
-                                { cause: err }
-                            )
+                            let error = err
+                            if (!(err instanceof FatalError)) {
+                                // wrap unexpected errors with a more useful message
+                                error = new Error(
+                                    `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
+                                        'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                    { cause: err }
+                                )
+                            }
+                            if (pageOptions.throwOnFail) {
+                                throw error
+                            } else {
+                                logger.error('build failed: ' + error + '\n')
+                                throw INTERRUPT
+                            }
                         }
 
                         if (i < maxRuns) {
@@ -166,9 +175,15 @@ export default function pdf(options: Options): AstroIntegration {
                 }
 
                 try {
-                    await Promise.all(
-                        queue.map(({ location, pageOptions }) => pool.add(() => task(location, pageOptions)))
-                    )
+                    await pMap(queue, ({ location, pageOptions }) => task(location, pageOptions), {
+                        concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY
+                    })
+                } catch (err) {
+                    if (err === INTERRUPT) {
+                        return
+                    } else {
+                        throw err
+                    }
                 } finally {
                     await browser.close()
                     if (typeof close === 'function') {

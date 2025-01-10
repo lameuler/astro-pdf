@@ -1,11 +1,11 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
+import { bold, red, yellow } from 'kleur/colors'
 import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
 
 import { type PageOptions } from './options.js'
 import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
-import { bold, red, yellow } from 'kleur/colors'
 
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
@@ -39,6 +39,16 @@ export class PageError extends Error implements PageErrorOptions {
     }
 }
 
+export class FatalError extends Error {
+    name = 'FatalError' as const
+    constructor(message: string, cause?: unknown) {
+        if (cause) {
+            message += ': ' + cause
+        }
+        super(message, cause ? { cause } : undefined)
+    }
+}
+
 export interface PageResult {
     location: string
     src: string | null
@@ -55,12 +65,26 @@ export type PageEnv = {
     debug: (message: string) => void
 }
 
+async function newPage(browser: Browser, location: string) {
+    if (!browser.connected) {
+        throw new FatalError(
+            `Fatal error when opening a new page for \`${location}\`: ` +
+                'browser is not connected. it may have been unexpectedly closed.'
+        )
+    }
+    try {
+        return await browser.newPage()
+    } catch (err) {
+        throw new FatalError(`Fatal error when opening a new page for \`${location}\``, err)
+    }
+}
+
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
     const { outDir, browser, baseUrl, debug } = env
 
     debug(`starting processing of ${location}`)
 
-    const page = await browser.newPage()
+    const page = await newPage(browser, location)
 
     try {
         await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions.viewport, pageOptions.navTimeout)
@@ -109,7 +133,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             debug(`closing page for ${location} (page.url: ${page.url()})`)
             try {
                 await page.close()
-            } catch(err) {
+            } catch (err) {
                 debug(bold(red(`failed to close page for ${location}: `)) + err)
             }
         } else {
