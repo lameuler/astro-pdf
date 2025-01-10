@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { Output } from 'pdf2json'
-import { launch, Page } from 'puppeteer'
+import { CookieData, launch, Page } from 'puppeteer'
 
 import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
@@ -165,12 +165,96 @@ describe('process page', () => {
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
     })
+    describe('isolated pages', () => {
+        let cookie: CookieData
+        beforeAll(async () => {
+            cookie = {
+                domain: 'localhost',
+                name: 'test:cookie',
+                value: 'G19onZSj8uRt1_9ttkHG5'
+            }
+            await env.browser.defaultBrowserContext().setCookie(cookie)
+        })
+        test('non-isolated page can see cookie', async () => {
+            let hasCookie: boolean | null = null
+            await processPage(
+                '/',
+                {
+                    path: 'index.pdf',
+                    screen: false,
+                    waitUntil: 'load',
+                    pdf: {},
+                    async preCallback(page) {
+                        const cookies = await page.browserContext().cookies()
+                        console.log(cookies)
+                        hasCookie = !!cookies.find(
+                            ({ name, value, domain }) =>
+                                domain === cookie.domain && name === cookie.name && value === cookie.value
+                        )
+                    }
+                },
+                env
+            )
+            expect(hasCookie).toBe(true)
+        }, 10000)
+        test('isolated pages cannot see cookie', async () => {
+            let hasDefaultCookie: boolean | null = null
+            await processPage(
+                '/',
+                {
+                    path: 'index.pdf',
+                    screen: false,
+                    waitUntil: 'load',
+                    pdf: {},
+                    isolated: true,
+                    async preCallback(page) {
+                        const cookies = await page.browserContext().cookies()
+                        hasDefaultCookie = !!cookies.find(
+                            ({ name, value, domain }) =>
+                                domain === cookie.domain && name === cookie.name && value === cookie.value
+                        )
+                        if (hasDefaultCookie) return
+
+                        await page.browserContext().setCookie(cookie)
+                    }
+                },
+                env
+            )
+            expect(hasDefaultCookie).toBe(false)
+
+            let hasIsolatedCookie: boolean | null = null
+            await processPage(
+                '/',
+                {
+                    path: 'index.pdf',
+                    screen: false,
+                    waitUntil: 'load',
+                    pdf: {},
+                    isolated: true,
+                    async preCallback(page) {
+                        const cookies = await page.browserContext().cookies()
+                        hasIsolatedCookie = !!cookies.find(
+                            ({ name, value, domain }) =>
+                                domain === cookie.domain && name === cookie.name && value === cookie.value
+                        )
+                    }
+                },
+                env
+            )
+            expect(hasIsolatedCookie).toBe(false)
+        }, 15000)
+    })
 
     afterAll(async () => {
-        const n = (await env.browser.pages()).length
+        const pages = (await env.browser.pages()).length
+        const contexts = env.browser.browserContexts().length - 1
         await env.browser.close()
-        if (n > 0) {
-            throw new Error(`${n} pages were left open by processPage`)
+        if (pages > 0) {
+            throw new Error(`${pages} page(s) were left open by processPage`)
         }
+        if (contexts > 0) {
+            throw new Error(`${contexts} created browser context(s) were left open by processPage`)
+        }
+        await server.stop()
     })
 })

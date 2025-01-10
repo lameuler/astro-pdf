@@ -33,6 +33,7 @@ export interface PageOptions {
     pdf: Omit<PDFOptions, 'path'>
     maxRetries?: number
     throwOnFail?: boolean
+    isolated?: boolean
     preCallback?: (page: Page) => void | Promise<void>
     callback?: (page: Page) => void | Promise<void>
 }
@@ -43,7 +44,8 @@ export const defaultPageOptions = {
     waitUntil: 'networkidle2',
     pdf: {},
     maxRetries: 0,
-    throwOnFail: false
+    throwOnFail: false,
+    isolated: false
 } satisfies PageOptions
 
 export type CleanedMap = Record<string, Exclude<PagesEntry, null | undefined>[]>
