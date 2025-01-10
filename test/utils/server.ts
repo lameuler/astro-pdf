@@ -23,9 +23,26 @@ export class TestServer extends Server {
             const tid = setTimeout(() => {
                 reject(new Error(`server start timed out in ${timeout}ms`))
             }, timeout)
-            this.on('listening', () => {
+            const onError = (err: Error) => {
+                clearTimeout(tid)
+                reject(err)
+            }
+            this.once('listening', () => {
                 clearTimeout(tid)
                 resolve(this)
+                this.off('error', onError)
+            })
+            this.once('error', onError)
+        })
+    }
+    async stop() {
+        return new Promise<void>((resolve, reject) => {
+            this.close((err) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve()
+                }
             })
         })
     }

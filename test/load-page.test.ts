@@ -109,9 +109,6 @@ describe('load errors', () => {
 
     afterAll(async () => {
         await browser.close()
-        server.close()
-        await new Promise((resolve) => {
-            server.on('close', resolve)
-        })
+        await server.stop()
     })
 })
