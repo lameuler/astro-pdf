@@ -153,6 +153,10 @@ export interface Options
     const pdfUrl = new URL(pathnames[0], dir)
     ```
 
+- **`browserCallback`**: `(browser: Browser) => void | Promise<void>` _(optional)_
+
+    Receives a Puppeteer [`Browser`](https://pptr.dev/api/puppeteer.browser) after it is launched. This can be used to configure the browser before any pages are processed.
+
 ### `PageOptions`
 
 ```ts
@@ -212,6 +216,10 @@ Specifies options for generating each PDF. All options are optional when specify
     Set to throw errors encountered when loading and processing the page. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for the page.
 
     By default, errors for failed pages will be logged and the build will still successfully complete.
+
+- **`preCallback`**: `(page: Page) => void | Promise<void>` _(optional)_
+
+    Receives a Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page) before any navigation is done. This can be used, for example, to set the [user agent](https://pptr.dev/api/puppeteer.page.setuseragent), or [HTTP headers](https://pptr.dev/api/puppeteer.page.setextrahttpheaders) for the request.
 
 - **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 

@@ -87,7 +87,15 @@ export async function processPage(location: string, pageOptions: PageOptions, en
     const page = await newPage(browser, location)
 
     try {
-        await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions.viewport, pageOptions.navTimeout)
+        await loadPage(
+            location,
+            baseUrl,
+            page,
+            pageOptions.waitUntil,
+            pageOptions.viewport,
+            pageOptions.navTimeout,
+            pageOptions.preCallback
+        )
 
         if (pageOptions.screen) {
             await page.emulateMediaType('screen')
@@ -154,7 +162,8 @@ export async function loadPage(
     page: Page,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     viewport?: Viewport,
-    navTimeout?: number
+    navTimeout?: number,
+    preCallback?: (page: Page) => void | Promise<void>
 ): Promise<Page> {
     if (page.url() !== 'about:blank' || page.isClosed()) {
         throw new Error(`internal error: loadPage expects a new page`)
@@ -163,10 +172,13 @@ export async function loadPage(
     if (viewport) {
         await page.setViewport(viewport)
     }
-
     if (typeof navTimeout === 'number') {
         page.setDefaultNavigationTimeout(navTimeout)
     }
+    if (typeof preCallback === 'function') {
+        await preCallback(page)
+    }
+
     return new Promise((resolve, reject) => {
         let url: URL
         try {
