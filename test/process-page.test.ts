@@ -175,7 +175,6 @@ describe('process page', () => {
                 expires: Math.round(Date.now() / 1000) + 86400
             }
             await env.browser.defaultBrowserContext().setCookie(cookie)
-            console.log(await env.browser.cookies())
         })
         test('non-isolated page can see cookie', async () => {
             let hasCookie: boolean | null = null
@@ -190,7 +189,6 @@ describe('process page', () => {
                     async preCallback(page) {
                         sameContext = page.browserContext() === env.browser.defaultBrowserContext()
                         const cookies = await page.browserContext().cookies()
-                        console.log(cookies, await env.browser.cookies())
                         hasCookie = !!cookies.find(
                             ({ name, value, domain }) =>
                                 domain === cookie.domain && name === cookie.name && value === cookie.value
