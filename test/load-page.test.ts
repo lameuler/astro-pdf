@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { Browser, launch } from 'puppeteer'
+import { Browser, launch, Viewport } from 'puppeteer'
 
 import { loadPage, PageError } from 'astro-pdf/dist/page.js'
 
@@ -113,6 +113,21 @@ describe('load page', () => {
         const base = new URL('http://localhost:' + port)
         const fn = loadPage('/index.html', base, page, 'load')
         await expect(fn).rejects.toThrowError('internal error: loadPage expects a new page')
+    })
+
+    test('runs preCallback after setting viewport and nav timeout', async () => {
+        const page = await browser.newPage()
+        const base = new URL('http://localhost:' + port)
+        let pass = false
+        const viewport: Viewport = {
+            width: 111,
+            height: 99,
+            deviceScaleFactor: 1
+        }
+        await loadPage('/index.html', base, page, 'load', viewport, 12345, async (page) => {
+            pass = page.viewport() === viewport && page.getDefaultNavigationTimeout() === 12345
+        })
+        expect(pass).toBe(true)
     })
 
     afterAll(async () => {

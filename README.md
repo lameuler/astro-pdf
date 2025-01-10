@@ -213,6 +213,10 @@ Specifies options for generating each PDF. All options are optional when specify
 
     By default, errors for failed pages will be logged and the build will still successfully complete.
 
+- **`preCallback`**: `(page: Page) => void | Promise<void>` _(optional)_
+
+    Receives a Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page) before any navigation is done. This can be used, for example, to set the [user agent](https://pptr.dev/api/puppeteer.page.setuseragent), or [HTTP headers](https://pptr.dev/api/puppeteer.page.setextrahttpheaders) for the request.
+
 - **`callback`**: `(page: Page) => void | Promise<void>` _(optional)_
 
     Receives a Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page) after the page has loaded. This callback is run before the PDF is generated.

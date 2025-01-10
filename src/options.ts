@@ -32,6 +32,7 @@ export interface PageOptions {
     pdf: Omit<PDFOptions, 'path'>
     maxRetries?: number
     throwOnFail?: boolean
+    preCallback?: (page: Page) => void | Promise<void>
     callback?: (page: Page) => void | Promise<void>
 }
 
