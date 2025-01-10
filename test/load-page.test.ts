@@ -6,7 +6,7 @@ import { loadPage, PageError } from 'astro-pdf/dist/page.js'
 
 import { start, TestServer } from './utils/server.js'
 
-describe('load errors', () => {
+describe('load page', () => {
     let server: TestServer
     let port: number
     let browser: Browser
@@ -105,6 +105,14 @@ describe('load errors', () => {
         const base = new URL('http://localhost:' + port)
         const fn = loadPage('about:blank', base, page, 'load')
         await expect(fn).rejects.toThrowError('did not navigate')
+    })
+
+    test('rejects if page is reused', async () => {
+        const page = await browser.newPage()
+        await page.goto('https://example.com', { waitUntil: 'load' })
+        const base = new URL('http://localhost:' + port)
+        const fn = loadPage('/index.html', base, page, 'load')
+        await expect(fn).rejects.toThrowError('internal error: loadPage expects a new page')
     })
 
     afterAll(async () => {
