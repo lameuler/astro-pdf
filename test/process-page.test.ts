@@ -171,7 +171,8 @@ describe('process page', () => {
             cookie = {
                 domain: 'localhost',
                 name: 'test:cookie',
-                value: 'G19onZSj8uRt1_9ttkHG5'
+                value: 'G19onZSj8uRt1_9ttkHG5',
+                expires: Math.round(Date.now() / 1000) + 86400
             }
             await env.browser.defaultBrowserContext().setCookie(cookie)
             console.log(await env.browser.cookies())
