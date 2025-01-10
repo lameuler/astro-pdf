@@ -153,6 +153,10 @@ export interface Options
     const pdfUrl = new URL(pathnames[0], dir)
     ```
 
+- **`browserCallback`**: `(browser: Browser) => void | Promise<void>` _(optional)_
+
+    Receives a Puppeteer [`Browser`](https://pptr.dev/api/puppeteer.browser) after it is launched. This can be used to configure the browser before any pages are processed.
+
 ### `PageOptions`
 
 ```ts

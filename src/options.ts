@@ -1,6 +1,6 @@
 import type { InstallOptions } from '@puppeteer/browsers'
 import type { AstroConfig } from 'astro'
-import type { Page, PDFOptions, LaunchOptions, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
+import type { Page, PDFOptions, LaunchOptions, PuppeteerLifeCycleEvent, Viewport, Browser } from 'puppeteer'
 
 import type { ServerOutput } from './server.js'
 
@@ -13,6 +13,7 @@ export interface Options {
     maxConcurrent?: number | null
     runBefore?: (dir: URL) => void | Promise<void>
     runAfter?: (dir: URL, pathnames: string[]) => void | Promise<void>
+    browserCallback?: (browser: Browser) => void | Promise<void>
 }
 
 export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefined | void

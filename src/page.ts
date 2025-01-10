@@ -87,7 +87,15 @@ export async function processPage(location: string, pageOptions: PageOptions, en
     const page = await newPage(browser, location)
 
     try {
-        await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions.viewport, pageOptions.navTimeout, pageOptions.preCallback)
+        await loadPage(
+            location,
+            baseUrl,
+            page,
+            pageOptions.waitUntil,
+            pageOptions.viewport,
+            pageOptions.navTimeout,
+            pageOptions.preCallback
+        )
 
         if (pageOptions.screen) {
             await page.emulateMediaType('screen')

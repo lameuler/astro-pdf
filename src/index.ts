@@ -175,6 +175,9 @@ export default function pdf(options: Options): AstroIntegration {
                 }
 
                 try {
+                    if (typeof options.browserCallback === 'function') {
+                        await options.browserCallback(browser)
+                    }
                     await pMap(queue, ({ location, pageOptions }) => task(location, pageOptions), {
                         concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY
                     })

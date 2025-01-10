@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { AstroConfig, AstroIntegration, build } from 'astro'
+import type { Browser } from 'puppeteer'
 
 import pdf from 'astro-pdf'
 
@@ -15,6 +16,11 @@ describe('run integration', () => {
     let integration: AstroIntegration
     const runBefore = vi.fn()
     const runAfter = vi.fn()
+    const browserCallback = vi.fn(async (browser: Browser) => {
+        if ((await browser.pages()).length !== 0) {
+            throw new Error('expected browserCallback to be called before any pages are processed')
+        }
+    })
 
     beforeAll(() => {
         integration = pdf({
@@ -33,7 +39,8 @@ describe('run integration', () => {
                 }
             },
             runBefore,
-            runAfter
+            runAfter,
+            browserCallback
         })
     })
 
@@ -104,6 +111,10 @@ describe('run integration', () => {
             expect(calls[0][0]).toBe(outDir)
             const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf']
             expect(calls[0][1].sort()).toStrictEqual(expected.sort())
+        })
+
+        test('called browserCallback', () => {
+            expect(browserCallback).toBeCalledTimes(1)
         })
 
         test('generated local page', async () => {
