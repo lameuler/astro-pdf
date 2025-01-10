@@ -3,7 +3,7 @@
 [![CI](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/lameuler/astro-pdf/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/astro-pdf)](https://www.npmjs.com/package/astro-pdf)
 
-A simple Astro integration to generate PDFs from built pages. Generate PDF versions of pages in your Astro site, or pages on external sites. Note that the PDFs will only be generated during builds and not when running the dev server.
+Astro integration to generate PDFs from any webpage. Generate PDF versions of pages in your Astro site, or pages on external sites. Note that the PDFs will only be generated during builds and not when running the dev server.
 
 ## Quickstart
 
@@ -67,7 +67,8 @@ export default defineConfig({
                             format: 'A4',
                             printBackground: true,
                             timeout: 20_000
-                        }
+                        },
+                        isolated: true // do not share cookies with other pages
                     },
                     'basic-example.pdf'
                 ],
@@ -216,6 +217,16 @@ Specifies options for generating each PDF. All options are optional when specify
     Set to throw errors encountered when loading and processing the page. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for the page.
 
     By default, errors for failed pages will be logged and the build will still successfully complete.
+
+- **`isolated`**: `boolean`
+
+    Default: `false`
+
+    If `isolated` is set to `true`, a new [`BrowserContext`](https://pptr.dev/api/puppeteer.browsercontext) will be created every time the page is loaded.
+
+    This is like opening the page in a new incognito window, and `isolated` pages will not share any cookies or cache with the other pages.
+
+    Otherwise, all other pages (with `isolated: false`) will be opened in the same browser context.
 
 - **`preCallback`**: `(page: Page) => void | Promise<void>` _(optional)_
 

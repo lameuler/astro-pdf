@@ -65,7 +65,7 @@ export type PageEnv = {
     debug: (message: string) => void
 }
 
-async function newPage(browser: Browser, location: string) {
+async function newPage(browser: Browser, location: string, debug: (msg: string) => void, isolated?: boolean) {
     if (!browser.connected) {
         throw new FatalError(
             `Fatal error when opening a new page for \`${location}\`: ` +
@@ -73,7 +73,13 @@ async function newPage(browser: Browser, location: string) {
         )
     }
     try {
-        return await browser.newPage()
+        if (isolated) {
+            const context = await browser.createBrowserContext()
+            debug(`created browser context (${context.id}) for \`${location}\``)
+            return context.newPage()
+        } else {
+            return browser.newPage()
+        }
     } catch (err) {
         throw new FatalError(`Fatal error when opening a new page for \`${location}\``, err)
     }
@@ -84,7 +90,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
     debug(`starting processing of ${location}`)
 
-    const page = await newPage(browser, location)
+    const page = await newPage(browser, location, debug, pageOptions.isolated)
 
     try {
         await loadPage(
@@ -138,14 +144,27 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         }
     } finally {
         if (!page.isClosed()) {
-            debug(`closing page for ${location} (page.url: ${page.url()})`)
+            debug(`closing page for \`${location}\` (page.url: ${page.url()})`)
             try {
                 await page.close()
             } catch (err) {
-                debug(bold(red(`failed to close page for ${location}: `)) + err)
+                debug(bold(red(`failed to close page for \`${location}\`: `)) + err)
             }
         } else {
-            debug(yellow(`page for ${location} has already been closed`))
+            debug(yellow(`page for \`${location}\` has already been closed`))
+        }
+        const context = page.browserContext()
+        if (context !== page.browser().defaultBrowserContext()) {
+            if (!context.closed) {
+                debug(`closing browser context (${context.id}) for \`${location}\``)
+                try {
+                    await context.close()
+                } catch (err) {
+                    debug(bold(red(`failed to close browser context (${context.id}) for \`${location}\`: `)) + err)
+                }
+            } else {
+                debug(yellow(`browser context (${context.id}) for \`${location}\` has already been closed`))
+            }
         }
     }
 }
