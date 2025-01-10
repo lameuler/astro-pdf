@@ -119,10 +119,9 @@ export default function pdf(options: Options): AstroIntegration {
 
                 const generated: string[] = []
 
-                async function task(location: string, pageOptions: PageOptions, i: number) {
+                async function task(location: string, pageOptions: PageOptions, i: number = 1) {
                     const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
                     const start = Date.now()
-                    i++
                     const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
                     try {
                         const result = await processPage(location, pageOptions, env)
@@ -156,7 +155,7 @@ export default function pdf(options: Options): AstroIntegration {
                         }
 
                         if (i < maxRuns) {
-                            await task(location, pageOptions, i)
+                            await task(location, pageOptions, i + 1)
                         } else {
                             totalCount--
                             if (pageOptions.throwOnFail) {
@@ -168,7 +167,7 @@ export default function pdf(options: Options): AstroIntegration {
 
                 try {
                     await Promise.all(
-                        queue.map(({ location, pageOptions }) => pool.add(() => task(location, pageOptions, 0)))
+                        queue.map(({ location, pageOptions }) => pool.add(() => task(location, pageOptions)))
                     )
                 } finally {
                     await browser.close()
