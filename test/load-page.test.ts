@@ -1,15 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { Server } from 'node:http'
-
 import { Browser, launch } from 'puppeteer'
 
 import { loadPage, PageError } from 'astro-pdf/dist/page.js'
 
-import { start } from './utils/server.js'
+import { start, TestServer } from './utils/server.js'
 
-describe('load errors', () => {
-    let server: Server
+describe('load page', () => {
+    let server: TestServer
     let port: number
     let browser: Browser
 
@@ -29,81 +27,96 @@ describe('load errors', () => {
     })
 
     test('relative path with no base url', async () => {
-        const fn = loadPage('/page.html', undefined, browser, 'load')
+        const page = await browser.newPage()
+        const fn = loadPage('/page.html', undefined, page, 'load')
         await expect(fn).rejects.toThrowError(new PageError('/page.html', 'invalid location'))
     })
 
     test('invalid url', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('https://[pathname]', base, browser, 'load')
+        const fn = loadPage('https://[pathname]', base, page, 'load')
         await expect(fn).rejects.toThrowError(new PageError('https://[pathname]', 'invalid location'))
     })
 
     test('valid page', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const page = await loadPage('/index.html', base, browser, 'networkidle0')
+        await loadPage('/index.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
         expect(await page.content()).toContain('<h1>Page Loaded!</h1>')
     })
 
     test('redirect to valid page', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const page = await loadPage('/other.html', base, browser, 'networkidle0')
+        await loadPage('/other.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
     })
 
     test('404 page', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('/page.html', base, browser, 'networkidle0')
+        const fn = loadPage('/page.html', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
         expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('redirect to 404 page', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('/page2.html', base, browser, 'networkidle0')
+        const fn = loadPage('/page2.html', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/page.html', '404 Not Found!!', { status: 404 }))
         expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('empty status message', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('/403', base, browser, 'networkidle0')
+        const fn = loadPage('/403', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError('/403', '403'))
         expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('unresolved hostname', async () => {
+        const page = await browser.newPage()
         const location = 'https://fake-gxcskbrl.example.com/page.html'
-        const fn = loadPage(location, undefined, browser, 'networkidle0')
+        const fn = loadPage(location, undefined, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
         expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('redirect to unresolved hostname', async () => {
+        const page = await browser.newPage()
         const location = 'https://fake-gxcskbrl.example.com/page.html'
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('/outside', base, browser, 'networkidle0')
+        const fn = loadPage('/outside', base, page, 'networkidle0')
         const start = Date.now()
         await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
         expect(Date.now() - start).toBeLessThan(1200)
     })
 
     test('about:blank', async () => {
+        const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
-        const fn = loadPage('about:blank', base, browser, 'load')
+        const fn = loadPage('about:blank', base, page, 'load')
         await expect(fn).rejects.toThrowError('did not navigate')
+    })
+
+    test('rejects if page is reused', async () => {
+        const page = await browser.newPage()
+        await page.goto('https://example.com', { waitUntil: 'load' })
+        const base = new URL('http://localhost:' + port)
+        const fn = loadPage('/index.html', base, page, 'load')
+        await expect(fn).rejects.toThrowError('internal error: loadPage expects a new page')
     })
 
     afterAll(async () => {
         await browser.close()
-        server.close()
-        await new Promise((resolve) => {
-            server.on('close', resolve)
-        })
+        await server.stop()
     })
 })

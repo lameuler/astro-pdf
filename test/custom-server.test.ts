@@ -35,14 +35,7 @@ describe('custom server', () => {
                         const address = server.address()
                         const url =
                             typeof address === 'object' ? new URL(`http://localhost:${address?.port}`) : undefined
-                        close = vi.fn(
-                            () =>
-                                new Promise((resolve, reject) => {
-                                    server.on('close', resolve)
-                                    server.on('error', reject)
-                                    server.close()
-                                })
-                        )
+                        close = vi.fn(() => server.stop())
                         return {
                             url,
                             close
@@ -51,7 +44,7 @@ describe('custom server', () => {
                 })
             ]
         })
-    }, 20_000)
+    }, 30_000)
 
     test('close called once', () => {
         expect(close).toHaveBeenCalledOnce()

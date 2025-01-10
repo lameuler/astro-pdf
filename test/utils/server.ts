@@ -10,18 +10,47 @@ export interface Redirects {
     }
 }
 
-export function start(root: URL, redirects?: Redirects, timeout = 5000) {
-    const server = new Server(makeHandler(root, redirects ?? {}))
-    server.listen()
-    return new Promise<Server>((resolve, reject) => {
-        const tid = setTimeout(() => {
-            reject(new Error(`server start timed out in ${timeout}ms`))
-        }, timeout)
-        server.on('listening', () => {
-            clearTimeout(tid)
-            resolve(server)
+export class TestServer extends Server {
+    history: IncomingMessage[]
+    constructor(root: URL, redirects?: Redirects) {
+        const history: IncomingMessage[] = []
+        super(makeHandler(root, redirects ?? {}, history))
+        this.history = history
+    }
+    async start(timeout = 5000) {
+        this.listen()
+        return new Promise<TestServer>((resolve, reject) => {
+            const tid = setTimeout(() => {
+                reject(new Error(`server start timed out in ${timeout}ms`))
+            }, timeout)
+            const onError = (err: Error) => {
+                clearTimeout(tid)
+                reject(err)
+            }
+            this.once('listening', () => {
+                clearTimeout(tid)
+                resolve(this)
+                this.off('error', onError)
+            })
+            this.once('error', onError)
         })
-    })
+    }
+    async stop() {
+        return new Promise<void>((resolve, reject) => {
+            this.close((err) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve()
+                }
+            })
+        })
+    }
+}
+
+export async function start(root: URL, redirects?: Redirects, timeout?: number) {
+    const server = new TestServer(root, redirects)
+    return await server.start(timeout)
 }
 
 function wait(timeout: number) {
@@ -41,8 +70,9 @@ async function isFile(path: string) {
     }
 }
 
-function makeHandler(root: URL, redirects: Redirects) {
+function makeHandler(root: URL, redirects: Redirects, history: IncomingMessage[] = []) {
     return async (req: IncomingMessage, res: ServerResponse) => {
+        history.push(req)
         if (req.url) {
             const url = new URL(req.url, 'base://')
             const delay = parseInt(url.searchParams.get('delay') || '0')

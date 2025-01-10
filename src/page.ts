@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
+import { bold, red, yellow } from 'kleur/colors'
 import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
 
 import { type PageOptions } from './options.js'
@@ -38,6 +39,16 @@ export class PageError extends Error implements PageErrorOptions {
     }
 }
 
+export class FatalError extends Error {
+    name = 'FatalError' as const
+    constructor(message: string, cause?: unknown) {
+        if (cause) {
+            message += ': ' + cause
+        }
+        super(message, cause ? { cause } : undefined)
+    }
+}
+
 export interface PageResult {
     location: string
     src: string | null
@@ -54,59 +65,79 @@ export type PageEnv = {
     debug: (message: string) => void
 }
 
+async function newPage(browser: Browser, location: string) {
+    if (!browser.connected) {
+        throw new FatalError(
+            `Fatal error when opening a new page for \`${location}\`: ` +
+                'browser is not connected. it may have been unexpectedly closed.'
+        )
+    }
+    try {
+        return await browser.newPage()
+    } catch (err) {
+        throw new FatalError(`Fatal error when opening a new page for \`${location}\``, err)
+    }
+}
+
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
     const { outDir, browser, baseUrl, debug } = env
 
     debug(`starting processing of ${location}`)
 
-    const page = await loadPage(
-        location,
-        baseUrl,
-        browser,
-        pageOptions.waitUntil,
-        pageOptions.viewport,
-        pageOptions.navTimeout
-    )
-
-    if (pageOptions.screen) {
-        await page.emulateMediaType('screen')
-    }
-    if (pageOptions.callback) {
-        debug('running user callback')
-        await pageOptions.callback(page)
-    }
-
-    const url = page.url()
-    const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
-
-    const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
-    // resolve pdf output relative to astro output directory
-    const outPath = pathnameToFilepath(outPathRaw, outDir)
-
-    const dir = dirname(outPath)
-    await mkdir(dir, { recursive: true })
-
-    const { fd, path } = await openFd(outPath, debug)
+    const page = await newPage(browser, location)
 
     try {
-        const stream = await page.createPDFStream(pageOptions.pdf)
+        await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions.viewport, pageOptions.navTimeout)
 
-        await pipeToFd(stream, fd)
-    } catch (err) {
-        const info = err instanceof Error ? ': ' + err.message : ''
-        throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
+        if (pageOptions.screen) {
+            await page.emulateMediaType('screen')
+        }
+        if (pageOptions.callback) {
+            debug('running user callback')
+            await pageOptions.callback(page)
+        }
+
+        const url = page.url()
+        const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
+
+        const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
+        // resolve pdf output relative to astro output directory
+        const outPath = pathnameToFilepath(outPathRaw, outDir)
+
+        const dir = dirname(outPath)
+        await mkdir(dir, { recursive: true })
+
+        const { fd, path } = await openFd(outPath, debug)
+
+        try {
+            const stream = await page.createPDFStream(pageOptions.pdf)
+
+            await pipeToFd(stream, fd)
+        } catch (err) {
+            const info = err instanceof Error ? ': ' + err.message : ''
+            throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
+        } finally {
+            await fd.close()
+        }
+
+        return {
+            src: location !== dest ? location : null,
+            location: dest,
+            output: {
+                path,
+                pathname: filepathToPathname(path, outDir)
+            }
+        }
     } finally {
-        await fd.close()
-    }
-
-    await page.close()
-
-    return {
-        src: location !== dest ? location : null,
-        location: dest,
-        output: {
-            path,
-            pathname: filepathToPathname(path, outDir)
+        if (!page.isClosed()) {
+            debug(`closing page for ${location} (page.url: ${page.url()})`)
+            try {
+                await page.close()
+            } catch (err) {
+                debug(bold(red(`failed to close page for ${location}: `)) + err)
+            }
+        } else {
+            debug(yellow(`page for ${location} has already been closed`))
         }
     }
 }
@@ -120,12 +151,14 @@ class AbortPageLoad extends Error {
 export async function loadPage(
     location: string,
     baseUrl: URL | undefined,
-    browser: Browser,
+    page: Page,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
     viewport?: Viewport,
     navTimeout?: number
 ): Promise<Page> {
-    const page = await browser.newPage()
+    if (page.url() !== 'about:blank' || page.isClosed()) {
+        throw new Error(`internal error: loadPage expects a new page`)
+    }
 
     if (viewport) {
         await page.setViewport(viewport)

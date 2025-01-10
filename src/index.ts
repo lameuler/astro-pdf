@@ -2,17 +2,19 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
-import PQueue from 'p-queue'
+import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
 import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
-import { PageError, processPage } from './page.js'
+import { FatalError, PageError, processPage } from './page.js'
 import { astroPreview, type ServerOutput } from './server.js'
 
 export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
 export type { ServerOutput } from './server.js'
 export type { Options, PageOptions }
+
+const INTERRUPT = Symbol()
 
 export default function pdf(options: Options): AstroIntegration {
     let cacheDir: string
@@ -95,6 +97,8 @@ export default function pdf(options: Options): AstroIntegration {
                 })
                 logger.debug(`launched browser ${await browser.version()}`)
 
+                await Promise.all((await browser.pages()).map((page) => page.close()))
+
                 const { locations, map, fallback } = mergePages(pages, options.pages)
 
                 const queue: { location: string; pageOptions: PageOptions }[] = []
@@ -113,60 +117,80 @@ export default function pdf(options: Options): AstroIntegration {
                 let count = 0
                 let totalCount = queue.length
 
-                const pool = new PQueue({ concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY })
-
                 const generated: string[] = []
 
-                await Promise.all(
-                    queue.map(({ location, pageOptions }) => {
-                        const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
-                        let i = 0
-                        const task = async () => {
-                            const start = Date.now()
-                            i++
-                            const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
-                            try {
-                                const result = await processPage(location, pageOptions, env)
+                async function task(location: string, pageOptions: PageOptions, i: number = 1) {
+                    const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
+                    const start = Date.now()
+                    const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
+                    try {
+                        const result = await processPage(location, pageOptions, env)
+                        const time = Date.now() - start
+                        const src = result.src ? dim(' ← ' + result.src) : ''
+                        const attempts = i > 1 ? dim(retryInfo) : ''
+                        logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
+                        logger.info(
+                            `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                        )
+                        generated.push(result.output.pathname)
+                    } catch (err) {
+                        const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
+
+                        if (err instanceof PageError) {
+                            if (i < maxRuns || !pageOptions.throwOnFail) {
                                 const time = Date.now() - start
-                                const src = result.src ? dim(' ← ' + result.src) : ''
-                                const attempts = i > 1 ? dim(retryInfo) : ''
-                                logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
+                                const src = err.src ? dim(' ← ' + err.src) : ''
                                 logger.info(
-                                    `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
+                                    red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
                                 )
-                                generated.push(result.output.pathname)
-                            } catch (err) {
-                                const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
-
-                                if (err instanceof PageError && (i < maxRuns || !pageOptions.throwOnFail)) {
-                                    const time = Date.now() - start
-                                    const src = err.src ? dim(' ← ' + err.src) : ''
-                                    logger.info(
-                                        red(
-                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`
-                                        )
-                                    )
-                                }
-                                logger.debug(bold(red(`error while processing ${location}: `)) + err)
-
-                                if (i < maxRuns) {
-                                    await task()
-                                } else {
-                                    totalCount--
-                                    if (pageOptions.throwOnFail) {
-                                        throw err
-                                    }
-                                }
+                            }
+                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
+                        } else {
+                            let error = err
+                            if (!(err instanceof FatalError)) {
+                                // wrap unexpected errors with a more useful message
+                                error = new Error(
+                                    `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
+                                        'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                    { cause: err }
+                                )
+                            }
+                            if (pageOptions.throwOnFail) {
+                                throw error
+                            } else {
+                                logger.error('build failed: ' + error + '\n')
+                                throw INTERRUPT
                             }
                         }
-                        return pool.add(task)
-                    })
-                )
 
-                await browser.close()
-                if (typeof close === 'function') {
-                    await close()
+                        if (i < maxRuns) {
+                            await task(location, pageOptions, i + 1)
+                        } else {
+                            totalCount--
+                            if (pageOptions.throwOnFail) {
+                                throw err
+                            }
+                        }
+                    }
                 }
+
+                try {
+                    await pMap(queue, ({ location, pageOptions }) => task(location, pageOptions), {
+                        concurrency: options.maxConcurrent ?? Number.POSITIVE_INFINITY
+                    })
+                } catch (err) {
+                    if (err === INTERRUPT) {
+                        return
+                    } else {
+                        throw err
+                    }
+                } finally {
+                    await browser.close()
+                    if (typeof close === 'function') {
+                        await close()
+                    }
+                }
+
                 if (totalCount < queue.length) {
                     const n = queue.length - totalCount
                     logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))

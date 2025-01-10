@@ -1,8 +1,7 @@
-import { beforeAll, describe, expect, test, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { existsSync } from 'node:fs'
 import { lstat, rm } from 'node:fs/promises'
-import { Server } from 'node:http'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -13,10 +12,10 @@ import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
 import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
 
 import { parsePdf } from './utils/index.js'
-import { start } from './utils/server.js'
+import { start, TestServer } from './utils/server.js'
 
 describe('process page', () => {
-    let server: Server
+    let server: TestServer
     let env: PageEnv
 
     beforeAll(async () => {
@@ -36,6 +35,7 @@ describe('process page', () => {
             outDir: fileURLToPath(new URL('./dist/', root)),
             debug: () => {}
         }
+        await Promise.all((await env.browser.pages()).map((page) => page.close()))
         if (existsSync(env.outDir)) {
             await rm(env.outDir, { recursive: true })
         }
@@ -71,7 +71,7 @@ describe('process page', () => {
 
         beforeAll(async () => {
             result = await processPage('/', options, env)
-        })
+        }, 15000)
 
         test('output location', () => {
             expect(result.location).toBe('/')
@@ -164,5 +164,13 @@ describe('process page', () => {
         const pathnames = [results[0].output.pathname, results[1].output.pathname]
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
+    })
+
+    afterAll(async () => {
+        const n = (await env.browser.pages()).length
+        await env.browser.close()
+        if (n > 0) {
+            throw new Error(`${n} pages were left open by processPage`)
+        }
     })
 })
