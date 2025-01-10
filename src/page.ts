@@ -5,6 +5,7 @@ import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent,
 
 import { type PageOptions } from './options.js'
 import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
+import { bold, red, yellow } from 'kleur/colors'
 
 export interface PageErrorOptions extends ErrorOptions {
     status: number | null
@@ -104,8 +105,16 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             }
         }
     } finally {
-        debug(`closing page for ${location} (page.url: ${page.url()})`)
-        await page.close()
+        if (!page.isClosed()) {
+            debug(`closing page for ${location} (page.url: ${page.url()})`)
+            try {
+                await page.close()
+            } catch(err) {
+                debug(bold(red(`failed to close page for ${location}: `)) + err)
+            }
+        } else {
+            debug(yellow(`page for ${location} has already been closed`))
+        }
     }
 }
 
