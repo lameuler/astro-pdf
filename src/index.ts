@@ -144,21 +144,32 @@ export default function pdf(options: Options): AstroIntegration {
                                     red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
                                 )
                             }
-                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
+                            const causeStack =
+                                err.cause instanceof Error ? `\n${bold('Caused by:')}\n${err.cause.stack}` : ''
+                            logger.debug(bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack)
                         } else {
                             let error = err
                             if (!(err instanceof FatalError)) {
                                 // wrap unexpected errors with a more useful message
                                 error = new Error(
-                                    `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
-                                        'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                    `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
+                                        err +
+                                        '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose\n',
                                     { cause: err }
                                 )
                             }
                             if (pageOptions.throwOnFail) {
                                 throw error
                             } else {
-                                logger.error('build failed: ' + error + '\n')
+                                if (error instanceof Error && error.stack) {
+                                    if (error.cause instanceof Error) {
+                                        logger.error(`${error.stack}\n\n${bold('Caused by:')}\n${error.cause.stack}\n`)
+                                    } else {
+                                        logger.error(error.stack + '\n')
+                                    }
+                                } else {
+                                    logger.error(error + '\n')
+                                }
                                 throw INTERRUPT
                             }
                         }

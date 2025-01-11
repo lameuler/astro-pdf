@@ -25,7 +25,7 @@ export type PagesMap = Record<string, PagesEntry | PagesEntry[]> & {
 }
 
 export interface PageOptions {
-    path: string | ((url: URL) => string)
+    path: string | ((url: URL, page: Page) => string | Promise<string>)
     screen: boolean
     viewport?: Viewport
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]

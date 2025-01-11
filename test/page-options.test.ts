@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 
+import type { Page } from 'puppeteer'
+
 import { CleanedMap, defaultPageOptions, getPageOptions, mergePages, PagesFunction } from 'astro-pdf/dist/options.js'
 
 describe('merge pages', () => {
@@ -99,6 +101,6 @@ describe('page options', () => {
         const p = result![0].path
         expect(p).toBeTypeOf('function')
         if (typeof p !== 'function') return
-        expect(p(new URL('http://localhost:4321/route/a'))).toBe('static/route/a.pdf')
+        expect(p(new URL('http://localhost:4321/route/a'), {} as Page)).toBe('static/route/a.pdf')
     })
 })
