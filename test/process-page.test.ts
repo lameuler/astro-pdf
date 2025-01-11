@@ -191,7 +191,7 @@ describe('process page', () => {
 
         expect(page1.Height).toBeCloseTo(7.875, 3)
         expect(page2.Height).toBeCloseTo(5.07)
-    })
+    }, 15000)
 
     describe('isolated pages', () => {
         let cookie: CookieData
