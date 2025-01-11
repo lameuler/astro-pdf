@@ -150,8 +150,9 @@ export default function pdf(options: Options): AstroIntegration {
                             if (!(err instanceof FatalError)) {
                                 // wrap unexpected errors with a more useful message
                                 error = new Error(
-                                    `An unexpected error occurred and was not handled by astro-pdf while processing ${location}. ` +
-                                        'Consider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                    `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
+                                        err +
+                                        '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
                                     { cause: err }
                                 )
                             }

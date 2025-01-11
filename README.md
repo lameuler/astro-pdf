@@ -166,15 +166,15 @@ export interface PageOptions
 
 Specifies options for generating each PDF. All options are optional when specifying pages in a [`PagesMap`](#pagesmap) or [`PagesFunction`](#pagesfunction). See [`PagesEntry`](#pagesentry) for more details.
 
-- **`path`**: `string` | `((url: URL) => string)`
+- **`path`**: `string` | `((url: URL, page: Page) => string | Promise<string>)`
 
     Default: `'[pathname].pdf'`
 
-    Specify the location where the PDF will be generated. This is treated like a `href` in the site, so absolute paths will be resolved relative to the root of the site. For example, `/path/to/file.pdf` and `path/to/file.pdf` are equivalent.
+    Specify the location where the PDF will be generated. This is treated like a `href` in the site, so absolute paths will be resolved relative to the root of the site. For example, `/path/to/file.pdf` and `path/to/file.pdf` are equivalent. If `path` contains certain special characters like `%`, you will need to encode those characters using [`encodeURI`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI) or [`encodeURIComponent`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent).
 
     If the path contains `[pathname]`, it will be substituted for the pathname of the page generated e.g. `/path/to/page` will be substituted into `[pathname].pdf` to get `/path/to/page.pdf`. If there are any redirects, the pathname will be the final location that is used to generate the PDF.
 
-    `path` can also be a function which receives the URL of the page used to generate the PDF and returns the path where the PDF will be generated.
+    `path` can also be a function which receives the final URL of the page and the Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page). The function can return the path where the PDF will be generated as a string, or a Promise which will resolve to the path. The `url` parameter is equivalent to getting `new URL(page.url())`.
 
     If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
 

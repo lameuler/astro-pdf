@@ -114,7 +114,8 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         const url = page.url()
         const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
 
-        const outPathRaw = typeof pageOptions.path === 'function' ? pageOptions.path(new URL(url)) : pageOptions.path
+        const outPathRaw =
+            typeof pageOptions.path === 'function' ? await pageOptions.path(new URL(url), page) : pageOptions.path
         // resolve pdf output relative to astro output directory
         const outPath = pathnameToFilepath(outPathRaw, outDir)
 

@@ -9,7 +9,18 @@ const url = 'https://en.wikipedia.org/wiki/Special:RandomInCategory?wpcategory=F
 const pages: PagesMap = {
     [url]: Array(N)
         .fill(0)
-        .map((_, i) => `random-${i}.pdf`),
+        .map(() => ({
+            async path(url, page) {
+                return (
+                    (await page.title())
+                        .toLowerCase()
+                        .replace(/wikipedia\s*$/, '')
+                        .replaceAll(/[^a-z0-9\s]/g, '')
+                        .trim()
+                        .replaceAll(/\s+/, '-') + '.pdf'
+                )
+            }
+        })),
     'https://fake.example.com': 'fake.pdf'
 }
 
