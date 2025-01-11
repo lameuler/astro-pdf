@@ -139,7 +139,9 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         const { fd, path } = await openFd(outPath, debug)
 
         try {
-            const stream = await page.createPDFStream(pageOptions.pdf)
+            const pdfOptions = await (typeof pageOptions.pdf === 'function' ? pageOptions.pdf(page) : pageOptions.pdf)
+
+            const stream = await page.createPDFStream(pdfOptions)
 
             await pipeToFd(stream, fd)
         } catch (err) {

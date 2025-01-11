@@ -165,6 +165,34 @@ describe('process page', () => {
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
     })
+
+    test('dynamic page dimensions', async () => {
+        const options: PageOptions = {
+            path: defaultPathFunction('[pathname].pdf'),
+            screen: true,
+            waitUntil: 'networkidle0',
+            pdf: async (page) => {
+                const el = await page.$('body')
+                const height = (await el?.boundingBox())?.height
+                return {
+                    width: 1440,
+                    height
+                }
+            }
+        }
+        const result1 = await processPage('/', options, env)
+        const result2 = await processPage('/docs', options, env)
+
+        const data1 = await parsePdf(result1.output.path)
+        const data2 = await parsePdf(result2.output.path)
+
+        const page1 = data1.Pages[0]
+        const page2 = data2.Pages[0]
+
+        expect(page1.Height).toBeCloseTo(7.875, 3)
+        expect(page2.Height).toBeCloseTo(5.07)
+    })
+
     describe('isolated pages', () => {
         let cookie: CookieData
         beforeAll(async () => {

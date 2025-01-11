@@ -53,17 +53,17 @@ export default defineConfig({
                     {
                         path: 'example.pdf',
                         screen: true, // use screen media type instead of print
-                        waitUntil: 'networkidle0', // for puppeteer page loading
+                        waitUntil: 'networkidle0', // for Puppeteer page loading
                         navTimeout: 40_000,
                         maxRetries: 0,
                         throwOnFail: true,
-                        viewport: { // puppeteer Viewport
+                        viewport: { // Puppeteer Viewport
                             width: 800,
                             height: 600,
                             // https://github.com/puppeteer/puppeteer/issues/3910
                             deviceScaleFactor: 3
                         }
-                        pdf: { // puppeteer PDFOptions
+                        pdf: { // Puppeteer PDFOptions
                             format: 'A4',
                             printBackground: true,
                             timeout: 20_000
@@ -186,7 +186,7 @@ Specifies options for generating each PDF. All options are optional when specify
 
 - **`viewport`**: [`Viewport`](https://pptr.dev/api/puppeteer.viewport) _(optional)_
 
-    Set the [viewport](https://pptr.dev/api/puppeteer.page.setviewport) for Puppeteer. This may be useful to set `deviceScaleFactor`. Read [this](https://github.com/puppeteer/puppeteer/issues/3910) puppeteer issue for more info.
+    Set the [viewport](https://pptr.dev/api/puppeteer.page.setviewport) for Puppeteer. This may be useful to set `deviceScaleFactor`. Read [this](https://github.com/puppeteer/puppeteer/issues/3910) Puppeteer issue for more info.
 
 - **`waitUntil`**: [`PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]`](https://pptr.dev/api/puppeteer.puppeteerlifecycleevent)
 
@@ -198,11 +198,15 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Set the [default navigation timeout](https://pptr.dev/api/puppeteer.page.setdefaultnavigationtimeout) (in milliseconds) for Puppeteer. The default used by Puppeteer is 30 seconds. This can be set to 0 to have no timeout.
 
-- **`pdf`**: [`Omit<PDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.pdfoptions)
+- **`pdf`**: `PDFOptions | ((page: Page) => PDFOptions | Promise<PDFOptions>)`
 
     Default: `{}`
 
     Options to be passed to [`Page.pdf`](https://pptr.dev/api/puppeteer.page.pdf) to specify how the PDF is generated.
+
+    `PDFOptions` type is declared like this: [`Omit<PuppeteerPDFOptions, 'path'>`](https://pptr.dev/api/puppeteer.pdfoptions)
+
+    If you pass a callback, it will be called with the Puppeteer [`Page`](https://pptr.dev/api/puppeteer.page) once it is loaded. You can use this to define [dynamic page dimensions](https://github.com/lameuler/astro-pdf/issues/77).
 
 - **`maxRetries`**: `number`
 
