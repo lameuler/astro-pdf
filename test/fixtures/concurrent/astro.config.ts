@@ -17,7 +17,7 @@ const pages: PagesMap = {
                         .replace(/wikipedia\s*$/, '')
                         .replaceAll(/[^a-z0-9\s]/g, '')
                         .trim()
-                        .replaceAll(/\s+/, '-') + '.pdf'
+                        .replaceAll(/\s+/g, '-') + '.pdf'
                 )
             }
         })),

@@ -107,15 +107,29 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             await page.emulateMediaType('screen')
         }
         if (pageOptions.callback) {
-            debug('running user callback')
-            await pageOptions.callback(page)
+            try {
+                debug('running user callback')
+                await pageOptions.callback(page)
+            } catch (err) {
+                const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
+                throw new PageError(location, 'failed to run `callback`' + message, { cause: err })
+            }
         }
 
         const url = page.url()
         const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
 
-        const outPathRaw =
-            typeof pageOptions.path === 'function' ? await pageOptions.path(new URL(url), page) : pageOptions.path
+        let outPathRaw: string
+        if (typeof pageOptions.path === 'function') {
+            try {
+                outPathRaw = await pageOptions.path(new URL(url), page)
+            } catch (err) {
+                const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
+                throw new PageError(location, 'failed to run `path`' + message, { cause: err })
+            }
+        } else {
+            outPathRaw = pageOptions.path
+        }
         // resolve pdf output relative to astro output directory
         const outPath = pathnameToFilepath(outPathRaw, outDir)
 
@@ -129,7 +143,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
             await pipeToFd(stream, fd)
         } catch (err) {
-            const info = err instanceof Error ? ': ' + err.message : ''
+            const info = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
             throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
         } finally {
             await fd.close()
@@ -196,7 +210,12 @@ export async function loadPage(
         page.setDefaultNavigationTimeout(navTimeout)
     }
     if (typeof preCallback === 'function') {
-        await preCallback(page)
+        try {
+            await preCallback(page)
+        } catch (err) {
+            const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
+            throw new PageError(location, 'failed to run `preCallback`' + message, { cause: err })
+        }
     }
 
     return new Promise((resolve, reject) => {
