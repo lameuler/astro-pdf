@@ -171,6 +171,10 @@ describe('process page', () => {
             path: defaultPathFunction('[pathname].pdf'),
             screen: true,
             waitUntil: 'networkidle0',
+            viewport: {
+                width: 1440,
+                height: 600
+            },
             pdf: async (page) => {
                 const el = await page.$('body')
                 const height = (await el?.boundingBox())?.height
@@ -180,11 +184,12 @@ describe('process page', () => {
                 }
             }
         }
-        const result1 = await processPage('/', options, env)
-        const result2 = await processPage('/docs', options, env)
+        const [result1, result2] = await Promise.all([
+            processPage('/', options, env),
+            processPage('/docs', options, env)
+        ])
 
-        const data1 = await parsePdf(result1.output.path)
-        const data2 = await parsePdf(result2.output.path)
+        const [data1, data2] = await Promise.all([parsePdf(result1.output.path), parsePdf(result2.output.path)])
 
         const page1 = data1.Pages[0]
         const page2 = data2.Pages[0]
