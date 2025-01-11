@@ -154,17 +154,19 @@ export default function pdf(options: Options): AstroIntegration {
                                 error = new Error(
                                     `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
                                         err +
-                                        '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose',
+                                        '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose\n',
                                     { cause: err }
                                 )
                             }
                             if (pageOptions.throwOnFail) {
                                 throw error
                             } else {
-                                if (error instanceof Error) {
-                                    const causeStack =
-                                        error.cause instanceof Error ? `${bold('Caused by:')}\n${error.cause.stack}` : ''
-                                    logger.error(error.stack + '\n\n' + causeStack)
+                                if (error instanceof Error && error.stack) {
+                                    if (error.cause instanceof Error) {
+                                        logger.error(`${error.stack}\n\n${bold('Caused by:')}\n${error.cause.stack}\n`)
+                                    } else {
+                                        logger.error(error.stack + '\n')
+                                    }
                                 } else {
                                     logger.error(error + '\n')
                                 }
