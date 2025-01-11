@@ -144,7 +144,9 @@ export default function pdf(options: Options): AstroIntegration {
                                     red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
                                 )
                             }
-                            logger.debug(bold(red(`error while processing ${location}: `)) + err)
+                            const causeStack =
+                                err.cause instanceof Error ? `\n${bold('Caused by:')}\n${err.cause.stack}` : ''
+                            logger.debug(bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack)
                         } else {
                             let error = err
                             if (!(err instanceof FatalError)) {
@@ -159,7 +161,13 @@ export default function pdf(options: Options): AstroIntegration {
                             if (pageOptions.throwOnFail) {
                                 throw error
                             } else {
-                                logger.error('build failed: ' + error + '\n')
+                                if (error instanceof Error) {
+                                    const causeStack =
+                                        error.cause instanceof Error ? `${bold('Caused by:')}\n${error.cause.stack}` : ''
+                                    logger.error(error.stack + '\n\n' + causeStack)
+                                } else {
+                                    logger.error(error + '\n')
+                                }
                                 throw INTERRUPT
                             }
                         }
