@@ -167,16 +167,13 @@ describe('process page', () => {
     })
 
     test('dynamic page dimensions', async () => {
+        const PAGE_WIDTH_PX = 1440
         const options: PageOptions = {
             path: defaultPathFunction('[pathname].pdf'),
             screen: true,
             waitUntil: 'networkidle0',
-            viewport: {
-                width: 1440,
-                height: 600
-            },
             pdf: async (page) => {
-                const el = await page.$('body')
+                const el = await page.$('#main')
                 const height = (await el?.boundingBox())?.height
                 return {
                     width: 1440,
@@ -194,8 +191,8 @@ describe('process page', () => {
         const page1 = data1.Pages[0]
         const page2 = data2.Pages[0]
 
-        expect(page1.Height).toBeCloseTo(7.875, 3)
-        expect(page2.Height).toBeCloseTo(5.07)
+        expect(page1.Width / page1.Height).toBeCloseTo(PAGE_WIDTH_PX / 200)
+        expect(page2.Width / page2.Height).toBeCloseTo(PAGE_WIDTH_PX / 300)
     }, 15000)
 
     describe('isolated pages', () => {
