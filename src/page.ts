@@ -1,5 +1,5 @@
 import { mkdir } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { dirname, sep } from 'node:path'
 
 import { bold, red, yellow } from 'kleur/colors'
 import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
@@ -63,6 +63,7 @@ export type PageEnv = {
     browser: Browser
     baseUrl?: URL
     debug: (message: string) => void
+    warn: (message: string) => void
 }
 
 async function newPage(browser: Browser, location: string, debug: (msg: string) => void, isolated?: boolean) {
@@ -86,7 +87,7 @@ async function newPage(browser: Browser, location: string, debug: (msg: string) 
 }
 
 async function runCallback<T extends unknown[], R>(
-    location: string,
+    info: { dest: string; src?: string },
     name: string,
     callback: (...args: T) => R,
     ...args: T
@@ -95,12 +96,12 @@ async function runCallback<T extends unknown[], R>(
         return await callback(...args)
     } catch (err) {
         const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
-        throw new PageError(location, `failed to run \`${name}\`${message}`, { cause: err })
+        throw new PageError(info.dest, `failed to run \`${name}\`${message}`, { cause: err, src: info.src })
     }
 }
 
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
-    const { outDir, browser, baseUrl, debug } = env
+    const { outDir, browser, baseUrl, debug, warn } = env
 
     debug(`starting processing of ${location}`)
 
@@ -117,34 +118,38 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             pageOptions.preCallback
         )
 
+        const url = page.url()
+        const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
+
         if (pageOptions.screen) {
             await page.emulateMediaType('screen')
         }
         if (pageOptions.callback) {
             debug('running user callback')
-            await runCallback(location, 'callback', pageOptions.callback, page)
+            await runCallback({ dest, src: location }, 'callback', pageOptions.callback, page)
         }
-
-        const url = page.url()
-        const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
 
         const outPathRaw =
             typeof pageOptions.path === 'function'
-                ? await runCallback(location, 'path', pageOptions.path, new URL(url), page)
+                ? await runCallback({ dest, src: location }, 'path', pageOptions.path, new URL(url), page)
                 : pageOptions.path
 
         // resolve pdf output relative to astro output directory
         const outPath = pathnameToFilepath(outPathRaw, outDir)
 
+        if (outPath.endsWith(sep) || outPath.endsWith('/')) {
+            throw new PageError(dest, `output path \`${outPath}\` is a directory`, { src: location })
+        }
+
         const dir = dirname(outPath)
         await mkdir(dir, { recursive: true })
 
-        const { fd, path } = await openFd(outPath, debug)
+        const { fd, path } = await openFd(outPath, debug, warn)
 
         try {
             const pdfOptions =
                 typeof pageOptions.pdf === 'function'
-                    ? await runCallback(location, 'pdf', pageOptions.pdf, page)
+                    ? await runCallback({ dest, src: location }, 'pdf', pageOptions.pdf, page)
                     : pageOptions.pdf
 
             const stream = await page.createPDFStream(pdfOptions)

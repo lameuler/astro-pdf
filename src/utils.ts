@@ -2,7 +2,7 @@ import { open, type FileHandle } from 'node:fs/promises'
 import { extname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-export async function openFd(path: string, debug: (message: string) => void) {
+export async function openFd(path: string, debug: (message: string) => void, warn: (message: string) => void) {
     const ext = extname(path)
     const name = path.substring(0, path.length - ext.length)
     let i = 0
@@ -17,6 +17,9 @@ export async function openFd(path: string, debug: (message: string) => void) {
         } catch (err) {
             debug('openFd: ' + err)
             i++
+        }
+        if (i === 9) {
+            warn(`failed to open \`${name}-\${i}${ext}\` 10 times. run with --verbose to check the errors from openFd.`)
         }
     }
     return { fd, path: p }

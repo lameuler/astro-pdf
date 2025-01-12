@@ -1,3 +1,4 @@
+import { extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
@@ -111,10 +112,10 @@ export default function pdf(options: Options): AstroIntegration {
                     outDir,
                     browser,
                     baseUrl: url,
-                    debug: (message: string) => logger.debug(message)
+                    debug: (message: string) => logger.debug(message),
+                    warn: (message: string) => logger.warn(message)
                 }
 
-                let count = 0
                 let totalCount = queue.length
 
                 const generated: string[] = []
@@ -125,14 +126,16 @@ export default function pdf(options: Options): AstroIntegration {
                     const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
                     try {
                         const result = await processPage(location, pageOptions, env)
+                        const pathname = result.output.pathname
+                        generated.push(pathname)
+
                         const time = Date.now() - start
                         const src = result.src ? dim(' ← ' + result.src) : ''
                         const attempts = i > 1 ? dim(retryInfo) : ''
                         logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
-                        logger.info(
-                            `  ${blue('└─')} ${dim(`${result.output.pathname} (+${time}ms) (${++count}/${totalCount})`)}`
-                        )
-                        generated.push(result.output.pathname)
+
+                        const out = extname(pathname) !== '.pdf' ? yellow(pathname) : pathname
+                        logger.info(`  ${blue('└─')} ${dim(`${out} (+${time}ms) (${generated.length}/${totalCount})`)}`)
                     } catch (err) {
                         const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
 
@@ -205,9 +208,14 @@ export default function pdf(options: Options): AstroIntegration {
                     }
                 }
 
-                if (totalCount < queue.length) {
-                    const n = queue.length - totalCount
-                    logger.info(red(`Failed to generate ${n} page${n === 1 ? '' : 's'}`))
+                const noExt = generated.filter((path) => extname(path) !== '.pdf').length
+                if (noExt > 0) {
+                    logger.warn(`${noExt} file${noExt === 1 ? '' : 's'} generated without .pdf extension`)
+                }
+
+                if (generated.length < queue.length) {
+                    const n = queue.length - generated.length
+                    logger.error(red(`Failed to generate ${n} file${n === 1 ? '' : 's'}`))
                 }
 
                 if (typeof options.runAfter === 'function') {

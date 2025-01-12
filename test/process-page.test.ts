@@ -33,7 +33,8 @@ describe('process page', () => {
             browser: await launch(),
             baseUrl: new URL('http://localhost:' + address.port),
             outDir: fileURLToPath(new URL('./dist/', root)),
-            debug: () => {}
+            debug: () => {},
+            warn: () => {}
         }
         await Promise.all((await env.browser.pages()).map((page) => page.close()))
         if (existsSync(env.outDir)) {
