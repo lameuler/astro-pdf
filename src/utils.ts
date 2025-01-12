@@ -9,14 +9,17 @@ export async function openFd(path: string, debug: (message: string) => void, war
     let fd: FileHandle | null = null
     let p: string = path
     while (fd === null) {
+        const suffix = i ? '-' + i : ''
+        p = name + suffix + ext
         try {
-            const suffix = i ? '-' + i : ''
-            p = name + suffix + ext
             fd = await open(p, 'wx')
             break
         } catch (err) {
             debug('openFd: ' + err)
             i++
+            if (!(err instanceof Error && 'code' in err && err.code === 'EEXIST')) {
+                warn(`unexpected error while opening \`${p}\`: ${err}`)
+            }
         }
         if (i === 9) {
             warn(`failed to open \`${name}-\${i}${ext}\` 10 times. run with --verbose to check the errors from openFd.`)
