@@ -165,6 +165,36 @@ describe('process page', () => {
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
     })
+
+    test('dynamic page dimensions', async () => {
+        const PAGE_WIDTH_PX = 1440
+        const options: PageOptions = {
+            path: defaultPathFunction('[pathname].pdf'),
+            screen: true,
+            waitUntil: 'networkidle0',
+            pdf: async (page) => {
+                const el = await page.$('#main')
+                const height = (await el?.boundingBox())?.height
+                return {
+                    width: PAGE_WIDTH_PX,
+                    height
+                }
+            }
+        }
+        const [result1, result2] = await Promise.all([
+            processPage('/', options, env),
+            processPage('/docs', options, env)
+        ])
+
+        const [data1, data2] = await Promise.all([parsePdf(result1.output.path), parsePdf(result2.output.path)])
+
+        const page1 = data1.Pages[0]
+        const page2 = data2.Pages[0]
+
+        expect(page1.Width / page1.Height).toBeCloseTo(PAGE_WIDTH_PX / 200)
+        expect(page2.Width / page2.Height).toBeCloseTo(PAGE_WIDTH_PX / 300)
+    }, 15000)
+
     describe('isolated pages', () => {
         let cookie: CookieData
         beforeAll(async () => {
