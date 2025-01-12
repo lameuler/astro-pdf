@@ -33,7 +33,8 @@ describe('process page', () => {
             browser: await launch(),
             baseUrl: new URL('http://localhost:' + address.port),
             outDir: fileURLToPath(new URL('./dist/', root)),
-            debug: () => {}
+            debug: () => {},
+            warn: vi.fn(() => {})
         }
         await Promise.all((await env.browser.pages()).map((page) => page.close()))
         if (existsSync(env.outDir)) {
@@ -164,6 +165,7 @@ describe('process page', () => {
         const pathnames = [results[0].output.pathname, results[1].output.pathname]
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
+        expect(env.warn).toBeCalledTimes(0)
     })
 
     test('dynamic page dimensions', async () => {
