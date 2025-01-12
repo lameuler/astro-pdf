@@ -176,7 +176,7 @@ describe('process page', () => {
                 const el = await page.$('#main')
                 const height = (await el?.boundingBox())?.height
                 return {
-                    width: 1440,
+                    width: PAGE_WIDTH_PX,
                     height
                 }
             }

@@ -85,6 +85,20 @@ async function newPage(browser: Browser, location: string, debug: (msg: string) 
     }
 }
 
+async function runCallback<T extends unknown[], R>(
+    location: string,
+    name: string,
+    callback: (...args: T) => R,
+    ...args: T
+): Promise<R> {
+    try {
+        return await callback(...args)
+    } catch (err) {
+        const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
+        throw new PageError(location, `failed to run \`${name}\`${message}`, { cause: err })
+    }
+}
+
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
     const { outDir, browser, baseUrl, debug } = env
 
@@ -107,29 +121,18 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             await page.emulateMediaType('screen')
         }
         if (pageOptions.callback) {
-            try {
-                debug('running user callback')
-                await pageOptions.callback(page)
-            } catch (err) {
-                const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
-                throw new PageError(location, 'failed to run `callback`' + message, { cause: err })
-            }
+            debug('running user callback')
+            await runCallback(location, 'callback', pageOptions.callback, page)
         }
 
         const url = page.url()
         const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
 
-        let outPathRaw: string
-        if (typeof pageOptions.path === 'function') {
-            try {
-                outPathRaw = await pageOptions.path(new URL(url), page)
-            } catch (err) {
-                const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
-                throw new PageError(location, 'failed to run `path`' + message, { cause: err })
-            }
-        } else {
-            outPathRaw = pageOptions.path
-        }
+        const outPathRaw =
+            typeof pageOptions.path === 'function'
+                ? await runCallback(location, 'path', pageOptions.path, new URL(url), page)
+                : pageOptions.path
+
         // resolve pdf output relative to astro output directory
         const outPath = pathnameToFilepath(outPathRaw, outDir)
 
@@ -139,12 +142,18 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         const { fd, path } = await openFd(outPath, debug)
 
         try {
-            const pdfOptions = await (typeof pageOptions.pdf === 'function' ? pageOptions.pdf(page) : pageOptions.pdf)
+            const pdfOptions =
+                typeof pageOptions.pdf === 'function'
+                    ? await runCallback(location, 'pdf', pageOptions.pdf, page)
+                    : pageOptions.pdf
 
             const stream = await page.createPDFStream(pdfOptions)
 
             await pipeToFd(stream, fd)
         } catch (err) {
+            if (err instanceof PageError || err instanceof FatalError) {
+                throw err
+            }
             const info = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
             throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
         } finally {
