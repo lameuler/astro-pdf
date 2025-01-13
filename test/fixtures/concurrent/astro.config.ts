@@ -19,6 +19,11 @@ const pages: PagesMap = {
                         .trim()
                         .replaceAll(/\s+/g, '-') + '.pdf'
                 )
+            },
+            async callback(page) {
+                if ((await page.title()).toLowerCase().includes('j')) {
+                    await page.browser().close()
+                }
             }
         })),
     'https://fake.example.com': 'fake.pdf'
@@ -29,12 +34,12 @@ export default defineConfig({
         pdf({
             pages,
             baseOptions: {
+                //throwOnFail: true,
                 waitUntil: 'networkidle0'
                 //maxRetries: 2
                 //navTimeout: 0
-                //throwOnFail: true
             },
-            maxConcurrent: null //40
+            maxConcurrent: 5
         })
     ]
 })

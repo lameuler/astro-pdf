@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { dirname, sep } from 'node:path'
 
 import { bold, red, yellow } from 'kleur/colors'
-import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent, Viewport } from 'puppeteer'
+import type { Browser, HTTPRequest, HTTPResponse, Page, PuppeteerLifeCycleEvent } from 'puppeteer'
 
 import { type PageOptions } from './options.js'
 import { filepathToPathname, openFd, pathnameToFilepath, pipeToFd } from './utils.js'
@@ -62,6 +62,7 @@ export type PageEnv = {
     outDir: string
     browser: Browser
     baseUrl?: URL
+    signal?: AbortSignal
     debug: (message: string) => void
     warn: (message: string) => void
 }
@@ -77,9 +78,9 @@ async function newPage(browser: Browser, location: string, debug: (msg: string) 
         if (isolated) {
             const context = await browser.createBrowserContext()
             debug(`created browser context (${context.id}) for \`${location}\``)
-            return context.newPage()
+            return await context.newPage()
         } else {
-            return browser.newPage()
+            return await browser.newPage()
         }
     } catch (err) {
         throw new FatalError(`Fatal error when opening a new page for \`${location}\``, err)
@@ -101,22 +102,18 @@ async function runCallback<T extends unknown[], R>(
 }
 
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
-    const { outDir, browser, baseUrl, debug, warn } = env
+    const { outDir, browser, baseUrl, debug, warn, signal } = env
+    signal?.throwIfAborted()
 
     debug(`starting processing of ${location}`)
 
     const page = await newPage(browser, location, debug, pageOptions.isolated)
 
     try {
-        await loadPage(
-            location,
-            baseUrl,
-            page,
-            pageOptions.waitUntil,
-            pageOptions.viewport,
-            pageOptions.navTimeout,
-            pageOptions.preCallback
-        )
+        signal?.throwIfAborted()
+
+        await loadPage(location, baseUrl, page, pageOptions.waitUntil, pageOptions, signal)
+        signal?.throwIfAborted()
 
         const url = page.url()
         const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
@@ -124,15 +121,18 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         if (pageOptions.screen) {
             await page.emulateMediaType('screen')
         }
+        signal?.throwIfAborted()
         if (pageOptions.callback) {
             debug('running user callback')
             await runCallback({ dest, src: location }, 'callback', pageOptions.callback, page)
         }
+        signal?.throwIfAborted()
 
         const outPathRaw =
             typeof pageOptions.path === 'function'
                 ? await runCallback({ dest, src: location }, 'path', pageOptions.path, new URL(url), page)
                 : pageOptions.path
+        signal?.throwIfAborted()
 
         // resolve pdf output relative to astro output directory
         const outPath = pathnameToFilepath(outPathRaw, outDir)
@@ -142,19 +142,26 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         }
 
         const dir = dirname(outPath)
+        signal?.throwIfAborted()
         await mkdir(dir, { recursive: true })
 
-        const { fd, path } = await openFd(outPath, debug, warn)
+        signal?.throwIfAborted()
+
+        const { fd, path } = await openFd(outPath, debug, warn, signal)
 
         try {
+            signal?.throwIfAborted()
+
             const pdfOptions =
                 typeof pageOptions.pdf === 'function'
                     ? await runCallback({ dest, src: location }, 'pdf', pageOptions.pdf, page)
                     : pageOptions.pdf
+            signal?.throwIfAborted()
 
             const stream = await page.createPDFStream(pdfOptions)
+            signal?.throwIfAborted()
 
-            await pipeToFd(stream, fd)
+            await pipeToFd(stream, fd, signal)
         } catch (err) {
             if (err instanceof PageError || err instanceof FatalError) {
                 throw err
@@ -164,6 +171,8 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         } finally {
             await fd.close()
         }
+
+        signal?.throwIfAborted()
 
         return {
             src: location !== dest ? location : null,
@@ -211,28 +220,28 @@ export async function loadPage(
     baseUrl: URL | undefined,
     page: Page,
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[],
-    viewport?: Viewport,
-    navTimeout?: number,
-    preCallback?: (page: Page) => void | Promise<void>
+    options: Pick<PageOptions, 'viewport' | 'navTimeout' | 'preCallback'> = {},
+    signal?: AbortSignal
 ): Promise<Page> {
+    signal?.throwIfAborted()
     if (page.url() !== 'about:blank' || page.isClosed()) {
         throw new Error(`internal error: loadPage expects a new page`)
     }
 
+    const { viewport, navTimeout, preCallback } = options
+
     if (viewport) {
         await page.setViewport(viewport)
     }
+    signal?.throwIfAborted()
     if (typeof navTimeout === 'number') {
         page.setDefaultNavigationTimeout(navTimeout)
     }
+    signal?.throwIfAborted()
     if (typeof preCallback === 'function') {
-        try {
-            await preCallback(page)
-        } catch (err) {
-            const message = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
-            throw new PageError(location, 'failed to run `preCallback`' + message, { cause: err })
-        }
+        await runCallback({ dest: location }, 'preCallback', preCallback, page)
     }
+    signal?.throwIfAborted()
 
     return new Promise((resolve, reject) => {
         let url: URL
@@ -253,9 +262,17 @@ export async function loadPage(
                     src: location
                 })
             )
+            signal?.removeEventListener('abort', onAbort)
         }
 
         const controller = new AbortController()
+
+        function onAbort() {
+            controller.abort(new AbortPageLoad())
+            signal?.removeEventListener('abort', onAbort)
+            reject(signal?.reason)
+        }
+        signal?.addEventListener('abort', onAbort)
 
         const requestListener = (req: HTTPRequest) => {
             if (req.url() === new URL(dest, baseUrl).href) {
@@ -317,6 +334,9 @@ export async function loadPage(
                         src: location
                     })
                 )
+            })
+            .finally(() => {
+                signal?.removeEventListener('abort', onAbort)
             })
     })
 }

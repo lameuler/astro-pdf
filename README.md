@@ -135,6 +135,10 @@ export interface Options
 
     This can also be set to `false` to not run any server. If `server` is set to `false` or returns no URL, then only pages with a full URL specified for the location in [`PagesMap`](#pagesmap) will work.
 
+- **`throwErrors`**: `boolean` _(optional)_
+
+    Set to `false` to prevent `astro-pdf` from throwing any errors. This will cause `astro-pdf` to exit gracefully when it encounters errors, instead of the default behaviour of causing the whole Astro build to fail.
+
 - **`baseOptions`**: [`Partial<PageOptions>`](#pageoptions) _(optional)_
 
     Default options to use for each page. Overrides the default options of [`PageOptions`](#pageoptions).
@@ -218,7 +222,7 @@ Specifies options for generating each PDF. All options are optional when specify
 
     Default: `false`
 
-    Set to throw errors encountered when loading and processing the page. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for the page.
+    Set to throw errors encountered when loading and processing the page. This will cause the build of your site to fail when `astro-pdf` fails to generate the PDF for the page if `throwErrors` is set to `true` in [`Options`](#options) (which is the default).
 
     By default, errors for failed pages will be logged and the build will still successfully complete.
 

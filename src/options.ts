@@ -18,6 +18,7 @@ export interface Options {
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
     pages: PagesFunction | PagesMap
     maxConcurrent?: number | null
+    throwErrors?: boolean
     runBefore?: (dir: URL) => void | Promise<void>
     runAfter?: (dir: URL, pathnames: string[]) => void | Promise<void>
     browserCallback?: (browser: Browser) => void | Promise<void>

@@ -124,8 +124,12 @@ describe('load page', () => {
             height: 99,
             deviceScaleFactor: 1
         }
-        await loadPage('/index.html', base, page, 'load', viewport, 12345, async (page) => {
-            pass = page.viewport() === viewport && page.getDefaultNavigationTimeout() === 12345
+        await loadPage('/index.html', base, page, 'load', {
+            viewport,
+            navTimeout: 12345,
+            preCallback: async (page) => {
+                pass = page.viewport() === viewport && page.getDefaultNavigationTimeout() === 12345
+            }
         })
         expect(pass).toBe(true)
     })
