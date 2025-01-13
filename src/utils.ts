@@ -2,7 +2,12 @@ import { open, type FileHandle } from 'node:fs/promises'
 import { extname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-export async function openFd(path: string, debug: (message: string) => void, warn: (message: string) => void, signal?: AbortSignal) {
+export async function openFd(
+    path: string,
+    debug: (message: string) => void,
+    warn: (message: string) => void,
+    signal?: AbortSignal
+) {
     const ext = extname(path)
     const name = path.substring(0, path.length - ext.length)
     let i = 0

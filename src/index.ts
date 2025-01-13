@@ -148,7 +148,9 @@ export default function pdf(options: Options): AstroIntegration {
                             logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
 
                             const out = extname(pathname) !== '.pdf' ? yellow(pathname) : pathname
-                            logger.info(`  ${blue('└─')} ${dim(`${out} (+${time}ms) (${generated.length}/${totalCount})`)}`)
+                            logger.info(
+                                `  ${blue('└─')} ${dim(`${out} (+${time}ms) (${generated.length}/${totalCount})`)}`
+                            )
                         } catch (err) {
                             const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
 
@@ -157,12 +159,16 @@ export default function pdf(options: Options): AstroIntegration {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
-                                        red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
+                                        red(
+                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`
+                                        )
                                     )
                                 }
                                 const causeStack =
                                     err.cause instanceof Error ? `\n${bold('Caused by:')}\n${err.cause.stack}` : ''
-                                logger.debug(bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack)
+                                logger.debug(
+                                    bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack
+                                )
                             } else {
                                 if (err instanceof FatalError) {
                                     throw err
@@ -210,7 +216,7 @@ export default function pdf(options: Options): AstroIntegration {
                         if (noExt > 0) {
                             logger.warn(`${noExt} file${noExt === 1 ? '' : 's'} generated without .pdf extension`)
                         }
-        
+
                         if (generated.length < queue.length) {
                             const n = queue.length - generated.length
                             logger.error(red(`Failed to generate ${n} file${n === 1 ? '' : 's'}`))
