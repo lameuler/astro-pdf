@@ -5,7 +5,7 @@ import { readdir, readFile, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { AstroConfig, AstroIntegrationLogger } from 'astro'
+import { AstroConfig, AstroIntegration, AstroIntegrationLogger } from 'astro'
 
 import pdf from 'astro-pdf'
 
@@ -164,10 +164,11 @@ describe('custom server', () => {
 
     describe('server with error', () => {
         let logger: AstroIntegrationLogger
+        let integration: AstroIntegration
         const root = new URL('./fixtures/tmp/server-error/', import.meta.url)
 
         beforeAll(async () => {
-            const integration = pdf({
+            integration = pdf({
                 server: () => {
                     throw new Error('failed to start server')
                 },
@@ -191,18 +192,19 @@ describe('custom server', () => {
                 buildOutput: 'static',
                 logger
             })
-            await integration.hooks['astro:build:done']!({
+        })
+
+        test('throws error', async () => {
+            expect(logger.warn).not.toBeCalled()
+            const promise = integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: new URL('dist', root),
                 routes: [],
                 logger,
                 assets: new Map()
             })
-        })
-
-        test('error', () => {
+            await expect(promise).rejects.toThrow('error when setting up server')
             expect(logger.warn).not.toBeCalled()
-            expect(logger.error).toBeCalled()
         })
 
         test('no files generated', async () => {
