@@ -147,7 +147,19 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
         signal?.throwIfAborted()
 
-        const { fd, path } = await openFd(outPath, debug, warn, signal)
+        const { fd, path, err } = await openFd(outPath, pageOptions.ensurePath, debug, warn, signal)
+        const pathname = filepathToPathname(path, outDir)
+
+        if (!fd) {
+            let code = err instanceof Error && 'code' in err ? err.code : false
+            if (code === 'EEXIST') {
+                code = 'file already exists'
+            } else if (code) {
+                code = 'error code ' + code
+            }
+            const message = code ? ': ' + code : ''
+            throw new PageError(dest, `failed to open \`${pathname}\`${message}`, { src: location })
+        }
 
         try {
             signal?.throwIfAborted()
@@ -179,7 +191,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             location: dest,
             output: {
                 path,
-                pathname: filepathToPathname(path, outDir)
+                pathname
             }
         }
     } finally {

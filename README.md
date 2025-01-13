@@ -182,6 +182,12 @@ Specifies options for generating each PDF. All options are optional when specify
 
     If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file. For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
 
+- **`ensurePath`**: `boolean`
+
+    Default: `false`
+
+    Set to `true` to ensure that the output path of the file is the same as the `path` option. This will prevent `astro-pdf` from adding the counter suffix if there is a file with the same name, and will instead cause the processing of that page to fail.
+
 - **`screen`**: `boolean`
 
     Default: `false`

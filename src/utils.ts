@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export async function openFd(
     path: string,
+    ensure: boolean | undefined,
     debug: (message: string) => void,
     warn: (message: string) => void,
     signal?: AbortSignal
@@ -22,6 +23,9 @@ export async function openFd(
             break
         } catch (err) {
             debug('openFd: ' + err)
+            if (ensure) {
+                return { err, fd, path: p }
+            }
             i++
             if (!(err instanceof Error && 'code' in err && err.code === 'EEXIST')) {
                 warn(`unexpected error while opening \`${p}\`: ${err}`)

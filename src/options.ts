@@ -36,6 +36,7 @@ export type PDFOptions = Omit<PuppeteerPDFOptions, 'path'>
 
 export interface PageOptions {
     path: string | ((url: URL, page: Page) => string | Promise<string>)
+    ensurePath?: boolean
     screen: boolean
     viewport?: Viewport
     waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
@@ -50,6 +51,7 @@ export interface PageOptions {
 
 export const defaultPageOptions = {
     path: '[pathname].pdf',
+    ensurePath: false,
     screen: false,
     waitUntil: 'networkidle2',
     pdf: {},
