@@ -168,6 +168,20 @@ describe('process page', () => {
         expect(env.warn).toBeCalledTimes(0)
     })
 
+    test('throws for conflicting filenames with ensurePath', async () => {
+        const options: PageOptions = {
+            path: 'another-output.pdf',
+            ensurePath: true,
+            screen: false,
+            waitUntil: 'networkidle2',
+            pdf: {}
+        }
+        expect(existsSync(resolve(env.outDir, 'another-output.pdf'))).toBe(false)
+        const promise = Promise.all([processPage('/docs', options, env), processPage('/docs/page', options, env)])
+        await expect(promise).rejects.toThrow('file already exists')
+        expect(existsSync(resolve(env.outDir, 'another-output.pdf'))).toBe(true)
+    })
+
     test('dynamic page dimensions', async () => {
         const PAGE_WIDTH_PX = 1440
         const options: PageOptions = {
