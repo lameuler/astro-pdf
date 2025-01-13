@@ -1,5 +1,29 @@
 # astro-pdf
 
+## 1.7.0
+
+### Minor Changes
+
+- [#75](https://github.com/lameuler/astro-pdf/pull/75) [`cafc705`](https://github.com/lameuler/astro-pdf/commit/cafc7057315c83224661eab46e5ea2303402e3f8) Thanks [@lameuler](https://github.com/lameuler)! - Add `preCallback` page option to configure the Puppeteer `Page` before navigation
+
+- [#84](https://github.com/lameuler/astro-pdf/pull/84) [`7bc4eee`](https://github.com/lameuler/astro-pdf/commit/7bc4eee358450f1faeea6946bd1c001ac55034b2) Thanks [@lameuler](https://github.com/lameuler)! - add `ensurePath` page option to throw if there is a filename conflict instead of adding a suffix to the path
+
+- [#79](https://github.com/lameuler/astro-pdf/pull/79) [`cf1500a`](https://github.com/lameuler/astro-pdf/commit/cf1500a511b288838d33c92c29bcad12c8707924) Thanks [@DeyLak](https://github.com/DeyLak)! - Allow passing a callback for the `pdf` page option to dynamically set `PDFOptions`
+
+- [#78](https://github.com/lameuler/astro-pdf/pull/78) [`5944756`](https://github.com/lameuler/astro-pdf/commit/59447569b6f30f7d657a52572c2f3b38a8429866) Thanks [@lameuler](https://github.com/lameuler)! - added `page: Page` parameter to `path` option callback, and allow it to return a Promise. this can be used to dynamically set the PDF output path based on the page content
+
+- [#76](https://github.com/lameuler/astro-pdf/pull/76) [`e699220`](https://github.com/lameuler/astro-pdf/commit/e69922090de74bbfbc66e5d62ce99bcb439a964e) Thanks [@lameuler](https://github.com/lameuler)! - Added `isolated` page option to create a new browser context for that page which will not share cookies and cache with other pages
+
+- [#83](https://github.com/lameuler/astro-pdf/pull/83) [`3d07ce7`](https://github.com/lameuler/astro-pdf/commit/3d07ce7a4f5a94ef758fe3ace8a2580f6d6614e2) Thanks [@lameuler](https://github.com/lameuler)! - added `throwErrors` option to prevent `astro-pdf` from causing Astro build fails. Fixed the error handling of custom servers to be consistent with the new option.
+
+- [#75](https://github.com/lameuler/astro-pdf/pull/75) [`cafc705`](https://github.com/lameuler/astro-pdf/commit/cafc7057315c83224661eab46e5ea2303402e3f8) Thanks [@lameuler](https://github.com/lameuler)! - Add `browserCallback` option to configure the Puppeteer `Browser` before any pages are processed
+
+### Patch Changes
+
+- [#73](https://github.com/lameuler/astro-pdf/pull/73) [`1f0e8b0`](https://github.com/lameuler/astro-pdf/commit/1f0e8b08395b58e55bcf29f4af6957905a81ca3a) Thanks [@lameuler](https://github.com/lameuler)! - Ensure that all pages and the browser are closed properly when errors are encountered
+
+- [#81](https://github.com/lameuler/astro-pdf/pull/81) [`0dcbd2b`](https://github.com/lameuler/astro-pdf/commit/0dcbd2b71dc1e4830c6f30f523dd3dc4e7d658eb) Thanks [@lameuler](https://github.com/lameuler)! - throw an error if the output `path` is a directory (i.e. has a trailing slash)
+
 ## 1.6.0
 
 ### Minor Changes
