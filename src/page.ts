@@ -1,4 +1,4 @@
-import { mkdir } from 'node:fs/promises'
+import { mkdir, rm } from 'node:fs/promises'
 import { dirname, sep } from 'node:path'
 
 import { bold, red, yellow } from 'kleur/colors'
@@ -175,6 +175,14 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
             await pipeToFd(stream, fd, signal)
         } catch (err) {
+            await fd.close()
+            try {
+                // remove the created file if writing was not successful
+                await rm(path)
+                debug(`removed \`${path}\``)
+            } catch (e) {
+                debug(`failed to remove \`${path}\`: ${e}`)
+            }
             if (err instanceof PageError || err instanceof FatalError) {
                 throw err
             }

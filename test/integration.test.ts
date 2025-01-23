@@ -23,6 +23,7 @@ describe('run integration', () => {
     })
 
     beforeAll(() => {
+        let i = 0
         integration = pdf({
             pages: {
                 'https://ler.sg/cv': {
@@ -36,6 +37,13 @@ describe('run integration', () => {
                 '/missing': {
                     path: 'missing.pdf',
                     maxRetries: 2
+                },
+                'https://example.com': {
+                    path: 'example.pdf',
+                    maxRetries: 1,
+                    pdf: () => ({
+                        timeout: i++ === 0 ? 1 : undefined
+                    })
                 }
             },
             runBefore,
@@ -109,7 +117,7 @@ describe('run integration', () => {
             const calls = runAfter.mock.calls
             expect(calls.length).toBe(1)
             expect(calls[0][0]).toBe(outDir)
-            const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf']
+            const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf', '/example.pdf']
             expect(calls[0][1].sort()).toStrictEqual(expected.sort())
         })
 
@@ -143,6 +151,11 @@ describe('run integration', () => {
             }
         }, 10000)
 
+        test('does not add suffix for retry', () => {
+            expect(existsSync(resolve(outPath, 'example.pdf'))).toBe(true)
+            expect(existsSync(resolve(outPath, 'example-1.pdf'))).toBe(false)
+        })
+
         test('generated remote page', async () => {
             const path = resolve(outPath, 'resume.pdf')
             expect((await lstat(path)).isFile()).toBe(true)
@@ -150,7 +163,7 @@ describe('run integration', () => {
             expect(data.Meta['Title']).toContain('resume')
         })
 
-        test('did not generate 404 page', async () => {
+        test('did not generate 404 page', () => {
             const path = resolve(outPath, 'missing.pdf')
             expect(existsSync(path)).toBe(false)
         })

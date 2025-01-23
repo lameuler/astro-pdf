@@ -182,6 +182,21 @@ describe('process page', () => {
         expect(existsSync(resolve(env.outDir, 'another-output.pdf'))).toBe(true)
     })
 
+    test('removes files which were not fully generated', async () => {
+        const options: PageOptions = {
+            path: 'pdf-timeout.pdf',
+            screen: false,
+            waitUntil: 'networkidle2',
+            pdf: {
+                printBackground: true,
+                timeout: 1
+            }
+        }
+        const promise = processPage('https://example.com', options, env)
+        await expect(promise).rejects.toThrow('Timed out')
+        expect(existsSync(resolve(env.outDir, 'pdf-timeout.pdf'))).toBe(false)
+    })
+
     test('dynamic page dimensions', async () => {
         const PAGE_WIDTH_PX = 1440
         const options: PageOptions = {
