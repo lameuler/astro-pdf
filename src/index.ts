@@ -8,14 +8,18 @@ import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
-import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
+import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions, type ServerOutput } from './options.js'
 import { FatalError, PageError, processPage } from './page.js'
-import { astroPreview, type ServerOutput } from './server.js'
+import { astroPreview } from './server.js'
 
-export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
-export type { ServerOutput } from './server.js'
-export type { Options, PageOptions }
+export type { Options, PageOptions, ServerOutput }
+export type { PagesEntry, PagesFunction, PagesMap, PDFOptions } from './options.js'
 
+/**
+ * Creates the `astro-pdf` integration.
+ *
+ * @param options - `astro-pdf` configuration options
+ */
 export default function pdf(options: Options): AstroIntegration {
     let cacheDir: string
     let astroConfig: AstroConfig
