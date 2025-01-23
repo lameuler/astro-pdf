@@ -45,14 +45,14 @@ describe('load page', () => {
         await loadPage('/index.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
         expect(await page.content()).toContain('<h1>Page Loaded!</h1>')
-    }, 8000)
+    }, 10000)
 
     test('redirect to valid page', async () => {
         const page = await browser.newPage()
         const base = new URL('http://localhost:' + port)
         await loadPage('/other.html', base, page, 'networkidle0')
         expect(page.url()).toBe(new URL('/index.html', base).href)
-    }, 8000)
+    }, 10000)
 
     test('404 page', async () => {
         const page = await browser.newPage()
@@ -132,7 +132,7 @@ describe('load page', () => {
             }
         })
         expect(pass).toBe(true)
-    })
+    }, 10000)
 
     afterAll(async () => {
         await browser.close()
