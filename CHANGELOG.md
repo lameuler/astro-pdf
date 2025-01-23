@@ -1,5 +1,12 @@
 # astro-pdf
 
+## 1.7.1
+
+### Patch Changes
+
+- [#86](https://github.com/lameuler/astro-pdf/pull/86) [`2654d81`](https://github.com/lameuler/astro-pdf/commit/2654d81c6adc749ae453daf865a82942d780d347) Thanks [@lameuler](https://github.com/lameuler)! - delete PDF files which failed to generate fully (e.g. timed out).
+  this allows subsequent retries to still use the same output path.
+
 ## 1.7.0
 
 ### Minor Changes
