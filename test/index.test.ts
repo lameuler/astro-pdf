@@ -7,4 +7,4 @@ test('default exports function', async () => {
 })
 
 // check all documented types
-export type { Options, PageOptions, PagesEntry, PagesFunction, PagesMap, ServerOutput } from 'astro-pdf'
+export type { Options, PageOptions, PagesEntry, PagesFunction, PagesMap, PDFOptions, ServerOutput } from 'astro-pdf'
