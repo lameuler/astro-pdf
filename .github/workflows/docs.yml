@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+            - docs # TODO this is temporary
     workflow_dispatch:
         inputs:
             force:
