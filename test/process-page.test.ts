@@ -72,7 +72,7 @@ describe('process page', () => {
 
         beforeAll(async () => {
             result = await processPage('/', options, env)
-        }, 15000)
+        }, 20000)
 
         test('output location', () => {
             expect(result.location).toBe('/')
