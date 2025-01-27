@@ -1,5 +1,13 @@
 # astro-pdf
 
+## 1.7.2
+
+### Patch Changes
+
+- [#88](https://github.com/lameuler/astro-pdf/pull/88) [`3ba2cf8`](https://github.com/lameuler/astro-pdf/commit/3ba2cf89e93bf22a561779ecc217cc4c5046a1ac) Thanks [@lameuler](https://github.com/lameuler)! - Export `PDFOptions` type which was previously not exported
+
+- [#88](https://github.com/lameuler/astro-pdf/pull/88) [`3ba2cf8`](https://github.com/lameuler/astro-pdf/commit/3ba2cf89e93bf22a561779ecc217cc4c5046a1ac) Thanks [@lameuler](https://github.com/lameuler)! - Added TSDoc comments to the source code. Read the full documentation at https://ler.quest/astro-pdf/
+
 ## 1.7.1
 
 ### Patch Changes

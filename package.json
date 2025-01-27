@@ -1,6 +1,6 @@
 {
     "name": "astro-pdf",
-    "version": "1.7.1",
+    "version": "1.7.2",
     "description": "Astro integration to generate PDFs from pages in your site and other websites",
     "type": "module",
     "main": "./dist/index.js",
