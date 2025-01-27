@@ -57,14 +57,14 @@ jobs:
                   " >> "$GITHUB_OUTPUT"
 
             - name: Log exit
-              if: ${{ steps.check.outputs.has_changesets == true }}
+              if: ${{ steps.check.outputs.has_changesets == 'true' }}
               run: echo "Found changesets. Skipping docs deployment."
 
     build:
         name: Build
         needs: check
 
-        if: ${{ needs.check.outputs.has_changesets == false || inputs.force }}
+        if: ${{ needs.check.outputs.has_changesets == 'false' || inputs.force }}
         runs-on: ubuntu-latest
 
         steps:
