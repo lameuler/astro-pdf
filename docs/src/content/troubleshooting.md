@@ -1,5 +1,6 @@
 ---
 title: Troubleshooting
+description: Troubleshoot common configuration issues which can cause unexpected results when generating PDFs. Find out how to debug unexpected errors while using astro-pdf.
 ---
 
 ## Missing content or timeouts
