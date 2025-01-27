@@ -1,5 +1,6 @@
 ---
 title: Modifying Generated PDFs
+description: astro-pdf can modify the generated PDFs with the help of other tools. For example, to set the title or other metadata, or to merge multiple PDF files into one.
 ---
 
 ## Edit metadata

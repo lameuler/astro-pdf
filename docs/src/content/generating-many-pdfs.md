@@ -1,5 +1,6 @@
 ---
 title: Generating Many PDFs
+description: Configure astro-pdf to generate as many PDFs as possible. This can involve limiting concurrency, increasing timeouts, and allowing retries when errors occur.
 ---
 
 By default, `astro-pdf` tries to load and process all pages in parallel. This helps to speed up build times, but can lead to issues when you need to generate a large number of PDF files. As Puppeteer cannot handle too many page loads at once, the loading may time out after the default navigation timeout of 30 seconds.

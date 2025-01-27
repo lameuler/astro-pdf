@@ -1,5 +1,6 @@
 ---
 title: Configuring Puppeteer
+description: Setup a Puppeteer configuration file to control which browser it installs and uses. Handle common sandbox related issues with Puppeteer on Linux and Windows.
 ---
 
 When `astro-pdf` is installed, it installs `puppeteer`, which will automatically install a recent version of Chrome. However, you can [configure Puppeteer](https://pptr.dev/guides/configuration) to prevent this.
@@ -41,6 +42,8 @@ You can also set `PUPPETEER_SKIP_DOWNLOAD` environment variable when installing 
 ```sh
 PUPPETEER_SKIP_DOWNLOAD=true npm install
 ```
+
+You can then use the [`install` option](reference/options#install) to control which browser to install when `astro-pdf` runs.
 
 ## Linux AppArmor profile
 

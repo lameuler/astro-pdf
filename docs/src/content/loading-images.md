@@ -1,5 +1,6 @@
 ---
 title: Loading Images
+description: Configure astro-pdf to wait for all images to load, including images with loading='lazy'. This will ensure that all images appear in the generated PDF files.
 ---
 
 ## Wait for images
