@@ -33,7 +33,7 @@ jobs:
         runs-on: ubuntu-latest
 
         outputs:
-            has_changesets: steps.check.outputs.has_changesets
+            has_changesets: ${{ steps.check.outputs.has_changesets }}
 
         steps:
             - name: Checkout
