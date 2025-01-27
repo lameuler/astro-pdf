@@ -20,6 +20,7 @@
         "version": "changeset version && npm install --lockfile-only"
     },
     "author": "Lam Eu Ler",
+    "homepage": "https://ler.quest/astro-pdf/",
     "license": "MIT",
     "repository": {
         "type": "git",
