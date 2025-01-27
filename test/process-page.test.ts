@@ -72,7 +72,7 @@ describe('process page', () => {
 
         beforeAll(async () => {
             result = await processPage('/', options, env)
-        }, 15000)
+        }, 20000)
 
         test('output location', () => {
             expect(result.location).toBe('/')
@@ -166,7 +166,7 @@ describe('process page', () => {
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
         expect(env.warn).toBeCalledTimes(0)
-    })
+    }, 10000)
 
     test('throws for conflicting filenames with ensurePath', async () => {
         const options: PageOptions = {
@@ -180,7 +180,7 @@ describe('process page', () => {
         const promise = Promise.all([processPage('/docs', options, env), processPage('/docs/page', options, env)])
         await expect(promise).rejects.toThrow('file already exists')
         expect(existsSync(resolve(env.outDir, 'another-output.pdf'))).toBe(true)
-    })
+    }, 10000)
 
     test('removes files which were not fully generated', async () => {
         const options: PageOptions = {

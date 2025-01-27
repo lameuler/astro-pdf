@@ -1,0 +1,132 @@
+name: Docs
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+        inputs:
+            force:
+                description: 'Force deployment even if there are changesets'
+                default: false
+                required: false
+                type: boolean
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    BUILD_PATH: docs
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    check:
+        name: Check
+
+        if: ${{ github.repository_owner == 'lameuler' }}
+        runs-on: ubuntu-latest
+
+        outputs:
+            has_changesets: ${{ steps.check.outputs.has_changesets }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Check for changesets
+              id: check
+              run: |
+                  node -e "
+                      require('@changesets/read').default(process.cwd())
+                      .then((c) => console.log('has_changesets=' + (c.length > 0)))
+                  " >> "$GITHUB_OUTPUT"
+
+            - name: Log exit
+              if: ${{ steps.check.outputs.has_changesets == 'true' }}
+              run: echo "Found changesets. Skipping docs deployment."
+
+    build:
+        name: Build
+        needs: check
+
+        if: ${{ needs.check.outputs.has_changesets == 'false' || inputs.force }}
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - name: Setup Pages
+              id: pages
+              uses: actions/configure-pages@v5
+
+            - name: Configure AppArmor profile for Puppeteer
+              run: |
+                  sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  abi <abi/4.0>,
+                  include <tunables/global>
+
+                  profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+
+                  profile chrome-local $PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  EOF
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+                  sudo service apparmor reload
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Build docs
+              run: |
+                  npm run build -- \
+                  --site "${{ steps.pages.outputs.origin }}" \
+                  --base "${{ steps.pages.outputs.base_path }}"
+              working-directory: ${{ env.BUILD_PATH }}
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: ${{ env.BUILD_PATH }}/dist
+
+    deploy:
+        name: Deploy
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        needs: build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4

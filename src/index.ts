@@ -1,3 +1,9 @@
+/**
+ * This is the documentation for the `astro-pdf` Astro integration.
+ *
+ * For more infomation on how to install and use `astro-pdf`, refer to the {@link https://ler.quest/astro-pdf/ | Getting Started guide}.
+ * @module
+ */
 import EventEmitter from 'node:events'
 import { extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,14 +14,39 @@ import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
 import { findOrInstallBrowser } from './browser.js'
-import { defaultPageOptions, getPageOptions, mergePages, type Options, type PageOptions } from './options.js'
+import {
+    defaultPageOptions,
+    getPageOptions,
+    mergePages,
+    type Options,
+    type PageOptions,
+    type ServerOutput
+} from './options.js'
 import { FatalError, PageError, processPage } from './page.js'
-import { astroPreview, type ServerOutput } from './server.js'
+import { astroPreview } from './server.js'
 
-export type { PagesEntry, PagesFunction, PagesMap } from './options.js'
-export type { ServerOutput } from './server.js'
-export type { Options, PageOptions }
+export type { Options, PageOptions, ServerOutput }
+export type { PagesEntry, PagesFunction, PagesMap, PDFOptions } from './options.js'
 
+/**
+ * Creates the `astro-pdf` integration.
+ *
+ * @param options - `astro-pdf` configuration options
+ *
+ * @example
+ * ```ts
+ * import { defineConfig } from 'astro/config'
+ * import pdf from 'astro-pdf'
+ *
+ * export default defineConfig({
+ *     integrations: [pdf({
+ *         pages: {
+ *             '/': 'home.pdf'
+ *         }
+ *     })]
+ * })
+ * ```
+ */
 export default function pdf(options: Options): AstroIntegration {
     let cacheDir: string
     let astroConfig: AstroConfig
@@ -101,7 +132,6 @@ export default function pdf(options: Options): AstroIntegration {
 
                     function onDisconnected() {
                         controller.abort(new FatalError('Fatal error: Browser disconnected unexpectedly'))
-                        console.log('browser disconnected')
                     }
                     browser.on('disconnected', onDisconnected)
 

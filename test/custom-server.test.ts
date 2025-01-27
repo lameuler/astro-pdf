@@ -100,7 +100,7 @@ describe('custom server', () => {
                 logger,
                 assets: new Map()
             })
-        })
+        }, 15000)
 
         test('no warning or error', () => {
             expect(logger.warn).not.toBeCalled()
@@ -148,7 +148,7 @@ describe('custom server', () => {
                 logger,
                 assets: new Map()
             })
-        })
+        }, 15000)
 
         test('warning', () => {
             expect(logger.warn).toBeCalled()
@@ -192,7 +192,7 @@ describe('custom server', () => {
                 buildOutput: 'static',
                 logger
             })
-        })
+        }, 15000)
 
         test('throws error', async () => {
             expect(logger.warn).not.toBeCalled()

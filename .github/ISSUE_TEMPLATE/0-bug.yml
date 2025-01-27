@@ -6,6 +6,11 @@ body:
       attributes:
           value: |
               Thanks for taking the time to fill out this bug report!
+
+              Before you submit the bug report, do ensure that you are using the latest version of `astro-pdf`,
+              and check the [existing issues on GitHub](https://github.com/lameuler/astro-pdf/issues) (if any)
+              and the [troubleshooting guide](https://ler.quest/astro-pdf/troubleshooting/).
+
     - type: input
       attributes:
           label: astro-pdf version
@@ -22,7 +27,7 @@ body:
       id: describe-bug
       attributes:
           label: Describe the bug
-          description: Please provide a clear description of the issue and the expected behaviour.
+          description: Please provide a clear description of the issue and the expected behaviour. If there are errors encountered, run with `--verbose` to get the error stack trace.
       validations:
           required: true
     - type: input

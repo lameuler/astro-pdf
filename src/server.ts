@@ -3,10 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, preview } from 'astro'
 
-export interface ServerOutput {
-    url?: URL
-    close?: () => unknown | Promise<unknown>
-}
+import { ServerOutput } from './options.js'
 
 export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {
     // ** `preview` is an experimental API **
