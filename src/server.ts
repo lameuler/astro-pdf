@@ -2,6 +2,7 @@ import { Server } from 'node:http'
 import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, preview } from 'astro'
+
 import { ServerOutput } from './options.js'
 
 export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {

@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
     { files: ['**/*.{js,mjs,cjs,ts}'] },
-    { ignores: ['**/dist', 'test/fixtures/**/*.d.ts', 'test/fixtures/**/public', '**/.cache'] },
+    { ignores: ['**/dist', 'test/fixtures/**/*.d.ts', 'test/fixtures/**/public', '**/.cache', '**/.astro'] },
     { languageOptions: { globals: globals.node } },
     pluginJs.configs.recommended,
     ...tseslint.configs.recommended,

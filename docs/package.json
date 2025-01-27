@@ -1,0 +1,17 @@
+{
+    "name": "docs",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro check && astro build",
+        "preview": "astro preview",
+        "astro": "astro"
+    },
+    "dependencies": {
+        "@astrojs/check": "^0.9.4",
+        "@lameuler/atlas": "^2.1.1",
+        "astro": "^5.1.8",
+        "typescript": "^5.7.3"
+    }
+}

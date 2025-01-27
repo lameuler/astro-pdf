@@ -29,7 +29,7 @@ export interface Options {
      */
     maxConcurrent?: number | null
     /**
-     * Specifies whether to install a browser, or options to pass to {@link https://pptr.dev/browsers-api/browsers.install | Puppeteer `install`}
+     * Specifies whether to install a browser, or options to pass to {@link https://pptr.dev/browsers-api/browsers.install | Puppeteer `install`}.
      *
      * @remarks
      * By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
@@ -51,18 +51,11 @@ export interface Options {
      * The `server` function will be called with the project's {@link https://docs.astro.build/en/reference/configuration-reference/ | Astro config}.
      *
      * This can also be set to `false` to not run any server. If `server` is set to `false` or returns no URL, then only pages with a full URL specified for the location in {@link PagesMap | `PagesMap`} will work.
-     * 
+     *
      * @returns
      * The URL of the server, and optionally a function to close the server. Note that only the origin of the URL will be used.
      */
     server?: ((config: AstroConfig) => ServerOutput | Promise<ServerOutput>) | false
-    /**
-     * Set to `false` to prevent `astro-pdf` from throwing any errors.
-     *
-     * @remarks
-     * This will cause `astro-pdf` to exit gracefully when it encounters errors, instead of the default behaviour of causing the whole Astro build to fail.
-     */
-    throwErrors?: boolean
     /**
      * Default options to use for each page.
      *
@@ -70,6 +63,13 @@ export interface Options {
      * This will override the default options of {@link PageOptions | `PageOptions`}.
      */
     baseOptions?: Partial<PageOptions>
+    /**
+     * Set to `false` to prevent `astro-pdf` from throwing any errors.
+     *
+     * @remarks
+     * This will cause `astro-pdf` to exit gracefully when it encounters errors, instead of the default behaviour of causing the whole Astro build to fail.
+     */
+    throwErrors?: boolean
     /**
      * Callback to run before `astro-pdf` has started running anything, but after the Astro build has completed.
      *
@@ -142,11 +142,12 @@ export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefi
  *         if (pathname === '/specific/page') {
  *             return {
  *                 path: 'specific-page.pdf',
- *                 light: true
+ *                 ensurePath: true,
+ *                 throwOnFail: true
  *             }
  *         }
  *         if (pathname.startsWith('/documents/')) {
- *             return pathname.replace(/^\/documents/, '/generated')
+ *             return `/generated/${pathname.substring(11)}.pdf`
  *         }
  *     }
  * }
@@ -184,7 +185,7 @@ export type PagesFunction = (pathname: string) => PagesEntry | PagesEntry[]
  *         '/documents/dynamic': false, // will not be passed to fallback
  *         fallback: (pathname) => {
  *             if (pathname.startsWith('/documents/')) {
- *                 return pathname.replace(/^\/documents/, '/generated')
+ *                 return `/generated/${pathname.substring(11)}.pdf`
  *             }
  *         }
  *     }
@@ -225,6 +226,8 @@ export type PagesFunction = (pathname: string) => PagesEntry | PagesEntry[]
  * /documents/static2
  * /other/page
  * ```
+ *
+ * assuming that your {@link https://docs.astro.build/en/reference/configuration-reference/#buildformat | `build.format`} is set to `file`.
  */
 export type PagesMap = Record<string, PagesEntry | PagesEntry[]> & {
     fallback?: PagesFunction
@@ -257,6 +260,7 @@ export interface PageOptions {
      *
      * If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file.
      * For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
+     * This can be disabled with the {@link ensurePath | `ensurePath` option }.
      *
      * @defaultValue `'[pathname].pdf'`
      */
@@ -297,6 +301,9 @@ export interface PageOptions {
      * {@link https://pptr.dev/api/puppeteer.page.setdefaultnavigationtimeout | Set the default navigation timeout} (in milliseconds) for Puppeteer.
      *
      * @remarks
+     * This timeout applies when the page and all its contents are being loaded.
+     * A separate timeout is used when generating the PDF after the page is loaded. This can be set using the {@link pdf | `pdf` option}.
+     *
      * The default used by Puppeteer is 30 seconds. This can be set to 0 to have no timeout.
      */
     navTimeout?: number
@@ -305,7 +312,7 @@ export interface PageOptions {
      *
      * @remarks
      * If you pass a callback, it will be called with the {@link https://pptr.dev/api/puppeteer.page | Puppeteer `Page`} once it is loaded.
-     * You can use this to define {@link https://github.com/lameuler/astro-pdf/issues/77 | dynamic page dimensions}.
+     * You can use this to {@link https://github.com/lameuler/astro-pdf/issues/77 | define dynamic page dimensions}.
      *
      * @defaultValue `{}`
      */
@@ -342,7 +349,11 @@ export interface PageOptions {
      * Receives a {@link https://pptr.dev/api/puppeteer.page | Puppeteer `Page`} before any navigation is done.
      *
      * @remarks
-     * This can be used, for example, to {@link https://pptr.dev/api/puppeteer.page.setuseragent | set the user agent}, or {@link https://pptr.dev/api/puppeteer.page.setextrahttpheaders | HTTP headers} for the request.
+     * This can be used, for example, to {@link https://pptr.dev/api/puppeteer.page.setuseragent | set the user agent},
+     * or {@link https://pptr.dev/api/puppeteer.page.setextrahttpheaders | HTTP headers} for the request.
+     *
+     * Note that the contents of the page will not be available as this is run before the page is loaded.
+     * If you need to access or modify the page contents, use the {@link callback | `callback` option }
      *
      * @param page - The {@link https://pptr.dev/api/puppeteer.page | Puppeteer `Page`}
      */
@@ -353,7 +364,7 @@ export interface PageOptions {
      * @remarks
      * This callback is run before the PDF is generated.
      *
-     * This can be used to modify the loaded page before generated the PDF, for example to remove certain elements, or {@link https://ler.quest/astro-pdf/loading-images/#lazily-loaded-images | eagerly load all images}
+     * This can be used to modify the loaded page before generated the PDF, for example to remove certain elements, or {@link https://ler.quest/astro-pdf/loading-images/#lazily-loaded-images | eagerly load all images}.
      *
      * @param page - The {@link https://pptr.dev/api/puppeteer.page | Puppeteer `Page`}
      */
@@ -362,7 +373,7 @@ export interface PageOptions {
 
 /**
  * Options to pass to {@link https://pptr.dev/api/puppeteer.page.createpdfstream | Puppeteer's `page.createPDFStream()`} function.
- * 
+ *
  * @remarks
  * The `path` property is omitted as it is unused. To specify the output path of PDF files, use the {@link PageOptions.path | `path` page option}.
  */
@@ -372,7 +383,23 @@ export type PDFOptions = Omit<PuppeteerPDFOptions, 'path'>
  * The return type of the {@link Options.server | `server` option}.
  */
 export interface ServerOutput {
+    /**
+     * The URL of the server.
+     *
+     * @remarks
+     * Only the origin of the server (e.g. `http://localhost:4321`) will be used.
+     *
+     * If the URL is undefined, `astro-pdf` will not attempt to load local pages.
+     */
     url?: URL
+    /**
+     * Function to close the server.
+     *
+     * @remarks
+     * This will be called after `astro-pdf` has finished loading and processing all pages.
+     *
+     * If the function returns a promise, it will be awaited. Otherwise the return value is ignored.
+     */
     close?: () => unknown | Promise<unknown>
 }
 
