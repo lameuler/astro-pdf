@@ -55,10 +55,18 @@ jobs:
                       require('@changesets/read').default(process.cwd())
                       .then((c) => console.log(`has_changesets={c.length > 0}`))
                   " >> "$GITHUB_OUTPUT"
+            - name: Log
+              run: echo ${{ steps.check.outputs.has_changesets }}
 
             - name: Log exit
               if: ${{ steps.check.outputs.has_changesets == 'true' }}
               run: echo "Found changesets. Skipping docs deployment."
+
+    temp:
+        needs: check
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo ${{ needs.check.outputs.has_changesets }}
 
     build:
         name: Build
