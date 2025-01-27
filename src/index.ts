@@ -32,12 +32,12 @@ export type { PagesEntry, PagesFunction, PagesMap, PDFOptions } from './options.
  * Creates the `astro-pdf` integration.
  *
  * @param options - `astro-pdf` configuration options
- * 
+ *
  * @example
  * ```ts
  * import { defineConfig } from 'astro/config'
  * import pdf from 'astro-pdf'
- * 
+ *
  * export default defineConfig({
  *     integrations: [pdf({
  *         pages: {
