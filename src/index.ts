@@ -189,9 +189,7 @@ export default function pdf(options: Options): AstroIntegration {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
-                                        red(
-                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`
-                                        )
+                                        red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
                                     )
                                 }
                                 const causeStack =

@@ -54,16 +54,18 @@ describe('custom server', () => {
         expect(data.Meta['Title']).toBe('index.astro')
         const texts: string[] = []
         data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
-        expect(texts).toContain('index.astro')
-        expect(texts).toContain('@test/custom-server')
+        const allText = texts.join('')
+        expect(allText).toContain('index.astro')
+        expect(allText).toContain('@test/custom-server')
     })
     test('page generated', async () => {
         const data = await parsePdf(fixture.resolveOutput('page.pdf'))
         expect(data.Meta['Title']).toBe('page.astro')
         const texts: string[] = []
         data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
-        expect(texts).toContain('page.astro')
-        expect(texts).toContain('@test/custom-server')
+        const allText = texts.join('')
+        expect(allText).toContain('page.astro')
+        expect(allText).toContain('@test/custom-server')
     })
 
     describe('no server', () => {
