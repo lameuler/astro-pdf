@@ -41,11 +41,11 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: 'npm'
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
 
             - name: Check for changesets
               id: check
@@ -73,7 +73,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: 'npm'
 
             - name: Setup Pages
@@ -105,6 +105,10 @@ jobs:
 
             - name: Install Dependencies
               run: npm ci
+
+            - name: Install docs dependencies
+              run: npm ci
+              working-directory: ${{ env.BUILD_PATH }}
 
             - name: Build docs
               run: |

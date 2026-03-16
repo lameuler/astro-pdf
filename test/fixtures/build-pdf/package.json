@@ -10,8 +10,8 @@
         "astro": "astro"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.4",
-        "astro": "^5.0.3",
+        "@astrojs/check": "^0.9.7",
+        "astro": "^6.0.4",
         "astro-pdf": "^1.7.2",
         "typescript": "^5.6.2"
     }

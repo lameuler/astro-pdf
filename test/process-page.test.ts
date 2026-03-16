@@ -40,7 +40,7 @@ describe('process page', () => {
         if (existsSync(env.outDir)) {
             await rm(env.outDir, { recursive: true })
         }
-    })
+    }, 30000)
 
     describe('valid page full test', () => {
         const injectedTitle = '@test/process-page | astro-pdf'

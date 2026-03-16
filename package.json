@@ -14,7 +14,8 @@
         "prepack": "npm run build && npm test",
         "test": "tsc -p test && vitest run",
         "coverage": "vitest run --coverage",
-        "lint": "eslint",
+        "lint": "eslint src test eslint.config.js vitest.config.ts tsup.config.ts",
+        "lint:docs": "eslint docs/astro.config.mjs docs/src/content.config.ts",
         "format": "prettier . --write",
         "format:check": "prettier . --check",
         "version": "changeset version && npm install --lockfile-only"
@@ -40,7 +41,7 @@
         "puppeteer": "^24.2.0"
     },
     "peerDependencies": {
-        "astro": "^4.4.4 || ^5.0.0"
+        "astro": "^4.4.4 || ^5.0.0 || ^6.0.0"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.5.0",
@@ -52,14 +53,14 @@
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/node": "^22.10.1",
         "@vitest/coverage-istanbul": "^3.0.3",
-        "astro": "^5.0.3",
+        "astro": "^6.0.4",
         "cheerio": "^1.0.0",
         "eslint": "^9.16.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-n": "^17.14.0",
         "glob": "^11.0.0",
         "globals": "^15.13.0",
-        "pdf2json": "^3.1.4",
+        "pdf2json": "^4.0.2",
         "prettier": "^3.4.2",
         "tsup": "^8.3.5",
         "typescript-eslint": "^8.17.0",
@@ -67,7 +68,6 @@
     },
     "workspaces": [
         "./",
-        "./docs",
         "./test/fixtures/**"
     ],
     "publishConfig": {

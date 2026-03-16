@@ -12,7 +12,7 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    node-version: 20
+    node-version: 22
 
 jobs:
     lint:
@@ -29,10 +29,16 @@ jobs:
                   cache: 'npm'
 
             - name: Install Dependencies
-              run: npm install
+              run: npm ci
+
+            - name: Install docs dependencies
+              run: npm ci
+              working-directory: docs
 
             - name: Lint
-              run: npm run lint
+              run: |
+                  npm run lint
+                  npm run lint:docs
 
     format:
         name: 'Check format'
@@ -48,7 +54,7 @@ jobs:
                   cache: 'npm'
 
             - name: Install Dependencies
-              run: npm install
+              run: npm ci
 
             - name: Check Format
               run: npm run format:check
@@ -67,7 +73,11 @@ jobs:
                   cache: 'npm'
 
             - name: Install Dependencies
-              run: npm install
+              run: npm ci
+
+            - name: Install docs dependencies
+              run: npm ci
+              working-directory: docs
 
             - name: Build docs
               run: npm run build
@@ -81,7 +91,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                node-version: [20, 22]
+                node-version: [22, 24]
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -117,7 +127,7 @@ jobs:
                   cache: 'npm'
 
             - name: Install Dependencies
-              run: npm install
+              run: npm ci
 
             - name: Build Package
               run: npm run build

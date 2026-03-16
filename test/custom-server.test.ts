@@ -98,7 +98,6 @@ describe('custom server', () => {
             await integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: new URL('dist', root),
-                routes: [],
                 logger,
                 assets: new Map()
             })
@@ -146,7 +145,6 @@ describe('custom server', () => {
             await integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: new URL('dist', root),
-                routes: [],
                 logger,
                 assets: new Map()
             })
@@ -201,7 +199,6 @@ describe('custom server', () => {
             const promise = integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: new URL('dist', root),
-                routes: [],
                 logger,
                 assets: new Map()
             })
