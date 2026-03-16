@@ -12,7 +12,7 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    node-version: 20
+    node-version: 22
 
 jobs:
     lint:
@@ -91,12 +91,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                node-version: [22]
-                include:
-                    - os: ubuntu-latest
-                      node-version: 18
-                    - os: ubuntu-latest
-                      node-version: 20
+                node-version: [22, 24]
         steps:
             - name: Checkout
               uses: actions/checkout@v4
