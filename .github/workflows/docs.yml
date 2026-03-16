@@ -45,7 +45,7 @@ jobs:
                   cache: 'npm'
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
 
             - name: Check for changesets
               id: check
@@ -107,7 +107,7 @@ jobs:
               run: npm ci
 
             - name: Install docs dependencies
-              run: npm install
+              run: npm ci
               working-directory: ${{ env.BUILD_PATH }}
 
             - name: Build docs
