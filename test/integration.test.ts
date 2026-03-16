@@ -102,7 +102,6 @@ describe('run integration', () => {
             await integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: outDir,
-                routes: [],
                 logger,
                 assets: new Map()
             })
