@@ -106,6 +106,10 @@ jobs:
             - name: Install Dependencies
               run: npm ci
 
+            - name: Install docs dependencies
+              run: npm install
+              working-directory: ${{ env.BUILD_PATH }}
+
             - name: Build docs
               run: |
                   npm run build -- \
