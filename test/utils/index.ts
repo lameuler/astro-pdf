@@ -64,7 +64,7 @@ export function parsePdf(path: string) {
             resolve(data)
         })
         parser.on('pdfParser_dataError', (err) => {
-            reject(err.parserError)
+            reject(err)
         })
     })
     parser.loadPDF(path)
