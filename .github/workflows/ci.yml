@@ -31,8 +31,14 @@ jobs:
             - name: Install Dependencies
               run: npm install
 
+            - name: Install docs dependencies
+              run: npm install
+              working-directory: docs
+
             - name: Lint
-              run: npm run lint
+              run: |
+                  npm run lint
+                  npm run lint:docs
 
     format:
         name: 'Check format'
