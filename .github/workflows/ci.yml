@@ -12,7 +12,7 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    node-version: 20
+    node-version: 22
 
 jobs:
     lint:
@@ -31,8 +31,14 @@ jobs:
             - name: Install Dependencies
               run: npm install
 
+            - name: Install docs dependencies
+              run: npm install
+              working-directory: docs
+
             - name: Lint
-              run: npm run lint
+              run: |
+                  npm run lint
+                  npm run lint:docs
 
     format:
         name: 'Check format'
@@ -69,6 +75,10 @@ jobs:
             - name: Install Dependencies
               run: npm install
 
+            - name: Install docs dependencies
+              run: npm install
+              working-directory: docs
+
             - name: Build docs
               run: npm run build
               working-directory: docs
@@ -81,12 +91,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                node-version: [22]
-                include:
-                    - os: ubuntu-latest
-                      node-version: 18
-                    - os: ubuntu-latest
-                      node-version: 20
+                node-version: [22, 24]
         steps:
             - name: Checkout
               uses: actions/checkout@v4
