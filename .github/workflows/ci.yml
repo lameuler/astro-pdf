@@ -12,7 +12,7 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    node-version: 22
+    node-version: 24
 
 jobs:
     lint:
@@ -20,10 +20,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup node@${{ env.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.node-version }}
                   cache: 'npm'
@@ -45,10 +45,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup node@${{ env.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.node-version }}
                   cache: 'npm'
@@ -64,10 +64,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup node@${{ env.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.node-version }}
                   cache: 'npm'
@@ -91,10 +91,10 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                node-version: [22, 24]
+                node-version: [22, 24, 25]
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Configure AppArmor profile for Puppeteer (Linux only)
               if: matrix.os == 'ubuntu-latest'
@@ -121,7 +121,7 @@ jobs:
                   sudo service apparmor reload
 
             - name: Setup node@${{ matrix.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'npm'
