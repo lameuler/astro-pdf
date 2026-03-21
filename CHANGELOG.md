@@ -1,5 +1,13 @@
 # astro-pdf
 
+## 1.8.0
+
+### Minor Changes
+
+- [#100](https://github.com/lameuler/astro-pdf/pull/100) [`00a9666`](https://github.com/lameuler/astro-pdf/commit/00a9666ef52c464eb8934fe590991a49011aef28) Thanks [@ktross](https://github.com/ktross)! - Add support for Astro v6.
+
+- [#99](https://github.com/lameuler/astro-pdf/pull/99) [`7533b53`](https://github.com/lameuler/astro-pdf/commit/7533b53763bc7b48e2c6f823fccee05e917f5f35) Thanks [@yeta1990](https://github.com/yeta1990)! - Update to use Puppeteer v24
+
 ## 1.7.2
 
 ### Patch Changes
