@@ -156,6 +156,7 @@ jobs:
 
     release:
         name: Release
+        needs: [pack, test]
 
         if: ${{ (github.repository_owner == 'lameuler') && (github.ref == 'refs/heads/main') }}
         runs-on: ubuntu-latest
