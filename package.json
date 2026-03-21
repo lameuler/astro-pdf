@@ -11,14 +11,14 @@
     ],
     "scripts": {
         "build": "tsup && tsc",
-        "prepack": "npm run build && npm test",
+        "prepack": "npm run build",
         "test": "tsc -p test && vitest run",
         "coverage": "vitest run --coverage",
         "lint": "eslint src test eslint.config.js vitest.config.ts tsup.config.ts",
         "lint:docs": "eslint docs/astro.config.mjs docs/src/content.config.ts",
         "format": "prettier . --write",
         "format:check": "prettier . --check",
-        "version": "changeset version && npm install --lockfile-only"
+        "version": "changeset version && npm install --package-lock-only"
     },
     "author": "Lam Eu Ler",
     "homepage": "https://ler.quest/astro-pdf/",

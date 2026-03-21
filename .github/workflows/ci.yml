@@ -85,6 +85,25 @@ jobs:
               env:
                   ATLAS_PREVIEWS: false
 
+    pack:
+        name: 'Dry run npm pack'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup node@${{ env.node-version }}
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.node-version }}
+                  cache: 'npm'
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Dry run npm pack
+              run: npm pack --dry-run
+
     test:
         name: 'Test: ${{ matrix.os }} (node@${{ matrix.node-version }})'
         runs-on: ${{ matrix.os }}
@@ -134,3 +153,63 @@ jobs:
 
             - name: Run tests
               run: npm test
+
+    release:
+        name: Release
+        needs: [pack, test]
+
+        if: ${{ (github.repository_owner == 'lameuler') && (github.ref == 'refs/heads/main') }}
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: write
+            pull-requests: write
+            id-token: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.node-version }}
+                  cache: 'npm'
+
+            - name: Configure AppArmor profile for Puppeteer
+              run: |
+                  sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  abi <abi/4.0>,
+                  include <tunables/global>
+
+                  profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+
+                  profile chrome-local $PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  EOF
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+                  sudo service apparmor reload
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Create Release Pull Request or Publish
+              id: changesets
+              uses: changesets/action@v1
+              with:
+                  version: npm run version
+                  publish: npx changeset publish
+                  commit: 'chore: release'
+                  title: '[changesets] release'
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
