@@ -131,8 +131,7 @@ describe('run integration', () => {
             expect(data.Meta['Title']).toBe('home page')
             const texts: string[] = []
             data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
-            const allText = texts.join('')
-            expect(allText).toContain('@test/integration')
+            expect(texts).toContain('@test/integration')
         })
 
         test('handles multiple pdfs per page', async () => {
@@ -147,8 +146,7 @@ describe('run integration', () => {
                 expect(data.Meta['Title']).toBe('home page')
                 const texts: string[] = []
                 data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
-                const allText = texts.join('')
-                expect(allText).toContain('@test/integration')
+                expect(texts).toContain('@test/integration')
             }
         }, 10000)
 
