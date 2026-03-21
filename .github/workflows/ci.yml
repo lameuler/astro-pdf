@@ -85,6 +85,25 @@ jobs:
               env:
                   ATLAS_PREVIEWS: false
 
+    pack:
+        name: Dry run npm pack
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup node@${{ env.node-version>
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.node-versio>
+                  cache: 'npm'
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Dry run npm pack
+              run: npm pack --dry-run
+
     test:
         name: 'Test: ${{ matrix.os }} (node@${{ matrix.node-version }})'
         runs-on: ${{ matrix.os }}
