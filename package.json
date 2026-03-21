@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "build": "tsup && tsc",
-        "prepack": "npm run build && npm test",
+        "prepack": "npm run build",
         "test": "tsc -p test && vitest run",
         "coverage": "vitest run --coverage",
         "lint": "eslint src test eslint.config.js vitest.config.ts tsup.config.ts",

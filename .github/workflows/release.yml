@@ -1,7 +1,10 @@
 name: Release
 
 on:
-    push:
+    workflow_run:
+        workflows: ["CI"]
+        types:
+            - completed
         branches:
             - main
 
@@ -11,7 +14,7 @@ jobs:
     changelog:
         name: Changelog PR or Release
 
-        if: ${{ github.repository_owner == 'lameuler' }}
+        if: ${{ (github.repository_owner == 'lameuler') && (github.event.workflow_run.conclusion == 'success') }}
         runs-on: ubuntu-latest
 
         permissions:
