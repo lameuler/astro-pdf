@@ -25,6 +25,7 @@ describe('run integration', () => {
     beforeAll(() => {
         let i = 0
         integration = pdf({
+            install: false,
             pages: {
                 'https://ler.sg/cv': {
                     waitUntil: 'networkidle0',
@@ -69,6 +70,11 @@ describe('run integration', () => {
         const outDir = new URL('./dist', root)
         const outPath = fileURLToPath(outDir)
 
+        const warnings: Error[] = []
+        process.on('warning', (warning) => {
+            warnings.push(warning)
+        })
+
         beforeAll(async () => {
             if (existsSync(outPath)) {
                 await rm(outPath, { recursive: true })
@@ -106,6 +112,10 @@ describe('run integration', () => {
                 assets: new Map()
             })
         }, 30000)
+
+        test('warns for deprecated options', () => {
+            expect(warnings.filter((warning) => warning.name === 'DeprecationWarning').map((warning) => 'code' in warning && warning.code)).toStrictEqual(['astro-pdf:001'])
+        })
 
         test('called runBefore', () => {
             expect(runBefore).toBeCalledTimes(1)

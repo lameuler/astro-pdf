@@ -35,6 +35,8 @@ export interface Options {
      * By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
      *
      * If `install` is `false` or `undefined`, but no browser is found, it will automatically install a browser.
+     * 
+     * @deprecated {@link https://pptr.dev/guides/configuration Configure Puppeteer} to choose which browser to install or manually install a browser and pass the `executablePath` to {@link Options.launch `launch`}.
      */
     install?: boolean | Partial<InstallOptions>
     /**
