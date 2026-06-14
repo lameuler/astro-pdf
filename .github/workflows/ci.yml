@@ -12,7 +12,8 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    node-version: 24
+    NODE_VERSION: '24.15'
+    BUILD_PATH: docs
 
 jobs:
     lint:
@@ -22,10 +23,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
 
-            - name: Setup node@${{ env.node-version }}
+            - name: Setup node@${{ env.NODE_VERSION }}
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ env.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Install Dependencies
@@ -47,10 +48,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
 
-            - name: Setup node@${{ env.node-version }}
+            - name: Setup node@${{ env.NODE_VERSION }}
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ env.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Install Dependencies
@@ -66,11 +67,34 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
 
-            - name: Setup node@${{ env.node-version }}
+            - name: Setup node@${{ env.NODE_VERSION }}
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ env.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
+
+            - name: Configure AppArmor profile for Puppeteer
+              run: |
+                  sudo tee /etc/apparmor.d/chrome-dev-builds <<EOF
+                  abi <abi/4.0>,
+                  include <tunables/global>
+
+                  profile chrome $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+
+                  profile chrome-local $PWD/test/fixtures/*/node_modules/.astro/chrome/*/chrome-linux64/chrome flags=(unconfined) {
+                    userns,
+
+                    # Site-specific additions and overrides. See local/README for details.
+                    include if exists <local/chrome>
+                  }
+                  EOF
+                  sudo apparmor_parser -r /etc/apparmor.d/chrome-dev-builds
+                  sudo service apparmor reload
 
             - name: Install Dependencies
               run: npm ci
@@ -82,8 +106,6 @@ jobs:
             - name: Build docs
               run: npm run build
               working-directory: docs
-              env:
-                  ATLAS_PREVIEWS: false
 
     pack:
         name: 'Dry run npm pack'
@@ -92,10 +114,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
 
-            - name: Setup node@${{ env.node-version }}
+            - name: Setup node@${{ env.NODE_VERSION }}
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ env.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Install Dependencies
@@ -173,7 +195,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
-                  node-version: ${{ env.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Configure AppArmor profile for Puppeteer

@@ -17,8 +17,8 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    BUILD_PATH: docs
-    NODE_VERSION: '26.0'
+    NODE_VERSION: '24.15'
+    DOCS_PATH: docs
 
 permissions:
     contents: read
@@ -109,19 +109,19 @@ jobs:
 
             - name: Install docs dependencies
               run: npm ci
-              working-directory: ${{ env.BUILD_PATH }}
+              working-directory: ${{ env.DOCS_PATH }}
 
             - name: Build docs
               run: |
                   npm run build -- \
                   --site "${{ steps.pages.outputs.origin }}" \
                   --base "${{ steps.pages.outputs.base_path }}"
-              working-directory: ${{ env.BUILD_PATH }}
+              working-directory: ${{ env.DOCS_PATH }}
 
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v4
               with:
-                  path: ${{ env.BUILD_PATH }}/dist
+                  path: ${{ env.DOCS_PATH }}/dist
 
     deploy:
         name: Deploy
