@@ -114,7 +114,11 @@ describe('run integration', () => {
         }, 30000)
 
         test('warns for deprecated options', () => {
-            expect(warnings.filter((warning) => warning.name === 'DeprecationWarning').map((warning) => 'code' in warning && warning.code)).toStrictEqual(['astro-pdf:001'])
+            expect(
+                warnings
+                    .filter((warning) => warning.name === 'DeprecationWarning')
+                    .map((warning) => 'code' in warning && warning.code)
+            ).toStrictEqual(['astro-pdf:001'])
         })
 
         test('called runBefore', () => {

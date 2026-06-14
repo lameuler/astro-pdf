@@ -83,7 +83,11 @@ export default function pdf(options: Options): AstroIntegration {
                 logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
                 if (options.install !== undefined) {
-                    process.emitWarning('Options.install is deprecated. Configure Puppeteer to choose which browser to install (https://pptr.dev/guides/configuration) or manually install a browser and pass the executablePath to Options.launch.', 'DeprecationWarning', 'astro-pdf:001')
+                    process.emitWarning(
+                        'Options.install is deprecated. Configure Puppeteer to choose which browser to install (https://pptr.dev/guides/configuration) or manually install a browser and pass the executablePath to Options.launch.',
+                        'DeprecationWarning',
+                        'astro-pdf:001'
+                    )
                 }
 
                 try {
