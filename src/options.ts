@@ -36,7 +36,10 @@ export interface Options {
      *
      * If `install` is `false` or `undefined`, but no browser is found, it will automatically install a browser.
      * 
-     * @deprecated {@link https://pptr.dev/guides/configuration Configure Puppeteer} to choose which browser to install or manually install a browser and pass the `executablePath` to {@link Options.launch `launch`}.
+     * @deprecated
+     * {@link https://pptr.dev/guides/configuration Configure Puppeteer} to choose which browser to install or manually install a browser and pass the `executablePath` to {@link Options.launch `launch`}.
+     * 
+     * In the next major version, `astro-pdf` will no longer handle the installation of browsers.
      */
     install?: boolean | Partial<InstallOptions>
     /**
