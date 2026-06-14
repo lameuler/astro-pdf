@@ -1,5 +1,15 @@
 # astro-pdf
 
+## 1.9.0
+
+### Minor Changes
+
+- [#110](https://github.com/lameuler/astro-pdf/pull/110) [`edd0d25`](https://github.com/lameuler/astro-pdf/commit/edd0d25544a729f2726f7ec6daceef29c3869681) Thanks [@lameuler](https://github.com/lameuler)! - ⚠️ Deprecated the `install` option. Instead, [configure Puppeteer](https://pptr.dev/guides/configuration) to choose which browser to install or manually install a browser and pass the `executablePath` to the [`launch` option](https://ler.quest/astro-pdf/reference/options#launch). In the next major version, `astro-pdf` will no longer handle the installation of browsers.
+
+### Patch Changes
+
+- [#107](https://github.com/lameuler/astro-pdf/pull/107) [`f770ae3`](https://github.com/lameuler/astro-pdf/commit/f770ae3143e68e9ec81e30b116e376342368379e) Thanks [@lameuler](https://github.com/lameuler)! - fix edge case where locations in `PagesMap` which are normalized to the same value will override each other's options
+
 ## 1.8.0
 
 ### Minor Changes
