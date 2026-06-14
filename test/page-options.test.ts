@@ -10,14 +10,15 @@ describe('merge pages', () => {
         const pages = {
             path: undefined,
             'https://example.com': [true, 'example.pdf'],
-            'route/c/': [false, undefined, null]
+            'route/c/': [false, undefined, null],
+            '/route/c/': ['null']
         }
         const { map, locations, fallback } = mergePages(routes, pages)
         locations.sort()
         expect(locations).toStrictEqual(['/route/a', '/route/b', '/route/c/', 'https://example.com/'])
         expect(map).toStrictEqual({
             'https://example.com/': [true, 'example.pdf'],
-            '/route/c/': [false]
+            '/route/c/': [false, 'null']
         })
         expect(fallback).toBeDefined()
         expect(fallback('/route/a')).toBeUndefined()
