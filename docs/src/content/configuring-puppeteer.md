@@ -3,13 +3,11 @@ title: Configuring Puppeteer
 description: Setup a Puppeteer configuration file to control which browser it installs and uses. Handle common sandbox related issues with Puppeteer on Linux and Windows.
 ---
 
-When `astro-pdf` is installed, it installs `puppeteer`, which will automatically install a recent version of Chrome. However, you can [configure Puppeteer](https://pptr.dev/guides/configuration) to prevent this.
-
-`astro-pdf` also gives you the [option to install a browser](reference/options#install) when it runs.
+When `astro-pdf` is installed, it installs `puppeteer`, which will automatically install a recent version of Chrome. However, you can [configure Puppeteer](https://pptr.dev/guides/configuration) to prevent this or change which browser and version it installs.
 
 ## Puppeteer config file
 
-The [Puppeteer config file](https://pptr.dev/guides/configuration#configuration-files) can be used to set the browsers installed, the location to install browsers, and more. Refer to the [Puppeteer API documentation](https://pptr.dev/api/puppeteer.configuration) for all the options.
+The [Puppeteer config file](https://pptr.dev/guides/configuration#configuration-files) can be used to set which browsers to install, the location to install browsers, and more. Refer to the [Puppeteer API documentation](https://pptr.dev/api/puppeteer.configuration) for all the options.
 
 ### Install browser with CLI
 
@@ -29,7 +27,7 @@ npx puppeteer browsers install chrome@131.0.6778.204
 
 ### Skip browser download
 
-To stop Puppeteer from downloading a browser by default, you can set `skipDownload` to `true` in you Puppeteer config file.
+To stop Puppeteer from downloading a browser by default, you can set `skipDownload` to `true` in your Puppeteer config file.
 
 ```js
 {
@@ -37,13 +35,13 @@ To stop Puppeteer from downloading a browser by default, you can set `skipDownlo
 }
 ```
 
-You can also set `PUPPETEER_SKIP_DOWNLOAD` environment variable when installing `astro-pdf` (or `puppeteer`) to prevent it from installing a browser.
+You can also set the `PUPPETEER_SKIP_DOWNLOAD` environment variable when installing `astro-pdf` (or `puppeteer`) to prevent it from installing a browser.
 
 ```sh
 PUPPETEER_SKIP_DOWNLOAD=true npm install
 ```
 
-You can then use the [`install` option](reference/options#install) to control which browser to install when `astro-pdf` runs.
+You can then manually install a browser and pass the `executablePath` to the [`launch` option](reference/options#launch).
 
 ## Linux AppArmor profile
 
