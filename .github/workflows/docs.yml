@@ -18,6 +18,7 @@ concurrency:
 
 env:
     BUILD_PATH: docs
+    NODE_VERSION: '26.0'
 
 permissions:
     contents: read
@@ -41,7 +42,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
-                  node-version: 24
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Install dependencies
@@ -73,7 +74,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v6
               with:
-                  node-version: 24
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: 'npm'
 
             - name: Setup Pages
