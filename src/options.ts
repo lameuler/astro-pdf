@@ -432,7 +432,8 @@ export function mergePages(builtPages: { pathname: string }[], pages: PagesFunct
                     }
                 }
                 if (result.length > 0) {
-                    const cleanKey = (url.protocol === 'http:' || url.protocol === 'https:') ? url.href : (url.pathname + url.search)
+                    const cleanKey =
+                        url.protocol === 'http:' || url.protocol === 'https:' ? url.href : url.pathname + url.search
                     // it is possible for there to be duplicate keys as the original key is cleaned/normalized
                     // e.g. '/path' and 'path' are both valid keys which will both become '/path'
                     if (cleanKey in map) {
