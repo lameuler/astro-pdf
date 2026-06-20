@@ -207,6 +207,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             debug(`closing page for \`${location}\` (page.url: ${page.url()})`)
             try {
                 await page.close()
+                debug(`page closed for \`${location}\``)
             } catch (err) {
                 debug(bold(red(`failed to close page for \`${location}\`: `)) + err)
             }
@@ -226,12 +227,6 @@ export async function processPage(location: string, pageOptions: PageOptions, en
                 debug(yellow(`browser context (${context.id}) for \`${location}\` has already been closed`))
             }
         }
-    }
-}
-
-class AbortPageLoad extends Error {
-    constructor() {
-        super('abort signal: abort page load')
     }
 }
 
@@ -263,100 +258,106 @@ export async function loadPage(
     }
     signal?.throwIfAborted()
 
-    return new Promise((resolve, reject) => {
-        let url: URL
-        try {
-            url = new URL(location, baseUrl)
-        } catch (err) {
-            reject(new PageError(location, 'invalid location', { cause: err }))
-            return
+    let url: URL
+    try {
+        url = new URL(location, baseUrl)
+    } catch (err) {
+        throw new PageError(location, 'invalid location', { cause: err })
+    }
+
+    let dest = location
+
+    function rejectedPageError(res: HTTPResponse) {
+        const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
+        return new PageError(dest, title, {
+            status: res.status(),
+            src: location
+        })
+    }
+
+    // this is used to interrupt page.goto and will cause it to throw the abort reason
+    // any errors before page.goto settles must be sent via this controller
+    // which interrupts page.goto while ensuring it settles, preventing any race conditions further on
+    const controller = new AbortController()
+
+    // handle aborts from outside loadPage while page.goto is running
+    function onAbort() {
+        controller.abort(signal?.reason)
+    }
+    signal?.addEventListener('abort', onAbort)
+
+    const requestListener = (req: HTTPRequest) => {
+        if (req.url() === new URL(dest, baseUrl).href) {
+            const err = req.failure()?.errorText ?? 'request failed'
+            page.off('response', responseListener)
+            page.off('requestfailed', requestListener)
+            controller.abort(new PageError(dest, err, { src: location }))
         }
+    }
+    page.on('requestfailed', requestListener)
 
-        let dest = location
-
-        function rejectResponse(res: HTTPResponse) {
-            const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
-            reject(
-                new PageError(dest, title, {
-                    status: res.status(),
-                    src: location
-                })
-            )
-            signal?.removeEventListener('abort', onAbort)
-        }
-
-        const controller = new AbortController()
-
-        function onAbort() {
-            controller.abort(new AbortPageLoad())
-            signal?.removeEventListener('abort', onAbort)
-            reject(signal?.reason)
-        }
-        signal?.addEventListener('abort', onAbort)
-
-        const requestListener = (req: HTTPRequest) => {
-            if (req.url() === new URL(dest, baseUrl).href) {
-                const err = req.failure()?.errorText ?? 'request failed'
+    const responseListener = (res: HTTPResponse) => {
+        if (res.url() === new URL(dest, baseUrl).href) {
+            const s = res.status()
+            if (s >= 200 && s < 300) {
                 page.off('response', responseListener)
                 page.off('requestfailed', requestListener)
-                controller.abort(new AbortPageLoad())
-                reject(new PageError(dest, err, { src: location }))
-            }
-        }
-        page.on('requestfailed', requestListener)
-
-        const responseListener = (res: HTTPResponse) => {
-            if (res.url() === new URL(dest, baseUrl).href) {
-                const s = res.status()
-                if (s >= 200 && s < 300) {
-                    page.off('response', responseListener)
-                    page.off('requestfailed', requestListener)
-                } else if (s >= 300 && s < 400) {
-                    const location = res.headers()['location']
-                    // check if it is a redirect
-                    // let puppeteer handle 3XX response codes which are not redirects
-                    if (typeof location === 'string') {
-                        const destUrl = new URL(res.headers()['location'], res.url())
-                        dest = destUrl.href
-                        if (baseUrl && dest.startsWith(baseUrl.origin)) {
-                            dest = dest.substring(baseUrl.origin.length)
-                        }
+            } else if (s >= 300 && s < 400) {
+                const location = res.headers()['location']
+                // check if the response is a redirect and if so records the new destination
+                // otherwise it does nothing, letting puppeteer handle 3XX response codes which are not redirects
+                if (typeof location === 'string') {
+                    const destUrl = new URL(res.headers()['location'], res.url())
+                    dest = destUrl.href
+                    if (baseUrl && dest.startsWith(baseUrl.origin)) {
+                        dest = dest.substring(baseUrl.origin.length)
                     }
-                } else if (s >= 400) {
-                    controller.abort(new AbortPageLoad())
-                    rejectResponse(res)
                 }
+            } else if (s >= 400) {
+                // for http error responses eg 404, 500
+                controller.abort(rejectedPageError(res))
             }
         }
-        page.on('response', responseListener)
+    }
+    page.on('response', responseListener)
 
-        page.goto(url.href, { waitUntil, signal: controller.signal })
-            .then((res) => {
-                if (res === null) {
-                    reject(
-                        new PageError(location, 'did not navigate', {
-                            details:
-                                '`page.goto` returned null. this could mean navigation to about:blank or the same URL with a different hash.'
-                        })
-                    )
-                } else if (res.status() >= 400) {
-                    rejectResponse(res)
-                } else {
-                    resolve(page)
-                }
+    try {
+        const res = await page.goto(url.href, { waitUntil, signal: controller.signal })
+        if (res === null) {
+            throw new PageError(location, 'did not navigate', {
+                details:
+                    '`page.goto` returned null. this could mean navigation to about:blank or the same URL with a different hash.'
             })
-            .catch((err) => {
-                if (err instanceof AbortPageLoad) return
-                const message = err instanceof Error ? err.message : 'error while navigating'
-                reject(
-                    new PageError(dest, message, {
-                        cause: err,
-                        src: location
-                    })
-                )
-            })
-            .finally(() => {
-                signal?.removeEventListener('abort', onAbort)
-            })
-    })
+        } else if (res.status() >= 400) {
+            throw rejectedPageError(res)
+        } else {
+            return page
+        }
+    } catch (err) {
+        // when loadPage is aborted, wait until page.goto settles after being aborted by its own controller
+        // before throwing the abort
+        signal?.throwIfAborted()
+
+        // this will rethrow the PageErrors thrown from the try block
+        // as well as PageErrors "thrown" via the AbortController from the response and requestfailed listeners
+        if (err instanceof PageError) {
+            throw err
+        }
+
+        // for requestfailed case
+        // since page.goto throws it own error rather than the PageError used to abort
+        if (controller.signal.aborted && controller.signal.reason instanceof PageError) {
+            const pageErr = controller.signal.reason
+            throw new PageError(pageErr.location, pageErr.title, { ...pageErr, cause: err })
+        }
+
+        // this is meant for catching unhandled errors from page.goto itself only
+        const message = err instanceof Error ? err.message : 'error while navigating'
+        throw new PageError(dest, message, {
+            cause: err,
+            src: location
+        })
+    } finally {
+        signal?.removeEventListener('abort', onAbort)
+    }
 }

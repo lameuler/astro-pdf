@@ -88,7 +88,11 @@ describe('load page', () => {
         const location = 'https://fake-gxcskbrl.example.com/page.html'
         const fn = loadPage(location, undefined, page, 'networkidle0')
         const start = Date.now()
-        await expect(fn).rejects.toThrowError(new PageError(location, 'net::ERR_NAME_NOT_RESOLVED'))
+        await expect(fn).rejects.toThrowError(
+            new PageError(location, 'net::ERR_NAME_NOT_RESOLVED', {
+                cause: new Error('net::ERR_NAME_NOT_RESOLVED at ' + location)
+            })
+        )
         expect(Date.now() - start).toBeLessThan(1400)
     })
 
