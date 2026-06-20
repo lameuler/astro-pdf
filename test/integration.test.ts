@@ -203,3 +203,87 @@ describe('throw on fail', () => {
         await expect(promise).rejects.toThrow('Failed to load')
     }, 10000)
 })
+
+describe('throw on fail logs', () => {
+    let integration: AstroIntegration
+    let logger: Logger
+    const root = new URL('./fixtures/integration/', import.meta.url)
+    const cacheDir = new URL('./node_modules/.astro/', root)
+    const cachePath = fileURLToPath(cacheDir)
+    const outDir = new URL('./dist', root)
+    const outPath = fileURLToPath(outDir)
+
+    beforeAll(async () => {
+        if (existsSync(outPath)) {
+            await rm(outPath, { recursive: true })
+        }
+        // "build" site
+        await cp(fileURLToPath(new URL('public', root)), outPath, { recursive: true })
+
+        if (existsSync(cachePath)) {
+            await rm(cachePath, { recursive: true })
+        }
+        await mkdir(cachePath, { recursive: true })
+
+        integration = pdf({
+            pages: {
+                'https://example.com/not/a/real/page.php': {
+                    throwOnFail: true
+                },
+                'https://example.com': true
+            },
+            throwErrors: false
+        })
+
+        logger = makeLogger()
+        await integration.hooks['astro:config:done']!({
+            config: {
+                root,
+                cacheDir
+            } as AstroConfig,
+            setAdapter: () => {
+                throw new Error('unimplemented')
+            },
+            injectTypes: () => {
+                throw new Error('unimplemented')
+            },
+            buildOutput: 'static',
+            logger
+        })
+        await integration.hooks['astro:build:done']!({
+            pages: [],
+            dir: outDir,
+            logger,
+            assets: new Map()
+        })
+    }, 10000)
+
+    test('logs failed pages', () => {
+        console.log(logger.debug.mock.calls)
+        console.log(logger.info.mock.calls)
+        console.log(logger.error.mock.calls)
+        expect(logger.error).toHaveBeenCalledWith('Failed to generate 2 files')
+        expect(logger.error).toHaveBeenCalledWith(
+            expect.stringContaining('PageError: Failed to load `https://example.com/not/a/real/page.php`: 404\n')
+        )
+        expect(logger.info).toHaveBeenCalledWith(expect.stringMatching(/^✖︎ Failed after \d+ms./))
+    })
+
+    test('does not info log when error thrown', () => {
+        expect(logger.info).not.toHaveBeenCalledWith(expect.stringContaining('https://example.com'))
+    })
+
+    test('logs page load aborted', () => {
+        expect(logger.debug).toHaveBeenCalledWith(
+            expect.stringContaining('page load aborted for https://example.com/' + '\n' + 'Caused by:')
+        )
+        expect(logger.debug).not.toHaveBeenCalledWith(
+            expect.stringContaining('page load aborted for https://example.com/not/a/real/page.php')
+        )
+    })
+
+    test('closes all pages', () => {
+        expect(logger.debug).toHaveBeenCalledWith('page closed for `https://example.com/not/a/real/page.php`')
+        expect(logger.debug).toHaveBeenCalledWith('page closed for `https://example.com/`')
+    })
+})

@@ -28,6 +28,14 @@ import { astroPreview } from './server.js'
 export type { Options, PageOptions, ServerOutput }
 export type { PagesEntry, PagesFunction, PagesMap, PDFOptions } from './options.js'
 
+class PageLoadAborted extends Error {
+    name = 'PageLoadAborted' as const
+
+    constructor(cause: unknown) {
+        super(`page load aborted`, { cause })
+    }
+}
+
 /**
  * Creates the `astro-pdf` integration.
  *
@@ -139,7 +147,9 @@ export default function pdf(options: Options): AstroIntegration {
                     const controller = new AbortController()
 
                     function onDisconnected() {
-                        controller.abort(new FatalError('Fatal error: Browser disconnected unexpectedly'))
+                        controller.abort(
+                            new PageLoadAborted(new FatalError('Fatal error: Browser disconnected unexpectedly'))
+                        )
                     }
                     browser.on('disconnected', onDisconnected)
 
@@ -205,10 +215,14 @@ export default function pdf(options: Options): AstroIntegration {
                                 logger.debug(
                                     bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack
                                 )
+                            } else if (err instanceof FatalError) {
+                                throw err
+                            } else if (err instanceof PageLoadAborted) {
+                                const causeStack =
+                                    err.cause instanceof Error ? `\n${bold('Caused by:')}\n${err.cause.stack}` : ''
+                                logger.debug(`page load aborted for ${location}` + causeStack)
+                                throw err
                             } else {
-                                if (err instanceof FatalError) {
-                                    throw err
-                                }
                                 // wrap unexpected errors with a more useful message
                                 throw new Error(
                                     `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
@@ -233,15 +247,40 @@ export default function pdf(options: Options): AstroIntegration {
                         if (typeof options.browserCallback === 'function') {
                             await options.browserCallback(browser)
                         }
-                        await pMap(queue, ({ location, pageOptions }) => task(location, pageOptions), {
-                            concurrency,
-                            signal
-                        })
+                        await pMap(
+                            queue,
+                            async ({ location, pageOptions }) => {
+                                try {
+                                    // ensure tasks do not run once aborted
+                                    signal.throwIfAborted()
+                                    await task(location, pageOptions)
+                                } catch (err) {
+                                    // instead of throwing an error, which will immediately cause pMap to throw,
+                                    // it will abort the individual tasks to let them run their cleanup
+                                    if (!(err instanceof PageLoadAborted)) {
+                                        controller.abort(new PageLoadAborted(err))
+                                    }
+                                }
+                            },
+                            {
+                                concurrency
+                            }
+                        )
+                        // throw the error from the first failed task if aborted
+                        signal.throwIfAborted()
                     } catch (err) {
-                        if (!signal.aborted) {
-                            controller.abort(err)
+                        // the err caught here should be signal.reason
+                        if (err instanceof PageLoadAborted) {
+                            throw err.cause
+                        } else {
+                            // all errors should be wrapped by PageLoadAborted
+                            throw new Error(
+                                `An unexpected error occurred and was not handled by astro-pdf:\n\n` +
+                                    err +
+                                    '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose\n',
+                                { cause: err }
+                            )
                         }
-                        throw err
                     } finally {
                         await browser.off('disconnected', onDisconnected).close()
                         if (typeof close === 'function') {
