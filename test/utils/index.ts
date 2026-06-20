@@ -71,6 +71,15 @@ export function parsePdf(path: string) {
     return promise
 }
 
+export interface MockedLogger {
+    label: string
+    fork: Mock<(label: string) => MockedLogger>
+    info: Mock<(message: string) => void>
+    warn: Mock<(message: string) => void>
+    error: Mock<(message: string) => void>
+    debug: Mock<(message: string) => void>
+}
+
 export interface Logger extends AstroIntegrationLogger {
     fork: Mock<(label: string) => Logger>
     info: Mock<(message: string) => void>
@@ -80,13 +89,7 @@ export interface Logger extends AstroIntegrationLogger {
 }
 
 export function makeLogger(): Logger {
-    const logger: Logger = {
-        options: {
-            dest: {
-                write: vi.fn()
-            },
-            level: 'info'
-        },
+    const logger: MockedLogger = {
         label: '',
         fork: vi.fn(() => logger),
         info: vi.fn(),
@@ -94,5 +97,5 @@ export function makeLogger(): Logger {
         error: vi.fn(),
         debug: vi.fn()
     }
-    return logger
+    return logger as Logger
 }

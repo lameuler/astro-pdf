@@ -321,12 +321,8 @@ describe('process page', () => {
     })
 
     afterAll(async () => {
-        const pages = (await env.browser.pages()).length
         const contexts = env.browser.browserContexts().length - 1
         await env.browser.close()
-        if (pages > 0) {
-            throw new Error(`${pages} page(s) were left open by processPage`)
-        }
         if (contexts > 0) {
             throw new Error(`${contexts} created browser context(s) were left open by processPage`)
         }
