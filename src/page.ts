@@ -186,6 +186,9 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             if (err instanceof PageError || err instanceof FatalError) {
                 throw err
             }
+            // rethrow abort reason if aborted
+            signal?.throwIfAborted()
+
             const info = err instanceof Error ? `: [${err.name}] ${err.message}` : ''
             throw new PageError(dest, 'failed to write pdf' + info, { cause: err, src: location })
         } finally {
