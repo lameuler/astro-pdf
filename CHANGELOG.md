@@ -1,5 +1,11 @@
 # astro-pdf
 
+## 1.9.1
+
+### Patch Changes
+
+- [#113](https://github.com/lameuler/astro-pdf/pull/113) [`e66669e`](https://github.com/lameuler/astro-pdf/commit/e66669ee2cce414634eb7552dcee31d7957a3e14) Thanks [@lameuler](https://github.com/lameuler)! - add timeout when closing Puppeteer pages to prevent it from hanging
+
 ## 1.9.0
 
 ### Minor Changes
