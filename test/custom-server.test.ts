@@ -5,10 +5,10 @@ import { readdir, readFile, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { AstroConfig, AstroIntegration, AstroIntegrationLogger } from 'astro'
+import { AstroConfig, AstroIntegration } from 'astro'
 
 import pdf from '../dist/index.js'
-import { loadFixture, makeLogger, parsePdf, type TestFixture } from './utils/index.js'
+import { loadFixture, makeLogger, parsePdf, type TestFixture, type Logger } from './utils/index.js'
 import { start } from './utils/server.js'
 
 describe('custom server', () => {
@@ -16,7 +16,7 @@ describe('custom server', () => {
     let close: () => unknown
 
     beforeAll(async () => {
-        fixture = await loadFixture('custom-server')
+        fixture = loadFixture('custom-server')
         if (existsSync(resolve(fixture.root, 'node_modules/.astro'))) {
             await rm(resolve(fixture.root, 'node_modules/.astro'), {
                 recursive: true
@@ -33,7 +33,7 @@ describe('custom server', () => {
                         const server = await start(new URL('dist/', config.root))
                         const address = server.address()
                         const url =
-                            typeof address === 'object' ? new URL(`http://localhost:${address?.port}`) : undefined
+                            typeof address === 'object' ? new URL(`http://localhost:${address!.port}`) : undefined
                         close = vi.fn(() => server.stop())
                         return {
                             url,
@@ -50,23 +50,27 @@ describe('custom server', () => {
     })
     test('index generated', async () => {
         const data = await parsePdf(fixture.resolveOutput('index.pdf'))
-        expect(data.Meta['Title']).toBe('index.astro')
+        expect(data.Meta.Title).toBe('index.astro')
         const texts: string[] = []
-        data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
+        data.Pages[0].Texts.forEach((t) => {
+            t.R.forEach((r) => texts.push(decodeURIComponent(r.T)))
+        })
         expect(texts).toContain('index.astro')
         expect(texts).toContain('@test/custom-server')
     })
     test('page generated', async () => {
         const data = await parsePdf(fixture.resolveOutput('page.pdf'))
-        expect(data.Meta['Title']).toBe('page.astro')
+        expect(data.Meta.Title).toBe('page.astro')
         const texts: string[] = []
-        data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
+        data.Pages[0].Texts.forEach((t) => {
+            t.R.forEach((r) => texts.push(decodeURIComponent(r.T)))
+        })
         expect(texts).toContain('page.astro')
         expect(texts).toContain('@test/custom-server')
     })
 
     describe('no server', () => {
-        let logger: AstroIntegrationLogger
+        let logger: Logger
         const root = new URL('./fixtures/tmp/no-server/', import.meta.url)
 
         beforeAll(async () => {
@@ -101,8 +105,8 @@ describe('custom server', () => {
         }, 15000)
 
         test('no warning or error', () => {
-            expect(logger.warn).not.toBeCalled()
-            expect(logger.error).not.toBeCalled()
+            expect(logger.warn).not.toHaveBeenCalled()
+            expect(logger.error).not.toHaveBeenCalled()
         })
 
         test('file generated', async () => {
@@ -113,7 +117,7 @@ describe('custom server', () => {
     })
 
     describe('server with empty return', () => {
-        let logger: AstroIntegrationLogger
+        let logger: Logger
         const root = new URL('./fixtures/tmp/server-empty/', import.meta.url)
 
         beforeAll(async () => {
@@ -148,8 +152,8 @@ describe('custom server', () => {
         }, 15000)
 
         test('warning', () => {
-            expect(logger.warn).toBeCalled()
-            expect(logger.error).not.toBeCalled()
+            expect(logger.warn).toHaveBeenCalled()
+            expect(logger.error).not.toHaveBeenCalled()
         })
 
         test('file generated', async () => {
@@ -160,7 +164,7 @@ describe('custom server', () => {
     })
 
     describe('server with error', () => {
-        let logger: AstroIntegrationLogger
+        let logger: Logger
         let integration: AstroIntegration
         const root = new URL('./fixtures/tmp/server-error/', import.meta.url)
 
@@ -192,7 +196,7 @@ describe('custom server', () => {
         }, 15000)
 
         test('throws error', async () => {
-            expect(logger.warn).not.toBeCalled()
+            expect(logger.warn).not.toHaveBeenCalled()
             const promise = integration.hooks['astro:build:done']!({
                 pages: [],
                 dir: new URL('dist', root),
@@ -200,7 +204,7 @@ describe('custom server', () => {
                 assets: new Map()
             })
             await expect(promise).rejects.toThrow('error when setting up server')
-            expect(logger.warn).not.toBeCalled()
+            expect(logger.warn).not.toHaveBeenCalled()
         })
 
         test('no files generated', async () => {

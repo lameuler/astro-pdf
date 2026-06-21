@@ -13,7 +13,7 @@ describe('max concurrent pages', () => {
         const root = './test/fixtures/.cache/concurrent'
         await mkdir(root, { recursive: true })
 
-        async function callback(page: Page) {
+        function callback(page: Page) {
             // ignore the default browser context which is not used
             calls.push(page.browser().browserContexts().length - 1)
         }

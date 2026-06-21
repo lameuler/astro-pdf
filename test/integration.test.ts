@@ -121,7 +121,7 @@ describe('run integration', () => {
         })
 
         test('called runBefore', () => {
-            expect(runBefore).toBeCalledTimes(1)
+            expect(runBefore).toHaveBeenCalledTimes(1)
             expect(runBefore).toHaveBeenCalledWith(outDir)
         })
 
@@ -130,20 +130,26 @@ describe('run integration', () => {
             expect(calls.length).toBe(1)
             expect(calls[0][0]).toBe(outDir)
             const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf', '/example.pdf']
-            expect(calls[0][1].sort()).toStrictEqual(expected.sort())
+            if (calls[0][1] instanceof Array) {
+                expect(calls[0][1].sort()).toStrictEqual(expected.sort())
+            } else {
+                expect.fail('2nd parameter of runAfter should be array')
+            }
         })
 
         test('called browserCallback', () => {
-            expect(browserCallback).toBeCalledTimes(1)
+            expect(browserCallback).toHaveBeenCalledTimes(1)
         })
 
         test('generated local page', async () => {
             const path = resolve(outPath, 'index.pdf')
             expect((await lstat(path)).isFile()).toBe(true)
             const data = await parsePdf(path)
-            expect(data.Meta['Title']).toBe('home page')
+            expect(data.Meta.Title).toBe('home page')
             const texts: string[] = []
-            data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
+            data.Pages[0].Texts.forEach((t) => {
+                t.R.forEach((r) => texts.push(decodeURIComponent(r.T)))
+            })
             expect(texts).toContain('@test/integration')
         })
 
@@ -156,9 +162,11 @@ describe('run integration', () => {
             for (const path of paths) {
                 expect((await lstat(path)).isFile()).toBe(true)
                 const data = await parsePdf(path)
-                expect(data.Meta['Title']).toBe('home page')
+                expect(data.Meta.Title).toBe('home page')
                 const texts: string[] = []
-                data.Pages[0].Texts.forEach((t) => t.R.forEach((r) => texts.push(decodeURIComponent(r.T))))
+                data.Pages[0].Texts.forEach((t) => {
+                    t.R.forEach((r) => texts.push(decodeURIComponent(r.T)))
+                })
                 expect(texts).toContain('@test/integration')
             }
         }, 10000)
@@ -172,7 +180,7 @@ describe('run integration', () => {
             const path = resolve(outPath, 'resume.pdf')
             expect((await lstat(path)).isFile()).toBe(true)
             const data = await parsePdf(path)
-            expect(data.Meta['Title']).toContain('resume')
+            expect(data.Meta.Title).toContain('resume')
         })
 
         test('did not generate 404 page', () => {

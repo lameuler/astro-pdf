@@ -14,13 +14,13 @@ export interface TestFixture {
     previewServer: PreviewServer | undefined
 }
 
-export async function loadFixture(fixture: string) {
+export function loadFixture(fixture: string) {
     const root = path.resolve('./test', 'fixtures', fixture)
 
     const self: TestFixture = {
         root,
         resolveOutput: (p) => path.resolve(root, './dist', p ?? ''),
-        build: async (config) =>
+        build: async (config) => {
             await build({
                 logLevel: 'silent',
                 mode: 'production',
@@ -28,7 +28,8 @@ export async function loadFixture(fixture: string) {
                 // override root and outDir options
                 root,
                 outDir: self.resolveOutput()
-            }),
+            })
+        },
         preview: async (config, restart = false) => {
             if (self.previewServer) {
                 if (restart) {
@@ -43,7 +44,7 @@ export async function loadFixture(fixture: string) {
                 ...config,
                 root
             })
-            server.closed().then(() => {
+            void server.closed().then(() => {
                 self.previewServer = undefined
                 self.previewUrl = undefined
             })
@@ -64,10 +65,11 @@ export function parsePdf(path: string) {
             resolve(data)
         })
         parser.on('pdfParser_dataError', (err) => {
-            reject(err)
+            reject(err instanceof Error ? err : err.parserError)
         })
     })
-    parser.loadPDF(path)
+    // instead of awaiting this function, await the pdfParser_dataReady event
+    void parser.loadPDF(path)
     return promise
 }
 

@@ -7,7 +7,11 @@ import { executablePath } from 'puppeteer'
 
 export async function installBrowser(options: Partial<InstallOptions>, defaultCacheDir: string) {
     const browser = options.browser ?? Browser.CHROME
-    const buildId = options.buildId ?? (await resolveBuildId(browser, detectBrowserPlatform()!, 'stable'))
+    const platform = detectBrowserPlatform()
+    if (!platform) {
+        throw new Error('unable to detect browser platform for installation')
+    }
+    const buildId = options.buildId ?? (await resolveBuildId(browser, platform, 'stable'))
     const installOptions: InstallOptions & { unpack: true } = {
         ...options,
         browser,
@@ -33,7 +37,7 @@ export async function findOrInstallBrowser(
             await lstat(defaultPath)
         } catch (e) {
             defaultPath = null
-            logger.debug('error: ' + e)
+            logger.debug('error: ' + String(e))
             logger.info(yellow(`could not find default browser. installing browser...`))
         }
     } else {

@@ -71,7 +71,7 @@ describe('page options', () => {
         const result = getPageOptions('https://example.com/', defaultPageOptions, map, fallback)
         expect(result).toBeDefined()
         expect(result.length).toBe(1)
-        expect(result![0].path).toBe('example.pdf')
+        expect(result[0].path).toBe('example.pdf')
     })
 
     test('route mapped to false', () => {
@@ -84,14 +84,14 @@ describe('page options', () => {
         const result = getPageOptions('/somewhere', defaultPageOptions, map, fallback)
         expect(result).toBeDefined()
         expect(result.length).toBe(2)
-        expect(result![0].path).toBeTypeOf('function')
+        expect(result[0].path).toBeTypeOf('function')
     })
 
     test('object page entry', () => {
         const result = getPageOptions('/somewhere', defaultPageOptions, map, fallback)
         expect(result).toBeDefined()
         expect(result.length).toBe(2)
-        expect(result![1].path).toBe('elsewhere.pdf')
+        expect(result[1].path).toBe('elsewhere.pdf')
     })
 
     test('fallback with [pathname]', () => {
@@ -99,7 +99,7 @@ describe('page options', () => {
         expect(result).toBeDefined()
         expect(result.length).toBe(1)
         expect(fallback).toHaveBeenCalledWith('/route/a')
-        const p = result![0].path
+        const p = result[0].path
         expect(p).toBeTypeOf('function')
         if (typeof p !== 'function') return
         expect(p(new URL('http://localhost:4321/route/a'), {} as Page)).toBe('static/route/a.pdf')

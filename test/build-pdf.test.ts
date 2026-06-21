@@ -10,7 +10,7 @@ describe('build', () => {
     let fixture: TestFixture
 
     beforeAll(async () => {
-        fixture = await loadFixture('build-pdf')
+        fixture = loadFixture('build-pdf')
         if (existsSync(resolve(fixture.root, 'node_modules/.astro'))) {
             await rm(resolve(fixture.root, 'node_modules/.astro'), {
                 recursive: true

@@ -13,8 +13,8 @@ let fixture1: TestFixture
 let fixture2: TestFixture
 
 beforeAll(async () => {
-    fixture1 = await loadFixture('astro-preview-1')
-    fixture2 = await loadFixture('astro-preview-2')
+    fixture1 = loadFixture('astro-preview-1')
+    fixture2 = loadFixture('astro-preview-2')
     await fixture1.build()
     await fixture2.build()
 })
@@ -70,10 +70,10 @@ describe('stop servers', () => {
     })
 
     test('server 1 closed', async () => {
-        await expect(fetch(server1!.url!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server1!.url!)).rejects.toThrow('fetch failed')
     })
 
     test('server 2 closed', async () => {
-        await expect(fetch(server2!.url!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server2!.url!)).rejects.toThrow('fetch failed')
     })
 })

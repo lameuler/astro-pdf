@@ -24,7 +24,7 @@ export class PageError extends Error implements PageErrorOptions {
     constructor(location: string, title: string, options?: Partial<PageErrorOptions>) {
         let message = `Failed to load \`${location}\`: ${title}`
         if (options?.details) {
-            message += '\n' + options?.details
+            message += '\n' + options.details
         }
         super(message, options)
 
@@ -42,8 +42,8 @@ export class PageError extends Error implements PageErrorOptions {
 export class FatalError extends Error {
     name = 'FatalError' as const
     constructor(message: string, cause?: unknown) {
-        if (cause) {
-            message += ': ' + cause
+        if (cause instanceof Error) {
+            message += ': ' + String(cause)
         }
         super(message, cause ? { cause } : undefined)
     }
@@ -58,7 +58,7 @@ export interface PageResult {
     }
 }
 
-export type PageEnv = {
+export interface PageEnv {
     outDir: string
     browser: Browser
     baseUrl?: URL
@@ -77,7 +77,7 @@ async function newPage(browser: Browser, location: string, debug: (msg: string) 
     try {
         if (isolated) {
             const context = await browser.createBrowserContext()
-            debug(`created browser context (${context.id}) for \`${location}\``)
+            debug(`created browser context${context.id ? ` (${context.id}) ` : ' '}for \`${location}\``)
             return await context.newPage()
         } else {
             return await browser.newPage()
@@ -116,7 +116,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         signal?.throwIfAborted()
 
         const url = page.url()
-        const dest = baseUrl && url.startsWith(baseUrl?.origin) ? url.substring(baseUrl?.origin.length) : url
+        const dest = baseUrl && url.startsWith(baseUrl.origin) ? url.substring(baseUrl.origin.length) : url
 
         if (pageOptions.screen) {
             await page.emulateMediaType('screen')
@@ -154,10 +154,10 @@ export async function processPage(location: string, pageOptions: PageOptions, en
             let code = err instanceof Error && 'code' in err ? err.code : false
             if (code === 'EEXIST') {
                 code = 'file already exists'
-            } else if (code) {
+            } else if (typeof code === 'string') {
                 code = 'error code ' + code
             }
-            const message = code ? ': ' + code : ''
+            const message = typeof code === 'string' ? ': ' + code : ''
             throw new PageError(dest, `failed to open \`${pathname}\`${message}`, { src: location })
         }
 
@@ -181,7 +181,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
                 await rm(path)
                 debug(`removed \`${path}\``)
             } catch (e) {
-                debug(`failed to remove \`${path}\`: ${e}`)
+                debug(`failed to remove \`${path}\`: ${String(e)}`)
             }
             if (err instanceof PageError || err instanceof FatalError) {
                 throw err
@@ -211,28 +211,31 @@ export async function processPage(location: string, pageOptions: PageOptions, en
                 // the page will be closed when the browser or browser context is closed
                 const start = Date.now()
                 await Promise.race([
-                    page.close().then(() => debug(`page closed for \`${location}\` in ${Date.now() - start}ms`)),
-                    new Promise((resolve) => setTimeout(resolve, 1000)).then(() =>
+                    page.close().then(() => {
+                        debug(`page closed for \`${location}\` in ${(Date.now() - start).toFixed()}ms`)
+                    }),
+                    new Promise((resolve) => setTimeout(resolve, 1000)).then(() => {
                         debug(`page.close() for \`${location}\` is taking more than 1000ms`)
-                    )
+                    })
                 ])
             } catch (err) {
-                debug(bold(red(`failed to close page for \`${location}\`: `)) + err)
+                debug(bold(red(`failed to close page for \`${location}\`: `)) + String(err))
             }
         } else {
             debug(yellow(`page for \`${location}\` has already been closed`))
         }
         const context = page.browserContext()
+        const contextStr = 'browser context' + (context.id ? ` (${context.id})` : '')
         if (context !== page.browser().defaultBrowserContext()) {
             if (!context.closed) {
-                debug(`closing browser context (${context.id}) for \`${location}\``)
+                debug(`closing ${contextStr} for \`${location}\``)
                 try {
                     await context.close()
                 } catch (err) {
-                    debug(bold(red(`failed to close browser context (${context.id}) for \`${location}\`: `)) + err)
+                    debug(bold(red(`failed to close ${contextStr} for \`${location}\`: `)) + String(err))
                 }
             } else {
-                debug(yellow(`browser context (${context.id}) for \`${location}\` has already been closed`))
+                debug(yellow(`${contextStr} for \`${location}\` has already been closed`))
             }
         }
     }
@@ -284,7 +287,7 @@ export async function loadPage(
         let dest = location
 
         function rejectResponse(res: HTTPResponse) {
-            const title = res.status() + (res.statusText() ? ' ' + res.statusText() : '')
+            const title = res.status().toFixed() + (res.statusText() ? ' ' + res.statusText() : '')
             reject(
                 new PageError(dest, title, {
                     status: res.status(),
@@ -299,7 +302,8 @@ export async function loadPage(
         function onAbort() {
             controller.abort(new AbortPageLoad())
             signal?.removeEventListener('abort', onAbort)
-            reject(signal?.reason)
+            const reason: unknown = signal?.reason
+            reject(reason instanceof Error ? reason : new Error('page load aborted unexpectedly', { cause: reason }))
         }
         signal?.addEventListener('abort', onAbort)
 
@@ -321,11 +325,11 @@ export async function loadPage(
                     page.off('response', responseListener)
                     page.off('requestfailed', requestListener)
                 } else if (s >= 300 && s < 400) {
-                    const location = res.headers()['location']
+                    const location = res.headers().location
                     // check if it is a redirect
                     // let puppeteer handle 3XX response codes which are not redirects
                     if (typeof location === 'string') {
-                        const destUrl = new URL(res.headers()['location'], res.url())
+                        const destUrl = new URL(res.headers().location, res.url())
                         dest = destUrl.href
                         if (baseUrl && dest.startsWith(baseUrl.origin)) {
                             dest = dest.substring(baseUrl.origin.length)
@@ -354,7 +358,7 @@ export async function loadPage(
                     resolve(page)
                 }
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
                 if (err instanceof AbortPageLoad) return
                 const message = err instanceof Error ? err.message : 'error while navigating'
                 reject(

@@ -16,19 +16,19 @@ export async function openFd(
     let p: string = path
     while (fd === null) {
         signal?.throwIfAborted()
-        const suffix = i ? '-' + i : ''
+        const suffix = i ? '-' + i.toFixed() : ''
         p = name + suffix + ext
         try {
             fd = await open(p, 'wx')
             break
         } catch (err) {
-            debug('openFd: ' + err)
+            debug('openFd: ' + String(err))
             if (ensure) {
                 return { err, fd, path: p }
             }
             i++
             if (!(err instanceof Error && 'code' in err && err.code === 'EEXIST')) {
-                warn(`unexpected error while opening \`${p}\`: ${err}`)
+                warn(`unexpected error while opening \`${p}\`: ${String(err)}`)
             }
         }
         if (i === 9) {
