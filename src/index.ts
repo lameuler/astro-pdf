@@ -114,7 +114,7 @@ export default function pdf(options: Options): AstroIntegration {
                             url = server.url
                             close = server.close
                         } catch (e) {
-                            throw new Error('error when setting up server: ' + e)
+                            throw new Error('error when setting up server: ' + e, { cause: e })
                         }
                         if (url) {
                             logger.info(`using server at ${blue(url.href)}`)

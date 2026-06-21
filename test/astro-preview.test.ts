@@ -5,9 +5,8 @@ import { pathToFileURL } from 'node:url'
 import { AstroConfig } from 'astro'
 import { load } from 'cheerio'
 
-import type { ServerOutput } from 'astro-pdf'
-import { astroPreview } from 'astro-pdf/dist/server.js'
-
+import type { ServerOutput } from '../dist/index.js'
+import { astroPreview } from '../dist/server.js'
 import { loadFixture, type TestFixture } from './utils/index.js'
 
 let fixture1: TestFixture

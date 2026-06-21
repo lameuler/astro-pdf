@@ -5,7 +5,7 @@ import { mkdir } from 'node:fs/promises'
 import { build } from 'astro'
 import type { Page } from 'puppeteer'
 
-import pdf from 'astro-pdf'
+import pdf from '../dist/index.js'
 
 describe('max concurrent pages', () => {
     const calls: number[] = []

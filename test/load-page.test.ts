@@ -2,8 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { Browser, launch, Viewport } from 'puppeteer'
 
-import { loadPage, PageError } from 'astro-pdf/dist/page.js'
-
+import { loadPage, PageError } from '../dist/page.js'
 import { start, TestServer } from './utils/server.js'
 
 describe('load page', () => {

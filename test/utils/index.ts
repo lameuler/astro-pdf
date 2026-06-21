@@ -71,7 +71,7 @@ export function parsePdf(path: string) {
     return promise
 }
 
-export interface MockedLogger {
+interface MockedLogger {
     label: string
     fork: Mock<(label: string) => MockedLogger>
     info: Mock<(message: string) => void>

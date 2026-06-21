@@ -7,8 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 import { AstroConfig, AstroIntegration, AstroIntegrationLogger } from 'astro'
 
-import pdf from 'astro-pdf'
-
+import pdf from '../dist/index.js'
 import { loadFixture, makeLogger, parsePdf, type TestFixture } from './utils/index.js'
 import { start } from './utils/server.js'
 

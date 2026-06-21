@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test, vi } from 'vitest'
 
 import type { Page } from 'puppeteer'
 
-import { CleanedMap, defaultPageOptions, getPageOptions, mergePages, PagesFunction } from 'astro-pdf/dist/options.js'
+import { CleanedMap, defaultPageOptions, getPageOptions, mergePages, PagesFunction } from '../dist/options.js'
 
 describe('merge pages', () => {
     test('pages map', () => {

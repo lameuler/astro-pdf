@@ -2,10 +2,11 @@
 import pluginJs from '@eslint/js'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import pluginNode from 'eslint-plugin-n'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
     { files: ['**/*.{js,mjs,cjs,ts}'] },
     { ignores: ['**/dist', 'test/fixtures/**/*.d.ts', 'test/fixtures/**/public', '**/.cache', '**/.astro'] },
     { languageOptions: { globals: globals.node } },
@@ -21,12 +22,7 @@ export default tseslint.config(
     {
         files: ['test/**'],
         rules: {
-            'n/no-missing-import': [
-                'error',
-                {
-                    allowModules: ['astro-pdf']
-                }
-            ],
+            'n/no-missing-import': 'off',
             'n/no-unsupported-features/node-builtins': [
                 'error',
                 {

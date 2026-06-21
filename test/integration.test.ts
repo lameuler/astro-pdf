@@ -8,8 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { AstroConfig, AstroIntegration, build } from 'astro'
 import type { Browser } from 'puppeteer'
 
-import pdf from 'astro-pdf'
-
+import pdf from '../dist/index.js'
 import { Logger, makeLogger, parsePdf } from './utils/index.js'
 
 describe('run integration', () => {

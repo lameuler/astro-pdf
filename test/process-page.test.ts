@@ -8,9 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { Output } from 'pdf2json'
 import { BrowserContext, CookieData, launch, Page } from 'puppeteer'
 
-import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
-import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
-
+import { defaultPathFunction, PageOptions } from '../dist/options.js'
+import { PageEnv, PageError, PageResult, processPage } from '../dist/page.js'
 import { parsePdf } from './utils/index.js'
 import { start, TestServer } from './utils/server.js'
 
