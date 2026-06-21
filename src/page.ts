@@ -206,7 +206,16 @@ export async function processPage(location: string, pageOptions: PageOptions, en
         if (!page.isClosed()) {
             debug(`closing page for \`${location}\` (page.url: ${page.url()})`)
             try {
-                await page.close()
+                // soft timeout page.close() if it takes long
+                // if it times out there is likely an issue which will cause it to never close
+                // the page will be closed when the browser or browser context is closed
+                const start = Date.now()
+                await Promise.race([
+                    page.close().then(() => debug(`page closed for \`${location}\` in ${Date.now() - start}ms`)),
+                    new Promise((resolve) => setTimeout(resolve, 1000)).then(() =>
+                        debug(`page.close() for \`${location}\` is taking more than 1000ms`)
+                    )
+                ])
             } catch (err) {
                 debug(bold(red(`failed to close page for \`${location}\`: `)) + err)
             }

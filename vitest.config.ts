@@ -7,6 +7,9 @@ export default defineConfig({
             provider: 'istanbul',
             include: ['src/**/*', 'dist/**/*.js'],
             exclude: ['**/*.d.ts']
+        },
+        env: {
+            PDF2JSON_DISABLE_LOGS: '1'
         }
     }
 })

@@ -14,7 +14,8 @@ describe('max concurrent pages', () => {
         await mkdir(root, { recursive: true })
 
         async function callback(page: Page) {
-            calls.push((await page.browser().pages()).length)
+            // ignore the default browser context which is not used
+            calls.push(page.browser().browserContexts().length - 1)
         }
 
         await build({
@@ -24,6 +25,8 @@ describe('max concurrent pages', () => {
                 pdf({
                     baseOptions: {
                         waitUntil: 'load',
+                        // astro-pdf only guarantees it will close browser contexts, not pages
+                        isolated: true,
                         callback
                     },
                     pages: {
