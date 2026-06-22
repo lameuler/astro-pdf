@@ -1,5 +1,5 @@
 {
-    "include": ["src/**/*", "*.config.ts"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules", "dist"],
     "compilerOptions": {
         "strict": true,
@@ -8,10 +8,11 @@
         "module": "node16",
         "target": "es2022",
         "skipLibCheck": true,
-        "rootDir": ".",
+        "rootDir": "./src",
         "outDir": "dist",
         "sourceMap": false,
         "declaration": true,
-        "emitDeclarationOnly": true
+        "emitDeclarationOnly": true,
+        "types": ["node"]
     }
 }

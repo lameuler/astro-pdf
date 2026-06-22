@@ -18,7 +18,7 @@ export default defineConfig(
         languageOptions: {
             parserOptions: {
                 projectService: {
-                    allowDefaultProject: ['eslint.config.js']
+                    allowDefaultProject: ['*.config.ts', 'eslint.config.js']
                 }
             }
         }

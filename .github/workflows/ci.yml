@@ -34,6 +34,9 @@ jobs:
             - name: Install Dependencies
               run: pnpm ci
 
+            - name: Build types
+              run: pnpm tsc
+
             - name: Lint
               run: |
                   pnpm run lint

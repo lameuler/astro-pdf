@@ -1,15 +1,15 @@
 packages:
-  - './'
-  - 'docs'
-  - 'test/fixtures/*'
+    - './'
+    - 'docs'
+    - 'test/fixtures/*'
 
 allowBuilds:
-  esbuild: true
-  puppeteer: true
-  sharp: true
+    esbuild: true
+    puppeteer: true
+    sharp: true
 
 linkWorkspacePackages: true
 minimumReleaseAgeExclude:
-  - '@lameuler/atlas'
-  - '@lameuler/ler-astro'
+    - '@lameuler/atlas'
+    - '@lameuler/ler-astro'
 preferWorkspacePackages: true
