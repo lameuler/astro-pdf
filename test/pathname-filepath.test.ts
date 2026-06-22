@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { filepathToPathname, pathnameToFilepath } from 'astro-pdf/dist/utils.js'
+import { filepathToPathname, pathnameToFilepath } from '../dist/utils.js'
 
 function createTests(name: string, resolveRoot: (root: string) => string | URL, slash = '/') {
     const d = resolveRoot

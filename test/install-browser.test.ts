@@ -13,8 +13,7 @@ import {
     resolveBuildId
 } from '@puppeteer/browsers'
 
-import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
-
+import { findOrInstallBrowser } from '../dist/browser.js'
 import { makeLogger } from './utils/index.js'
 
 describe('install browser', () => {

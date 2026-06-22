@@ -8,9 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { Output } from 'pdf2json'
 import { BrowserContext, CookieData, launch, Page } from 'puppeteer'
 
-import { defaultPathFunction, PageOptions } from 'astro-pdf/dist/options.js'
-import { PageEnv, PageError, PageResult, processPage } from 'astro-pdf/dist/page.js'
-
+import { defaultPathFunction, PageOptions } from '../dist/options.js'
+import { PageEnv, PageError, PageResult, processPage } from '../dist/page.js'
 import { parsePdf } from './utils/index.js'
 import { start, TestServer } from './utils/server.js'
 
@@ -85,7 +84,7 @@ describe('process page', () => {
             expect((await lstat(result.output.path)).isFile()).toBe(true)
         })
 
-        test('callback called', async () => {
+        test('callback called', () => {
             expect(options.callback).toHaveBeenCalledOnce()
         })
 
@@ -97,7 +96,7 @@ describe('process page', () => {
             })
 
             test('pdf title', () => {
-                expect(data.Meta['Title']).toBe(injectedTitle)
+                expect(data.Meta.Title).toBe(injectedTitle)
             })
 
             test('pdf size', () => {
@@ -133,7 +132,7 @@ describe('process page', () => {
         expect(result.output.pathname).toBe('/docs/page.pdf')
         expect((await lstat(result.output.path)).isFile()).toBe(true)
         const data = await parsePdf(result.output.path)
-        expect(data.Meta['Title']).toBe('docs')
+        expect(data.Meta.Title).toBe('docs')
     })
 
     test('404 page', async () => {
@@ -144,7 +143,7 @@ describe('process page', () => {
             pdf: {}
         }
         const fn = processPage('/somewhere', options, env)
-        await expect(fn).rejects.toThrowError(
+        await expect(fn).rejects.toThrow(
             new PageError('/somewhere/else', '404 Not Found!!', { src: '/somewhere', status: 404 })
         )
         expect(existsSync(resolve(env.outDir, 'somewhere.pdf'))).toBe(false)
@@ -165,7 +164,7 @@ describe('process page', () => {
         const pathnames = [results[0].output.pathname, results[1].output.pathname]
         expect(pathnames).toContain('/output.pdf')
         expect(pathnames).toContain('/output-1.pdf')
-        expect(env.warn).toBeCalledTimes(0)
+        expect(env.warn).toHaveBeenCalledTimes(0)
     }, 10000)
 
     test('throws for conflicting filenames with ensurePath', async () => {

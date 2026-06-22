@@ -33,6 +33,7 @@ export default defineConfig({
                     const mod = id.toDeclarationReference().moduleSource
                     switch (mod) {
                         case 'puppeteer':
+                        case 'puppeteer-core':
                             return `https://pptr.dev/api/puppeteer.${id.qualifiedName.toLowerCase()}`
                         case '@puppeteer/browsers':
                             return `https://pptr.dev/browsers-api/browsers.${id.qualifiedName.toLowerCase()}`

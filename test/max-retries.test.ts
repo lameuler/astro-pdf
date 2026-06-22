@@ -4,8 +4,7 @@ import { pathToFileURL } from 'node:url'
 
 import { build } from 'astro'
 
-import pdf from 'astro-pdf'
-
+import pdf from '../dist/index.js'
 import { start, TestServer } from './utils/server.js'
 
 describe('retries failed load', () => {

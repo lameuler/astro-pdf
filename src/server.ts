@@ -13,12 +13,12 @@ export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {
     let host: string | undefined = undefined
     let port: number | undefined = undefined
     if (address && typeof address === 'object') {
-        host = address?.address
-        port = address?.port
+        host = address.address
+        port = address.port
     }
-    const url = new URL(`http://${server.host ?? host ?? 'localhost'}:${port ?? server.port}`)
+    const url = new URL(`http://${server.host ?? host ?? 'localhost'}:${(port ?? server.port).toFixed()}`)
     return {
         url,
-        close: server.stop
+        close: () => server.stop()
     }
 }

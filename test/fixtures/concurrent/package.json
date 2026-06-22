@@ -7,7 +7,7 @@
     },
     "devDependencies": {
         "astro": "^6.0.4",
-        "astro-pdf": "^1.9.1",
+        "astro-pdf": "workspace:*",
         "typescript": "^5.6.2"
     }
 }

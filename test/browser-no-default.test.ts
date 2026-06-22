@@ -6,18 +6,17 @@ import { fileURLToPath } from 'node:url'
 
 import { install } from '@puppeteer/browsers'
 
-import { findOrInstallBrowser } from 'astro-pdf/dist/browser.js'
-
+import { findOrInstallBrowser } from '../dist/browser.js'
 import { makeLogger } from './utils/index.js'
 
 vi.mock('puppeteer', async (originalImport) => {
     const cacheDir = fileURLToPath(new URL('./fixtures/.cache/browser-no-default/', import.meta.url))
-    const oldValue = process.env['PUPPETEER_CACHE_DIR']
-    process.env['PUPPETEER_CACHE_DIR'] = cacheDir
+    const oldValue = process.env.PUPPETEER_CACHE_DIR
+    process.env.PUPPETEER_CACHE_DIR = cacheDir
 
     const mod = await originalImport<typeof import('puppeteer')>()
 
-    process.env['PUPPETEER_CACHE_DIR'] = oldValue
+    process.env.PUPPETEER_CACHE_DIR = oldValue
 
     return mod
 })

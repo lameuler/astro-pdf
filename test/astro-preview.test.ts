@@ -5,17 +5,16 @@ import { pathToFileURL } from 'node:url'
 import { AstroConfig } from 'astro'
 import { load } from 'cheerio'
 
-import type { ServerOutput } from 'astro-pdf'
-import { astroPreview } from 'astro-pdf/dist/server.js'
-
+import type { ServerOutput } from '../dist/index.js'
+import { astroPreview } from '../dist/server.js'
 import { loadFixture, type TestFixture } from './utils/index.js'
 
 let fixture1: TestFixture
 let fixture2: TestFixture
 
 beforeAll(async () => {
-    fixture1 = await loadFixture('astro-preview-1')
-    fixture2 = await loadFixture('astro-preview-2')
+    fixture1 = loadFixture('astro-preview-1')
+    fixture2 = loadFixture('astro-preview-2')
     await fixture1.build()
     await fixture2.build()
 })
@@ -71,10 +70,10 @@ describe('stop servers', () => {
     })
 
     test('server 1 closed', async () => {
-        await expect(fetch(server1!.url!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server1!.url!)).rejects.toThrow('fetch failed')
     })
 
     test('server 2 closed', async () => {
-        await expect(fetch(server2!.url!)).rejects.toThrowError('fetch failed')
+        await expect(fetch(server2!.url!)).rejects.toThrow('fetch failed')
     })
 })

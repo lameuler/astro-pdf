@@ -75,6 +75,7 @@ export default function pdf(options: Options): AstroIntegration {
                 const versionColour = VERSION.includes('-') ? yellow : green
                 logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
                 if (options.install !== undefined) {
                     process.emitWarning(
                         'Options.install is deprecated. Configure Puppeteer to choose which browser to install (https://pptr.dev/guides/configuration) or manually install a browser and pass the executablePath to Options.launch.',
@@ -88,9 +89,10 @@ export default function pdf(options: Options): AstroIntegration {
                         logger.info(dim('running runBefore hook...'))
                         const runStart = Date.now()
                         await options.runBefore(dir)
-                        logger.debug(`finished running runBefore hook in ${Date.now() - runStart}ms`)
+                        logger.debug(`finished running runBefore hook in ${(Date.now() - runStart).toFixed()}ms`)
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
                     const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
                     logger.debug(`using browser at ${blue(executablePath)}`)
 
@@ -114,7 +116,7 @@ export default function pdf(options: Options): AstroIntegration {
                             url = server.url
                             close = server.close
                         } catch (e) {
-                            throw new Error('error when setting up server: ' + e)
+                            throw new Error(`error when setting up server: ` + String(e), { cause: e })
                         }
                         if (url) {
                             logger.info(`using server at ${blue(url.href)}`)
@@ -156,18 +158,22 @@ export default function pdf(options: Options): AstroIntegration {
                         browser,
                         baseUrl: url,
                         signal,
-                        debug: (message: string) => logger.debug(message),
-                        warn: (message: string) => logger.warn(message)
+                        debug: (message: string) => {
+                            logger.debug(message)
+                        },
+                        warn: (message: string) => {
+                            logger.warn(message)
+                        }
                     }
 
                     let totalCount = queue.length
 
                     const generated: string[] = []
 
-                    async function task(location: string, pageOptions: PageOptions, i: number = 1) {
+                    async function task(location: string, pageOptions: PageOptions, i = 1) {
                         const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
                         const start = Date.now()
-                        const retryInfo = maxRuns > 1 ? ` (${i}/${maxRuns} attempts)` : ''
+                        const retryInfo = maxRuns > 1 ? ` (${i.toFixed()}/${maxRuns.toFixed()} attempts)` : ''
                         try {
                             const result = await processPage(location, pageOptions, env)
                             const pathname = result.output.pathname
@@ -180,7 +186,7 @@ export default function pdf(options: Options): AstroIntegration {
 
                             const out = extname(pathname) !== '.pdf' ? yellow(pathname) : pathname
                             logger.info(
-                                `  ${blue('└─')} ${dim(`${out} (+${time}ms) (${generated.length}/${totalCount})`)}`
+                                `  ${blue('└─')} ${dim(`${out} (+${time.toFixed()}ms) (${generated.length.toFixed()}/${totalCount.toFixed()})`)}`
                             )
                         } catch (err) {
                             const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
@@ -190,13 +196,17 @@ export default function pdf(options: Options): AstroIntegration {
                                     const time = Date.now() - start
                                     const src = err.src ? dim(' ← ' + err.src) : ''
                                     logger.info(
-                                        red(`✖︎ ${err.location} (${err.title}) ${dim(`(+${time}ms)`)}${src}${attempts}`)
+                                        red(
+                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time.toFixed()}ms)`)}${src}${attempts}`
+                                        )
                                     )
                                 }
                                 const causeStack =
-                                    err.cause instanceof Error ? `\n${bold('Caused by:')}\n${err.cause.stack}` : ''
+                                    err.cause instanceof Error && err.cause.stack
+                                        ? `\n${bold('Caused by:')}\n${err.cause.stack}`
+                                        : ''
                                 logger.debug(
-                                    bold(red(`error while processing ${location}:\n`)) + err.stack + causeStack
+                                    bold(red(`error while processing ${location}:\n`)) + (err.stack ?? '') + causeStack
                                 )
                             } else {
                                 if (err instanceof FatalError) {
@@ -205,7 +215,7 @@ export default function pdf(options: Options): AstroIntegration {
                                 // wrap unexpected errors with a more useful message
                                 throw new Error(
                                     `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
-                                        err +
+                                        String(err) +
                                         '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose\n',
                                     { cause: err }
                                 )
@@ -243,12 +253,14 @@ export default function pdf(options: Options): AstroIntegration {
 
                         const noExt = generated.filter((path) => extname(path) !== '.pdf').length
                         if (noExt > 0) {
-                            logger.warn(`${noExt} file${noExt === 1 ? '' : 's'} generated without .pdf extension`)
+                            logger.warn(
+                                `${noExt.toFixed()} file${noExt === 1 ? '' : 's'} generated without .pdf extension`
+                            )
                         }
 
                         if (generated.length < queue.length) {
                             const n = queue.length - generated.length
-                            logger.error(red(`Failed to generate ${n} file${n === 1 ? '' : 's'}`))
+                            logger.error(red(`Failed to generate ${n.toFixed()} file${n === 1 ? '' : 's'}`))
                         }
                     }
 
@@ -256,22 +268,22 @@ export default function pdf(options: Options): AstroIntegration {
                         logger.info(dim('running runAfter hook...'))
                         const runStart = Date.now()
                         await options.runAfter(dir, generated)
-                        logger.debug(`finished running runAfter hook in ${Date.now() - runStart}ms`)
+                        logger.debug(`finished running runAfter hook in ${(Date.now() - runStart).toFixed()}ms`)
                     }
 
-                    logger.info(green(`✓ Completed in ${Date.now() - startTime}ms.\n`))
+                    logger.info(green(`✓ Completed in ${(Date.now() - startTime).toFixed()}ms.\n`))
                 } catch (error) {
-                    logger.info(red(`✖︎ Failed after ${Date.now() - startTime}ms.\n`))
+                    logger.info(red(`✖︎ Failed after ${(Date.now() - startTime).toFixed()}ms.\n`))
                     if (options.throwErrors ?? true) {
                         throw error
                     } else if (error instanceof Error && error.stack) {
-                        if (error.cause instanceof Error) {
+                        if (error.cause instanceof Error && error.cause.stack) {
                             logger.error(`${error.stack}\n\n${bold('Caused by:')}\n${error.cause.stack}\n`)
                         } else {
                             logger.error(error.stack + '\n')
                         }
                     } else {
-                        logger.error(error + '\n')
+                        logger.error(String(error) + '\n')
                     }
                 }
             }

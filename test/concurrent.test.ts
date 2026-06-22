@@ -5,7 +5,7 @@ import { mkdir } from 'node:fs/promises'
 import { build } from 'astro'
 import type { Page } from 'puppeteer'
 
-import pdf from 'astro-pdf'
+import pdf from '../dist/index.js'
 
 describe('max concurrent pages', () => {
     const calls: number[] = []
@@ -13,7 +13,7 @@ describe('max concurrent pages', () => {
         const root = './test/fixtures/.cache/concurrent'
         await mkdir(root, { recursive: true })
 
-        async function callback(page: Page) {
+        function callback(page: Page) {
             // ignore the default browser context which is not used
             calls.push(page.browser().browserContexts().length - 1)
         }

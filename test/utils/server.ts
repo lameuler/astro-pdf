@@ -3,12 +3,13 @@ import { IncomingMessage, Server, ServerResponse } from 'node:http'
 import { extname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export interface Redirects {
-    [src: string]: {
+export type Redirects = Record<
+    string,
+    {
         dest: string
         code?: number
     }
-}
+>
 
 export class TestServer extends Server {
     history: IncomingMessage[]
@@ -75,7 +76,7 @@ function makeHandler(root: URL, redirects: Redirects, history: IncomingMessage[]
         history.push(req)
         if (req.url) {
             const url = new URL(req.url, 'base://')
-            const delay = parseInt(url.searchParams.get('delay') || '0')
+            const delay = parseInt(url.searchParams.get('delay') ?? '0')
             const timeout = isFinite(delay) ? delay : 0
 
             if (url.pathname in redirects) {
@@ -89,7 +90,7 @@ function makeHandler(root: URL, redirects: Redirects, history: IncomingMessage[]
 
             let status: number | undefined = undefined
 
-            const match = url.pathname.match(/^\/([1-5][0-9][0-9])(?:\.[a-zA-Z0-9-]+)?$/)
+            const match = /^\/([1-5][0-9][0-9])(?:\.[a-zA-Z0-9-]+)?$/.exec(url.pathname)
             if (match) {
                 const s = parseInt(match[1])
                 if (isFinite(s)) {
