@@ -29,6 +29,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
 
             - name: Install Dependencies
               run: pnpm ci
@@ -58,6 +59,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
 
             - name: Install Dependencies
               run: pnpm ci
@@ -79,6 +81,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
 
             - name: Configure AppArmor profile for Puppeteer
               run: |
@@ -123,6 +126,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
 
             - name: Install Dependencies
               run: pnpm ci
@@ -172,6 +176,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
+                  cache: 'pnpm'
 
             - name: Install Dependencies
               run: pnpm ci
@@ -205,6 +210,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
+                  cache: 'pnpm'
 
             - name: Configure AppArmor profile for Puppeteer
               run: |

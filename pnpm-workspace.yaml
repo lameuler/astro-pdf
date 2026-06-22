@@ -13,3 +13,5 @@ minimumReleaseAgeExclude:
     - '@lameuler/atlas'
     - '@lameuler/ler-astro'
 preferWorkspacePackages: true
+
+sideEffectsCache: false
