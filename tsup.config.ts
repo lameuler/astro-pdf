@@ -22,6 +22,6 @@ export default defineConfig({
     platform: 'node',
     sourcemap: true,
     define: {
-        VERSION: await getPackageVersion()
+        VERSION: JSON.stringify(await getPackageVersion())
     }
 })

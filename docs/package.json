@@ -10,8 +10,11 @@
     },
     "dependencies": {
         "@astrojs/check": "^0.9.4",
-        "@lameuler/atlas": "^2.3.2",
+        "@astrojs/svelte": "^8.1.2",
+        "@lameuler/atlas": "^3.0.0",
         "astro": "^6.4.0",
+        "shiki": "^4.2.0",
+        "svelte": "^5.56.3",
         "typescript": "^6.0.3"
     }
 }

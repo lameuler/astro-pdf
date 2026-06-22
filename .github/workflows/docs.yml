@@ -18,7 +18,6 @@ concurrency:
 
 env:
     NODE_VERSION: '24.15'
-    DOCS_PATH: docs
 
 permissions:
     contents: read
@@ -43,10 +42,10 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Install dependencies
-              run: npm ci
+              run: pnpm ci
 
             - name: Check for changesets
               id: check
@@ -75,7 +74,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Setup Pages
               id: pages
@@ -105,23 +104,18 @@ jobs:
                   sudo service apparmor reload
 
             - name: Install Dependencies
-              run: npm ci
-
-            - name: Install docs dependencies
-              run: npm ci
-              working-directory: ${{ env.DOCS_PATH }}
+              run: pnpm ci
 
             - name: Build docs
               run: |
-                  npm run build -- \
+                  pnpm run -C docs build \
                   --site "${{ steps.pages.outputs.origin }}" \
                   --base "${{ steps.pages.outputs.base_path }}"
-              working-directory: ${{ env.DOCS_PATH }}
 
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v4
               with:
-                  path: ${{ env.DOCS_PATH }}/dist
+                  path: docs/dist
 
     deploy:
         name: Deploy

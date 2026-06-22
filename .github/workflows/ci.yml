@@ -13,7 +13,6 @@ concurrency:
 
 env:
     NODE_VERSION: '24.15'
-    BUILD_PATH: docs
 
 jobs:
     lint:
@@ -27,19 +26,15 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Install Dependencies
-              run: npm ci
-
-            - name: Install docs dependencies
-              run: npm ci
-              working-directory: docs
+              run: pnpm ci
 
             - name: Lint
               run: |
-                  npm run lint
-                  npm run lint:docs
+                  pnpm run lint
+                  pnpm run lint:docs
 
     format:
         name: 'Check format'
@@ -52,13 +47,13 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Install Dependencies
-              run: npm ci
+              run: pnpm ci
 
             - name: Check Format
-              run: npm run format:check
+              run: pnpm run format:check
 
     docs:
         name: 'Check docs build'
@@ -71,7 +66,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Configure AppArmor profile for Puppeteer
               run: |
@@ -97,18 +92,13 @@ jobs:
                   sudo service apparmor reload
 
             - name: Install Dependencies
-              run: npm ci
-
-            - name: Install docs dependencies
-              run: npm ci
-              working-directory: docs
+              run: pnpm ci
 
             - name: Build docs
-              run: npm run build
-              working-directory: docs
+              run: pnpm run -C docs build
 
     pack:
-        name: 'Dry run npm pack'
+        name: 'Dry run pnpm pack'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -118,13 +108,13 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Install Dependencies
-              run: npm ci
+              run: pnpm ci
 
-            - name: Dry run npm pack
-              run: npm pack --dry-run
+            - name: Dry run pnpm pack
+              run: pnpm pack --dry-run
 
     test:
         name: 'Test: ${{ matrix.os }} (node@${{ matrix.node-version }})'
@@ -165,16 +155,16 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Install Dependencies
-              run: npm ci
+              run: pnpm ci
 
             - name: Build Package
-              run: npm run build
+              run: pnpm run build
 
             - name: Run tests
-              run: npm test
+              run: pnpm test
 
     release:
         name: Release
@@ -196,7 +186,7 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: 'npm'
+                  cache: 'pnpm'
 
             - name: Configure AppArmor profile for Puppeteer
               run: |
@@ -222,13 +212,13 @@ jobs:
                   sudo service apparmor reload
 
             - name: Install Dependencies
-              run: npm ci
+              run: pnpm ci
 
             - name: Create Release Pull Request or Publish
               id: changesets
               uses: changesets/action@v1
               with:
-                  version: npm run version
+                  version: pnpm run version
                   publish: npx changeset publish
                   commit: 'chore: release'
                   title: '[changesets] release'

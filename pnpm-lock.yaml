@@ -90,12 +90,21 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.4
         version: 0.9.9(prettier@3.8.4)(typescript@6.0.3)
+      '@astrojs/svelte':
+        specifier: ^8.1.2
+        version: 8.1.2(@types/node@24.13.2)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)(yaml@2.9.0)
       '@lameuler/atlas':
-        specifier: ^2.3.2
-        version: 2.3.2(@types/node@24.13.2)(@typescript-eslint/types@8.61.0)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(rollup@4.62.0)(typescript@6.0.3)(yaml@2.9.0)
+        specifier: ^3.0.0
+        version: 3.0.0(@astrojs/svelte@8.1.2(@types/node@24.13.2)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)(yaml@2.9.0))(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(rollup@4.62.0)(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)
       astro:
         specifier: ^6.4.0
         version: 6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0)
+      shiki:
+        specifier: ^4.2.0
+        version: 4.2.0
+      svelte:
+        specifier: ^5.56.3
+        version: 5.56.3(@typescript-eslint/types@8.61.0)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -795,13 +804,15 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lameuler/atlas@2.3.2':
-    resolution: {integrity: sha512-xl7US/hvMBHkcgoREuq8R/n9mZ2UpkaaJuD8S4E8F/SSMFvjsnSL5RU4OoKNcQKE1cdbQxnQJc++EUINIpqdcw==}
+  '@lameuler/atlas@3.0.0':
+    resolution: {integrity: sha512-gV58rQhmf+eVdpitpPK29VD0xtxHQBSivgQB0lZCJ966N3h4ktmGC9IAiRZNgWYrUk9sBiAfYleNdYhnbmMxUw==}
     peerDependencies:
+      '@astrojs/svelte': ^8.1.2
       astro: ^6.4.0
+      svelte: ^5.16.0
 
-  '@lameuler/ler-astro@2.6.0':
-    resolution: {integrity: sha512-mJKdKodKASvw3bl+DLCrfWn84fcaeTcHydSNeW2KQCYeBGjWYR/3771HzMmbLPWSYWM8uSdLNaxynDCBOXZv4A==}
+  '@lameuler/ler-astro@2.6.1':
+    resolution: {integrity: sha512-X9zrc9s28BNLgMVSTNKZ5QCaPrm2hTt0UvJok5HEV0NVFvZP8EkGDzvVjYeNYVSu6pfxSx7jIpAesd8/mYUuIg==}
     peerDependencies:
       astro: ^4.0.0 || ^5.0.0 || ^6.0.0
 
@@ -3869,7 +3880,7 @@ snapshots:
 
   '@babel/generator@7.17.7':
     dependencies:
-      '@babel/types': 7.17.0
+      '@babel/types': 7.29.7
       jsesc: 2.5.2
       source-map: 0.5.7
 
@@ -4447,12 +4458,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lameuler/atlas@2.3.2(@types/node@24.13.2)(@typescript-eslint/types@8.61.0)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(rollup@4.62.0)(typescript@6.0.3)(yaml@2.9.0)':
+  '@lameuler/atlas@3.0.0(@astrojs/svelte@8.1.2(@types/node@24.13.2)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)(yaml@2.9.0))(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(rollup@4.62.0)(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)':
     dependencies:
       '@astrojs/markdown-remark': 7.2.0
       '@astrojs/sitemap': 3.7.3
       '@astrojs/svelte': 8.1.2(@types/node@24.13.2)(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)(yaml@2.9.0)
-      '@lameuler/ler-astro': 2.6.0(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))
+      '@lameuler/ler-astro': 2.6.1(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))
       '@rollup/plugin-virtual': 3.0.2(rollup@4.62.0)
       '@shikijs/transformers': 4.2.0
       astro: 6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0)
@@ -4472,26 +4483,14 @@ snapshots:
       typedoc: 0.28.19(typescript@6.0.3)
       unist-util-visit: 5.1.0
     transitivePeerDependencies:
-      - '@types/node'
-      - '@typescript-eslint/types'
       - bufferutil
-      - jiti
-      - less
-      - lightningcss
       - proxy-agent
       - rollup
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
       - supports-color
-      - terser
-      - tsx
       - typescript
       - utf-8-validate
-      - yaml
 
-  '@lameuler/ler-astro@2.6.0(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))':
+  '@lameuler/ler-astro@2.6.1(astro@6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0))':
     dependencies:
       astro: 6.4.7(@types/node@24.13.2)(rollup@4.62.0)(yaml@2.9.0)
 
