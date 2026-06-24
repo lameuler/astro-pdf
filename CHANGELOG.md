@@ -1,5 +1,13 @@
 # astro-pdf
 
+## 1.10.0
+
+### Minor Changes
+
+- [#116](https://github.com/lameuler/astro-pdf/pull/116) [`6e7cef9`](https://github.com/lameuler/astro-pdf/commit/6e7cef9cbc6880ad4e1afd9c6421e500e6a74daf) Thanks [@lameuler](https://github.com/lameuler)! - Adds support for [Astro v7](https://astro.build/blog/astro-7/).
+
+    This will likely be the last minor version of astro-pdf v1.
+
 ## 1.9.1
 
 ### Patch Changes
