@@ -42,7 +42,7 @@
         "puppeteer": "^24.43.1"
     },
     "peerDependencies": {
-        "astro": "^4.4.4 || ^5.0.0 || ^6.0.0"
+        "astro": "^4.4.4 || ^5.0.0 || ^6.0.0 || ^7.0.0"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.7.0",
