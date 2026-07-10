@@ -20,4 +20,4 @@ export default defineConfig({
 })
 ```
 
-Find out more in the [`migration guide`](https://ler.quest/astro-pdf/migrate-to-v2/#removed-install-option).
+Find out more in the [migration guide](https://ler.quest/astro-pdf/migrate-to-v2/#removed-install-option).

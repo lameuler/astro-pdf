@@ -39,7 +39,7 @@ export default {
 }
 ```
 
-For most cases, the version of Chrome which Puppeteer automatically installs in its `postinstall` script (or by running `npx puppeteer browsers install`) can be used which having to do any other configuration. If you wish recreate the behaviour of the removed `install` option, you can install the `@puppeteer/browsers` package.
+For most cases, the version of Chrome which Puppeteer automatically installs in its `postinstall` script (or by running `npx puppeteer browsers install`) can be used without having to do any other configuration. If you wish to recreate the behaviour of the removed `install` option, you can install the `@puppeteer/browsers` package.
 
 ```ts
 import { install, resolveBuildId, Browser, detectBrowserPlatform } from '@puppeteer/browsers'
