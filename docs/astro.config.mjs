@@ -22,7 +22,8 @@ export default defineConfig({
                         'generating-many-pdfs',
                         'configuring-puppeteer',
                         'modifying-pdfs',
-                        'troubleshooting'
+                        'troubleshooting',
+                        'migrate-to-v2'
                     ]
                 }
             ],
