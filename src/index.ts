@@ -23,6 +23,7 @@ import {
 } from './options.js'
 import { FatalError, PageError, processPage } from './page.js'
 import { astroPreview } from './server.js'
+import { VERSION } from './version.js'
 
 export type { Options, PageOptions, ServerOutput }
 export type { PagesEntry, PagesFunction, PagesMap, PDFOptions } from './options.js'
