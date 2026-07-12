@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url'
 
 import { type AstroConfig, type AstroIntegration } from 'astro'
 import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
-import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
+import { makeLogger } from './logger.js'
 import {
     defaultPageOptions,
     getPageOptions,
@@ -21,7 +21,8 @@ import {
     type PageOptions,
     type ServerOutput
 } from './options.js'
-import { FatalError, PageError, processPage } from './page.js'
+import { FatalError, processPage } from './page.js'
+import { Runner } from './runner.js'
 import { astroPreview } from './server.js'
 import { VERSION } from './version.js'
 
@@ -57,9 +58,9 @@ export default function pdf(options: Options): AstroIntegration {
                 astroConfig = config
                 cacheDir = fileURLToPath(config.cacheDir)
             },
-            'astro:build:done': async ({ dir, pages, logger }) => {
-                // do not include [astro-pdf] for info logs
-                logger.info = logger.info.bind(logger.fork(''))
+            'astro:build:done': async (opts) => {
+                const { dir, pages } = opts
+                const logger = makeLogger(opts.logger)
 
                 if (typeof cacheDir !== 'string') {
                     logger.error('cacheDir is undefined. ending execution...')
@@ -150,100 +151,39 @@ export default function pdf(options: Options): AstroIntegration {
                         }
                     }
 
-                    let totalCount = queue.length
-
-                    const generated: string[] = []
-
-                    async function task(location: string, pageOptions: PageOptions, i = 1) {
-                        const maxRuns = Math.max(pageOptions.maxRetries ?? 0, 0) + 1
-                        const start = Date.now()
-                        const retryInfo = maxRuns > 1 ? ` (${i.toFixed()}/${maxRuns.toFixed()} attempts)` : ''
-                        try {
-                            const result = await processPage(location, pageOptions, env)
-                            const pathname = result.output.pathname
-                            generated.push(pathname)
-
-                            const time = Date.now() - start
-                            const src = result.src ? dim(' ← ' + result.src) : ''
-                            const attempts = i > 1 ? dim(retryInfo) : ''
-                            logger.info(`${green('▶')} ${result.location}${src}${attempts}`)
-
-                            const out = extname(pathname) !== '.pdf' ? yellow(pathname) : pathname
-                            logger.info(
-                                `  ${blue('└─')} ${dim(`${out} (+${time.toFixed()}ms) (${generated.length.toFixed()}/${totalCount.toFixed()})`)}`
-                            )
-                        } catch (err) {
-                            const attempts = maxRuns > 1 && i < maxRuns ? yellow(retryInfo) : retryInfo
-
-                            if (err instanceof PageError) {
-                                if (i < maxRuns || !pageOptions.throwOnFail) {
-                                    const time = Date.now() - start
-                                    const src = err.src ? dim(' ← ' + err.src) : ''
-                                    logger.info(
-                                        red(
-                                            `✖︎ ${err.location} (${err.title}) ${dim(`(+${time.toFixed()}ms)`)}${src}${attempts}`
-                                        )
-                                    )
-                                }
-                                const causeStack =
-                                    err.cause instanceof Error && err.cause.stack
-                                        ? `\n${bold('Caused by:')}\n${err.cause.stack}`
-                                        : ''
-                                logger.debug(
-                                    bold(red(`error while processing ${location}:\n`)) + (err.stack ?? '') + causeStack
-                                )
-                            } else {
-                                if (err instanceof FatalError) {
-                                    throw err
-                                }
-                                // wrap unexpected errors with a more useful message
-                                throw new Error(
-                                    `An unexpected error occurred and was not handled by astro-pdf while processing \`${location}\`:\n\n` +
-                                        String(err) +
-                                        '\n\nConsider filing a bug report at https://github.com/lameuler/astro-pdf/issues/new/choose\n',
-                                    { cause: err }
-                                )
-                            }
-
-                            if (i < maxRuns) {
-                                await task(location, pageOptions, i + 1)
-                            } else {
-                                totalCount--
-                                if (pageOptions.throwOnFail) {
-                                    throw err
-                                }
-                            }
-                        }
-                    }
+                    const runner = new Runner(
+                        (entry, env) => processPage(entry.location, entry.pageOptions, env),
+                        env,
+                        concurrency,
+                        logger
+                    )
 
                     try {
                         if (typeof options.browserCallback === 'function') {
                             await options.browserCallback(browser)
                         }
-                        await pMap(queue, ({ location, pageOptions }) => task(location, pageOptions), {
-                            concurrency,
-                            signal
-                        })
+                        await runner.run(queue)
                     } catch (err) {
                         if (!signal.aborted) {
                             controller.abort(err)
                         }
                         throw err
                     } finally {
-                        await browser.off('disconnected', onDisconnected).close()
+                        browser.off('disconnected', onDisconnected)
+                        await browser.close()
                         if (typeof close === 'function') {
                             await close()
                         }
 
-                        const noExt = generated.filter((path) => extname(path) !== '.pdf').length
+                        const noExt = runner.generated.filter(({ path }) => extname(path) !== '.pdf').length
                         if (noExt > 0) {
                             logger.warn(
                                 `${noExt.toFixed()} file${noExt === 1 ? '' : 's'} generated without .pdf extension`
                             )
                         }
 
-                        if (generated.length < queue.length) {
-                            const n = queue.length - generated.length
+                        if (runner.generated.length < queue.length) {
+                            const n = queue.length - runner.generated.length
                             logger.error(red(`Failed to generate ${n.toFixed()} file${n === 1 ? '' : 's'}`))
                         }
                     }
@@ -251,7 +191,10 @@ export default function pdf(options: Options): AstroIntegration {
                     if (typeof options.runAfter === 'function') {
                         logger.info(dim('running runAfter hook...'))
                         const runStart = Date.now()
-                        await options.runAfter(dir, generated)
+                        await options.runAfter(
+                            dir,
+                            runner.generated.map(({ pathname }) => pathname)
+                        )
                         logger.debug(`finished running runAfter hook in ${(Date.now() - runStart).toFixed()}ms`)
                     }
 
