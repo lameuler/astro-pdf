@@ -19,12 +19,12 @@ interface TaskInfo {
     duration: number
 }
 
-interface PageProcessorOpts {
+export interface PageProcessorOpts {
     location: string
     pageOptions: PageOptions
 }
 
-type PageProcessor = (opts: PageProcessorOpts, env: PageEnv) => Promise<PageResult>
+export type PageProcessor = (opts: PageProcessorOpts, env: PageEnv) => Promise<PageResult>
 
 export class Runner {
     readonly #context: RunnerContext
