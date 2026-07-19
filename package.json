@@ -7,8 +7,7 @@
     "types": "./dist/index.d.ts",
     "files": [
         "dist",
-        "!dist/**/*.map",
-        "scripts/preinstall.js"
+        "!dist/**/*.map"
     ],
     "scripts": {
         "build": "tsup && tsc",
@@ -19,8 +18,7 @@
         "lint:docs": "eslint docs/astro.config.mjs docs/src/content.config.ts",
         "format": "prettier . --write",
         "format:check": "prettier . --check",
-        "version": "changeset version && pnpm install --lockfile-only",
-        "preinstall": "node scripts/preinstall.js"
+        "version": "changeset version && pnpm install --lockfile-only"
     },
     "author": "Lam Eu Ler",
     "homepage": "https://ler.quest/astro-pdf/",
@@ -73,6 +71,12 @@
     },
     "engines": {
         "node": ">=18.0.0"
+    },
+    "devEngines": {
+        "packageManager": {
+            "name": "pnpm",
+            "onFail": "error"
+        }
     },
     "packageManager": "pnpm@11.7.0"
 }
