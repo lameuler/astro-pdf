@@ -75,7 +75,7 @@
     "devEngines": {
         "packageManager": {
             "name": "pnpm",
-            "onFail": "error"
+            "onFail": "warn"
         }
     },
     "packageManager": "pnpm@11.7.0"
