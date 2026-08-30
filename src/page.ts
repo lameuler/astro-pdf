@@ -104,7 +104,7 @@ async function runCallback<T extends unknown[], R>(
 }
 
 export async function processPage(location: string, pageOptions: PageOptions, env: PageEnv): Promise<PageResult> {
-    const { outDir, browser, baseUrl, debug, warn, signal } = env
+    const { outDir, browser, baseUrl, debug, signal } = env
     signal?.throwIfAborted()
 
     debug(`starting processing of ${location}`)
@@ -149,7 +149,7 @@ export async function processPage(location: string, pageOptions: PageOptions, en
 
         signal?.throwIfAborted()
 
-        const { fd, path, err } = await openFd(outPath, pageOptions.ensurePath, debug, warn, signal)
+        const { fd, path, err } = await openFd(outPath, debug, signal)
         const pathname = filepathToPathname(path, outDir)
 
         if (!fd) {

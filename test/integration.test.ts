@@ -32,7 +32,7 @@ describe('run integration', () => {
                         format: 'a4'
                     }
                 },
-                '/': [true, true, 'index.pdf', 'copy.pdf'],
+                '/': [true, 'index.pdf', 'copy.pdf'],
                 '/missing': {
                     path: 'missing.pdf',
                     maxRetries: 2
@@ -115,7 +115,7 @@ describe('run integration', () => {
             const calls = runAfter.mock.calls
             expect(calls.length).toBe(1)
             expect(calls[0][0]).toBe(outDir)
-            const expected = ['/resume.pdf', '/index.pdf', '/index-1.pdf', '/index-2.pdf', '/copy.pdf', '/example.pdf']
+            const expected = ['/resume.pdf', '/index.pdf', '/copy.pdf', '/example.pdf']
             if (calls[0][1] instanceof Array) {
                 expect(calls[0][1].sort()).toStrictEqual(expected.sort())
             } else {
@@ -141,8 +141,7 @@ describe('run integration', () => {
 
         test('handles multiple pdfs per page', async () => {
             const paths = [
-                resolve(outPath, 'index-1.pdf'),
-                resolve(outPath, 'index-2.pdf'),
+                resolve(outPath, 'index.pdf'),
                 resolve(outPath, 'copy.pdf')
             ]
             for (const path of paths) {

@@ -1,41 +1,21 @@
 import { open, type FileHandle } from 'node:fs/promises'
-import { extname, relative, resolve, sep } from 'node:path'
+import { relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export async function openFd(
     path: string,
-    ensure: boolean | undefined,
     debug: (message: string) => void,
-    warn: (message: string) => void,
     signal?: AbortSignal
 ) {
-    const ext = extname(path)
-    const name = path.substring(0, path.length - ext.length)
-    let i = 0
     let fd: FileHandle | null = null
-    let p: string = path
-    while (fd === null) {
-        signal?.throwIfAborted()
-        const suffix = i ? '-' + i.toFixed() : ''
-        p = name + suffix + ext
-        try {
-            fd = await open(p, 'wx')
-            break
-        } catch (err) {
-            debug('openFd: ' + String(err))
-            if (ensure) {
-                return { err, fd, path: p }
-            }
-            i++
-            if (!(err instanceof Error && 'code' in err && err.code === 'EEXIST')) {
-                warn(`unexpected error while opening \`${p}\`: ${String(err)}`)
-            }
-        }
-        if (i === 9) {
-            warn(`failed to open \`${name}-\${i}${ext}\` 10 times. run with --verbose to check the errors from openFd.`)
-        }
+    signal?.throwIfAborted()
+    try {
+        fd = await open(path, 'wx')
+    } catch (err) {
+        debug('openFd: ' + String(err))
+        return { err, fd, path }
     }
-    return { fd, path: p }
+    return { fd, path }
 }
 
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
