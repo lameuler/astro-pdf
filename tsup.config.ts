@@ -21,7 +21,8 @@ export default defineConfig({
     format: 'esm',
     platform: 'node',
     sourcemap: true,
+    treeshake: true,
     define: {
-        VERSION: JSON.stringify(await getPackageVersion())
+        __VERSION__: JSON.stringify(await getPackageVersion())
     }
 })
