@@ -52,10 +52,12 @@ export class FatalError extends Error {
 export interface PageResult {
     location: string
     src: string | null
-    output: {
-        path: string
-        pathname: string
-    }
+    output: PageOutput
+}
+
+export interface PageOutput {
+    path: string
+    pathname: string
 }
 
 export interface PageEnv {

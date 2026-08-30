@@ -2,7 +2,13 @@ import { beforeAll, describe, expect, test, vi } from 'vitest'
 
 import type { Page } from 'puppeteer'
 
-import { CleanedMap, defaultPageOptions, getPageOptions, mergePages, PagesFunction } from '../dist/options.js'
+import {
+    type CleanedMap,
+    defaultPageOptions,
+    getPageOptions,
+    mergePages,
+    type PagesFunction
+} from '../../src/options.js'
 
 describe('merge pages', () => {
     test('pages map', () => {
