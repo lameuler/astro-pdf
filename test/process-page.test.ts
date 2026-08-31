@@ -149,28 +149,9 @@ describe('process page', () => {
         expect(existsSync(resolve(env.outDir, 'somewhere.pdf'))).toBe(false)
     })
 
-    test('conflicting filenames', async () => {
-        const options: PageOptions = {
-            path: 'output.pdf',
-            screen: false,
-            waitUntil: 'networkidle2',
-            pdf: {}
-        }
-        const results = await Promise.all([processPage('/docs', options, env), processPage('/docs/page', options, env)])
-        expect(results[0].location).toBe(results[1].location)
-        const paths = [results[0].output.path, results[1].output.path]
-        expect(paths).toContain(resolve(env.outDir, 'output.pdf'))
-        expect(paths).toContain(resolve(env.outDir, 'output-1.pdf'))
-        const pathnames = [results[0].output.pathname, results[1].output.pathname]
-        expect(pathnames).toContain('/output.pdf')
-        expect(pathnames).toContain('/output-1.pdf')
-        expect(env.warn).toHaveBeenCalledTimes(0)
-    }, 10000)
-
-    test('throws for conflicting filenames with ensurePath', async () => {
+    test('throws for conflicting filenames', async () => {
         const options: PageOptions = {
             path: 'another-output.pdf',
-            ensurePath: true,
             screen: false,
             waitUntil: 'networkidle2',
             pdf: {}
@@ -199,7 +180,7 @@ describe('process page', () => {
     test('dynamic page dimensions', async () => {
         const PAGE_WIDTH_PX = 1440
         const options: PageOptions = {
-            path: defaultPathFunction('[pathname].pdf'),
+            path: defaultPathFunction('[pathname]-dynamic.pdf'),
             screen: true,
             waitUntil: 'networkidle0',
             pdf: async (page) => {
@@ -242,7 +223,7 @@ describe('process page', () => {
             await processPage(
                 '/',
                 {
-                    path: 'index.pdf',
+                    path: 'non-isolated.pdf',
                     screen: false,
                     waitUntil: 'load',
                     pdf: {},
@@ -267,7 +248,7 @@ describe('process page', () => {
             await processPage(
                 '/',
                 {
-                    path: 'index.pdf',
+                    path: 'isolated1.pdf',
                     screen: false,
                     waitUntil: 'load',
                     pdf: {},
@@ -296,7 +277,7 @@ describe('process page', () => {
             await processPage(
                 '/',
                 {
-                    path: 'index.pdf',
+                    path: 'isolated2.pdf',
                     screen: false,
                     waitUntil: 'load',
                     pdf: {},

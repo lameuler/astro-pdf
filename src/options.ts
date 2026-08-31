@@ -132,7 +132,6 @@ export type PagesEntry = Partial<PageOptions> | string | boolean | null | undefi
  *         if (pathname === '/specific/page') {
  *             return {
  *                 path: 'specific-page.pdf',
- *                 ensurePath: true,
  *                 throwOnFail: true
  *             }
  *         }
@@ -248,22 +247,9 @@ export interface PageOptions {
      * The function can return the path where the PDF will be generated as a string, or a Promise which will resolve to the path.
      * The `url` parameter is equivalent to getting `new URL(page.url())`.
      *
-     * If there is already a file with the same name, a counter suffix will be added to prevent overwriting the file.
-     * For example: `example.pdf` then `example-1.pdf` then `example-2.pdf`.
-     * This can be disabled with the {@link ensurePath | `ensurePath` option }.
-     *
      * @defaultValue `'[pathname].pdf'`
      */
     path: string | ((url: URL, page: Page) => string | Promise<string>)
-    /**
-     * Set to `true` to ensure that the output path of the file is the same as the `path` option.
-     *
-     * @remarks
-     * This will prevent `astro-pdf` from adding the counter suffix if there is a file with the same name, and will instead cause the processing of that page to fail.
-     *
-     * @defaultValue `false`
-     */
-    ensurePath?: boolean
     /**
      * Use the CSS {@link https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types | `screen` media type} instead of the default `print`.
      *
@@ -396,7 +382,6 @@ export interface ServerOutput {
 
 export const defaultPageOptions = {
     path: '[pathname].pdf',
-    ensurePath: false,
     screen: false,
     waitUntil: 'networkidle2',
     pdf: {},
