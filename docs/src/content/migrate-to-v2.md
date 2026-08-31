@@ -4,6 +4,12 @@ title: Migrate to astro-pdf v2
 
 ## Breaking changes
 
+### Removed `ensurePath` page option
+
+In v1, when trying to generate a PDF with a filename which already exists, `astro-pdf` would add a counter suffix to the end of the filename (e.g. `xxx-1.pdf`) to handle the conflicting filename. However, this can lead to unexpected behaviour as pages are processed in parallel, meaning the suffix could be different between builds. This dynamic filename behaviour makes it difficult to link to the generated files, which is why it was recommended to set `ensurePath` to `true`, which disables the suffix behaviour.
+
+In v2, `ensurePath` has been removed, and the default (and only) behaviour now is the same as `ensurePath: true`. If trying to output a file with a filename which already exists, the page will fail with a 'file already exists' error.
+
 ### Removed `install` option
 
 In v1, `astro-pdf` would check the executable path specified in the [Puppeteer configuration](https://pptr.dev/guides/configuration), and if the executable was not found, it would try to install the [latest `stable` version of Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) (which may not be the same as the pinned version which the installed version of Puppeteer installs by default). This would make it difficult to do a custom browser installation without `astro-pdf` also installing a browser.
