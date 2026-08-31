@@ -2,11 +2,7 @@ import { open, type FileHandle } from 'node:fs/promises'
 import { relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-export async function openFd(
-    path: string,
-    debug: (message: string) => void,
-    signal?: AbortSignal
-) {
+export async function openFd(path: string, debug: (message: string) => void, signal?: AbortSignal) {
     let fd: FileHandle | null = null
     signal?.throwIfAborted()
     try {

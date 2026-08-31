@@ -140,10 +140,7 @@ describe('run integration', () => {
         })
 
         test('handles multiple pdfs per page', async () => {
-            const paths = [
-                resolve(outPath, 'index.pdf'),
-                resolve(outPath, 'copy.pdf')
-            ]
+            const paths = [resolve(outPath, 'index.pdf'), resolve(outPath, 'copy.pdf')]
             for (const path of paths) {
                 expect((await lstat(path)).isFile()).toBe(true)
                 const data = await parsePdf(path)
