@@ -60,7 +60,6 @@ const options = {
             'about.pdf',
             {
                 path: '/path/to/file.pdf',
-                ensurePath: true,
                 throwOnFail: true,
                 pdf: {
                     timeout: 10_000
