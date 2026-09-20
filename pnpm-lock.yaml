@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@puppeteer/browsers':
-        specifier: ^2.6.0
-        version: 2.13.2
       kleur:
         specifier: ^4.1.5
         version: 4.1.5

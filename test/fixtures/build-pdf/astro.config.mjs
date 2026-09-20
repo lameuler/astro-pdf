@@ -7,7 +7,6 @@ import astroPdf from 'astro-pdf'
 export default defineConfig({
     integrations: [
         astroPdf({
-            install: true,
             pages: (path) => {
                 if (path === '/testing/') {
                     return {

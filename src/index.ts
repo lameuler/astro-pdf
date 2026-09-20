@@ -13,7 +13,6 @@ import { bgBlue, blue, bold, dim, green, red, yellow } from 'kleur/colors'
 import pMap from 'p-map'
 import { launch } from 'puppeteer'
 
-import { findOrInstallBrowser } from './browser.js'
 import {
     defaultPageOptions,
     getPageOptions,
@@ -75,15 +74,6 @@ export default function pdf(options: Options): AstroIntegration {
                 const versionColour = VERSION.includes('-') ? yellow : green
                 logger.info(`\r${bold(bgBlue(' astro-pdf '))} ${versionColour('v' + VERSION)} – generating pdf files`)
 
-                // eslint-disable-next-line @typescript-eslint/no-deprecated
-                if (options.install !== undefined) {
-                    process.emitWarning(
-                        'Options.install is deprecated. Configure Puppeteer to choose which browser to install (https://pptr.dev/guides/configuration) or manually install a browser and pass the executablePath to Options.launch.',
-                        'DeprecationWarning',
-                        'astro-pdf:001'
-                    )
-                }
-
                 try {
                     if (typeof options.runBefore === 'function') {
                         logger.info(dim('running runBefore hook...'))
@@ -91,10 +81,6 @@ export default function pdf(options: Options): AstroIntegration {
                         await options.runBefore(dir)
                         logger.debug(`finished running runBefore hook in ${(Date.now() - runStart).toFixed()}ms`)
                     }
-
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const executablePath = await findOrInstallBrowser(options.install, cacheDir, logger)
-                    logger.debug(`using browser at ${blue(executablePath)}`)
 
                     const outDir = fileURLToPath(dir)
 
@@ -125,10 +111,7 @@ export default function pdf(options: Options): AstroIntegration {
                         }
                     }
 
-                    const browser = await launch({
-                        executablePath,
-                        ...options.launch
-                    })
+                    const browser = await launch(options.launch)
                     logger.debug(`launched browser ${await browser.version()}`)
 
                     const controller = new AbortController()

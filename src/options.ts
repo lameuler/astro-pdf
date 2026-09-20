@@ -1,4 +1,3 @@
-import type { InstallOptions } from '@puppeteer/browsers'
 import type { AstroConfig } from 'astro'
 import type {
     Page,
@@ -28,20 +27,6 @@ export interface Options {
      * If set to `null` or `undefined`, there will be no limit (which is the default behaviour).
      */
     maxConcurrent?: number | null
-    /**
-     * Specifies whether to install a browser, or options to pass to {@link https://pptr.dev/browsers-api/browsers.install | Puppeteer `install`}.
-     *
-     * @remarks
-     * By default, it will install the latest stable build of Chrome if `install` is truthy and the browser to install is not specified.
-     *
-     * If `install` is `false` or `undefined`, but no browser is found, it will automatically install a browser.
-     *
-     * @deprecated
-     * {@link https://pptr.dev/guides/configuration Configure Puppeteer} to choose which browser to install or manually install a browser and pass the `executablePath` to {@link Options.launch `launch`}.
-     *
-     * In the next major version, `astro-pdf` will no longer handle the installation of browsers.
-     */
-    install?: boolean | Partial<InstallOptions>
     /**
      * Options to pass to {@link https://pptr.dev/api/puppeteer.puppeteernode.launch | Puppeteer `launch`} for launching the browser.
      */
