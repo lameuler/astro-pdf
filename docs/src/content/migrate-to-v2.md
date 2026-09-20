@@ -57,3 +57,14 @@ if (platform) {
     console.log(installed.browser, installed.executablePath)
 }
 ```
+
+### Increased minimum node version
+
+The minimum version of node supported by `astro-pdf` has been increased to 22.12.0.
+This is the same as the minimum version requirements for Astro 6+ and Puppeteer 25+.
+
+#### What should I do?
+
+Check your node version by running `node -v`.
+If it is less than 22.12.0, download a newer version of node using a version manager or from the [official installers](https://nodejs.org/en/download).
+See the [Node.js migration guides](https://nodejs.org/en/blog/migrations).
