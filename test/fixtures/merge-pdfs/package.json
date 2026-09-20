@@ -9,10 +9,10 @@
         "astro": "astro"
     },
     "dependencies": {
-        "@astrojs/check": "^0.9.7",
-        "astro": "^6.0.4",
+        "@astrojs/check": "^0.9.9",
+        "astro": "^6.4.8",
         "astro-pdf": "workspace:*",
         "pdf-merger-js": "^5.1.2",
-        "typescript": "^5.7.2"
+        "typescript": "^5.9.3"
     }
 }
