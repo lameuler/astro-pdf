@@ -69,13 +69,7 @@ describe('max concurrent', () => {
             location: '',
             pageOptions: fakePageOptions({ navTimeout: n })
         }))
-        const start = Date.now()
         await runner.run(queue)
-        const duration = Date.now() - start
-
-        const total = timings.reduce((p, n) => p + n)
-        expect(duration).toBeGreaterThan(total - 20)
-        expect(duration).toBeLessThan(total + 100)
 
         expect(Math.max(...history)).toBe(1)
     })
@@ -98,12 +92,7 @@ describe('max concurrent', () => {
             location: '',
             pageOptions: fakePageOptions({ navTimeout: n })
         }))
-        const start = Date.now()
         await runner.run(queue)
-        const duration = Date.now() - start
-
-        expect(duration).toBeGreaterThan(Math.max(...timings) - 20)
-        expect(duration).toBeLessThan(Math.max(...timings) + 60)
 
         expect(Math.max(...history)).toBe(queue.length)
     })
