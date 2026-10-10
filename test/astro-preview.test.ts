@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import { mkdir, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { AstroConfig } from 'astro'
@@ -8,8 +10,6 @@ import { load } from 'cheerio'
 import type { ServerOutput } from '../dist/index.js'
 import { astroPreview } from '../dist/server.js'
 import { loadFixture, type TestFixture } from './utils/index.js'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 
 let fixture1: TestFixture
 let fixture2: TestFixture
