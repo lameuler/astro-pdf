@@ -1,5 +1,44 @@
 # astro-pdf
 
+## 2.0.0
+
+### Major Changes
+
+- [#132](https://github.com/lameuler/astro-pdf/pull/132) [`c159b26`](https://github.com/lameuler/astro-pdf/commit/c159b2613696b9e027ec88a4c70f6e4e29ffee74) Thanks [@lameuler](https://github.com/lameuler)! - Increase minimum node version from 18 to 22.12.0
+
+- [#132](https://github.com/lameuler/astro-pdf/pull/132) [`7708468`](https://github.com/lameuler/astro-pdf/commit/7708468fc2bd3ee4fb9535d2891738474b0ba819) Thanks [@lameuler](https://github.com/lameuler)! - Removed the `ensurePath` page option. In v2, `astro-pdf` will no longer add suffixes to paths to prevent conflicts.
+  If attempting to overwrite a file, the processing of that page will always fail.
+
+    This helps to ensure that the output of `astro-pdf` is consistent, as page processing can be done in parallel, leading to different suffixes between builds with no way to link to the files.
+
+    Find out more in the [migration guide](https://ler.quest/astro-pdf/migrate-to-v2/#removed-ensurepath-page-option).
+
+- [#132](https://github.com/lameuler/astro-pdf/pull/132) [`fa47e76`](https://github.com/lameuler/astro-pdf/commit/fa47e76438c5cb4b6d8f16e9303c59ab1297b031) Thanks [@lameuler](https://github.com/lameuler)! - Removed the `install` option. In v2, `astro-pdf` will no longer handle the installation of browsers, and instead leaves the task to the user.
+
+    To use any custom browser, pass the [`browser`](https://pptr.dev/browsers-api/browsers.browser) and `executablePath` to the `launch` option.
+
+    ```diff
+    // https://astro.build/config
+    export default defineConfig({
+        integrations: [pdf({
+    -       install: true,
+    +       launch: {
+    +           // the browser (eg 'chrome') and executable path of the installed browser.
+    +           browser: '...',
+    +           executablePath: '...'
+    +       },
+        })]
+    })
+    ```
+
+    Find out more in the [migration guide](https://ler.quest/astro-pdf/migrate-to-v2/#removed-install-option).
+
+### Patch Changes
+
+- [#132](https://github.com/lameuler/astro-pdf/pull/132) [`9254746`](https://github.com/lameuler/astro-pdf/commit/925474686446d6d4760eb7009836d7699f8d8b95) Thanks [@lameuler](https://github.com/lameuler)! - Fix handling of IPv6 addresses when using the astro preview server.
+
+- [#132](https://github.com/lameuler/astro-pdf/pull/132) [`c159b26`](https://github.com/lameuler/astro-pdf/commit/c159b2613696b9e027ec88a4c70f6e4e29ffee74) Thanks [@lameuler](https://github.com/lameuler)! - Upgrade Puppeteer to v25
+
 ## 1.10.1
 
 ### Patch Changes
