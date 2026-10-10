@@ -51,7 +51,7 @@
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/node": "^22.19.21",
         "@vitest/coverage-istanbul": "^4.1.11",
-        "astro": "^7.3.3",
+        "astro": "^7.2.8",
         "cheerio": "^1.2.0",
         "eslint": "^10.5.0",
         "eslint-config-prettier": "^10.1.8",
