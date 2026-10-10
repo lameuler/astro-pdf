@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import { mkdir, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { AstroConfig } from 'astro'
@@ -42,8 +44,9 @@ describe('test server', () => {
         expect(server2?.close).toBeTypeOf('function')
     })
 
-    test('server 1 and server 2 have different urls', () => {
-        expect(server1!.url).not.toBe(server2!.url)
+    test('server 1 and server 2 have different ports', () => {
+        expect(server1!.url!.hostname).toBe(server2!.url!.hostname)
+        expect(server1!.url!.port).not.toBe(server2!.url!.port)
     })
 
     test('server 1 running', async () => {
@@ -75,5 +78,37 @@ describe('stop servers', () => {
 
     test('server 2 closed', async () => {
         await expect(fetch(server2!.url!)).rejects.toThrow('fetch failed')
+    })
+})
+
+describe('server url output', () => {
+    const root = resolve('test/fixtures/.cache/astro-preview')
+    beforeAll(async () => {
+        await mkdir(resolve(root, 'dist'), { recursive: true })
+    })
+    test('can resolve url with server.host: true', async () => {
+        await writeFile(resolve(root, 'astro.config.mjs'), 'export default { server: { host: true } }')
+        const output = await astroPreview({ root: pathToFileURL(root) } as AstroConfig)
+        // the value with host: true is likely 0.0.0.0 or :: but is not necessarily fixed
+        expect(output.url).toBeDefined()
+        await output.close?.()
+    })
+    test('can resolve localhost', async () => {
+        await writeFile(resolve(root, 'astro.config.mjs'), 'export default { server: { host: false } }')
+        const output = await astroPreview({ root: pathToFileURL(root) } as AstroConfig)
+        expect(output.url?.hostname).toBe('localhost')
+        await output.close?.()
+    })
+    test('can resolve ipv4 host', async () => {
+        await writeFile(resolve(root, 'astro.config.mjs'), 'export default { server: { host: "127.0.0.1" } }')
+        const output = await astroPreview({ root: pathToFileURL(root) } as AstroConfig)
+        expect(output.url?.hostname).toBe('127.0.0.1')
+        await output.close?.()
+    })
+    test('can resolve ipv6 host', async () => {
+        await writeFile(resolve(root, 'astro.config.mjs'), 'export default { server: { host: "::1" } }')
+        const output = await astroPreview({ root: pathToFileURL(root) } as AstroConfig)
+        expect(output.url?.hostname).toBe('[::1]')
+        await output.close?.()
     })
 })

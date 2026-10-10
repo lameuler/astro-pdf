@@ -10,13 +10,17 @@ export async function astroPreview(config: AstroConfig): Promise<ServerOutput> {
     const server = await preview({ root: fileURLToPath(config.root), logLevel: 'error' })
     // get the actual port number for static preview server
     const address = 'server' in server && server.server instanceof Server ? server.server.address() : undefined
-    let host: string | undefined = undefined
+    let host: string | undefined = server.host
     let port: number | undefined = undefined
     if (address && typeof address === 'object') {
-        host = address.address
+        host ??= address.address
         port = address.port
     }
-    const url = new URL(`http://${server.host ?? host ?? 'localhost'}:${(port ?? server.port).toFixed()}`)
+    // handle IPv6 addresses
+    if (host?.includes(':')) {
+        host = `[${host}]`
+    }
+    const url = new URL(`http://${host ?? 'localhost'}:${(port ?? server.port).toFixed()}`)
     return {
         url,
         close: () => server.stop()

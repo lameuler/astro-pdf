@@ -49,7 +49,7 @@ export function loadFixture(fixture: string) {
                 self.previewUrl = undefined
             })
             self.previewServer = server
-            self.previewUrl = (server.host ?? 'http://localhost') + ':' + server.port
+            self.previewUrl = 'http://' + (server.host ?? 'localhost') + ':' + server.port
             return server
         },
         previewUrl: undefined,
